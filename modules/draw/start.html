@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start something!</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="ThisIsPurelyTestingBase">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+        *
+        {
+            box-sizing:border-box;
+            -moz-box-sizing:border-box;
+            margin:0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        html,body
+        {
+            height:100%;
+        }
+        body
+        {
+            background: -webkit-linear-gradient(#057cb8,lavender); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#057cb8,lavender); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#057cb8,lavender); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#057cb8,lavender); /* Standard syntax */
+        }
+        svg
+        {
+            background-color:white;
+            margin:auto;
+            position:relative;
+            top:50px;
+            display:block;
+            border:1px dotted black;
+        }
+        #upper
+        {
+            margin:0;
+            padding:5px;
+            background-color:rgba(10,185,210,0.5);
+            text-align:center;
+            position:fixed;
+        }
+        #statusbar
+        {
+            position:fixed;
+            display:inline-block;
+            bottom:0;
+            height:3em;
+            line-height:2em;
+            width:100%;
+            background-color:black;
+            color:#057cb8;
+            overflow:scroll;
+            white-space:nowrap;
+        }
+        .line, .ellipse, .polyline, .rect, .free
+        {
+            cursor:crosshair;
+            -webkit-filter: drop-shadow( -5px -5px 5px #000 );
+            filter: drop-shadow( -5px -5px 5px #000 );
+        }
+        
+        </style>
+    </head>
+    <body>
+        <div id="upper">
+                <button onclick="akruti.selectOperation('lineMode')" id="lineBtn">Line</button>
+                <button onclick="akruti.selectOperation('rectangleMode')" id="rectangleBtn">Rectangle</button>
+                <button onclick="akruti.selectOperation('ellipseMode')" id="ellipseBtn">Ellipse</button>
+                <button onclick="akruti.selectOperation('freeMode')" id="freeBtn">Free</button>
+                <button onclick="akruti.selectOperation('selectMode')" id="selectBtn">Select</button>
+                <button onclick="akruti.test()" id="TBtn">Test</button>
+        </div>
+        <div id="statusbar">All fine!</div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="../jquery.min.js"><\/script>')</script>
+        <script src="akruti.js"></script>
+    </body>
+</html>
