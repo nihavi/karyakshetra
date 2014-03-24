@@ -45,11 +45,24 @@
                                         url: module_script,
                                         dataType: "script",
                                         cache: true
+                                    }),
+                                    $.ajax({
+                                        url: '<?php echo base_url(); ?>css/normalize.css',
+                                        cache: true,
+                                        success: applyCss
+                                    }),
+                                    $.ajax({
+                                        url: '<?php echo base_url(); ?>css/interface.css',
+                                        cache: true,
+                                        success: applyCss
                                     })
                                 ).then(
                                     function(){
                                         //Scripts loaded
                                         $( "#wait_message" ).remove();
+                                        linkCss('<?php echo base_url(); ?>css/font-awesome.min.css').load(Base.init);
+                                        linkCss('http://fonts.googleapis.com/css?family=Source+Sans+Pro');
+                                        linkCss('http://fonts.googleapis.com/css?family=Open+Sans');
                                     },
                                     function(){
                                         //Error: scripts loading failed
@@ -65,6 +78,24 @@
                     //Error: old browser
                     document.write('Your browser is not supported');
                 }
+            }
+            function applyCss(data){
+                //Assuming jQuery is loaded
+                var styleE = $('<style></style>');
+                styleE.html(data);
+                $('head').append(styleE);
+            }
+            function linkCss(url){
+                //Assuming jQuery is loaded
+                //Catch errors: TODO
+                //Returns jQuery link element
+                var linkE = $('<link>',{
+                    'href': url,
+                    'rel': 'stylesheet',
+                    'type': 'text/css'
+                });
+                $('head').append(linkE);
+                return linkE;
             }
         </script>
     </head>

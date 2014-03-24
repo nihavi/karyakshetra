@@ -1,0 +1,80 @@
+.interface {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.menubar {
+    background-color: #333;
+    box-shadow: 0 0 2px 2px #333;
+}
+
+.level:before,
+.level:after {
+    content: " ";
+    display: table;
+}
+
+.level:after {
+    clear: both;
+}
+
+.level {
+    *zoom: 1;
+}
+
+.level .btn {
+    float: left;
+}
+
+.btn {
+    xpadding: 10px 20px 10px 10px;
+    background-color: transparent;
+    color: #f5f5f5;
+}
+
+.btn-big {
+   padding: 15px 25px 15px 15px;
+}
+
+.btn i {
+    margin-right: 2px;
+}
+
+.btn-icon-only {
+    line-height: 1em;
+    height: 1em;
+    width: 1em;
+    padding: 10px;
+    border: 1px solid transparent;
+}
+
+.btn-icon-only i {
+    margin-right: 0;
+}
+
+.level-two {
+    font-size: 1.25em;
+}
+
+.blue.level-two {
+    background-color: #057cb8;
+}
+
+.green.level-two {
+    background-color: green;
+}
+
+.btn:hover,
+.btn.active {
+    background-color: #057cb8;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.btn-icon-only:hover {
+    xcolor: black;
+    xtext-shadow: -1px -1px 2px #034872, 1px 1px 3px #000;
+    xtext-shadow: -3px -3px 7px #A0D0D6, 3px 3px 7px #A0D0D6;
+    text-shadow: -3px -3px 7px #A0D0D6, 3px 3px 7px #A0D0D6;
+}
