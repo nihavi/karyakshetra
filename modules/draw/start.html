@@ -25,10 +25,11 @@
         }
         body
         {
-            background: -webkit-linear-gradient(#057cb8,lavender); /* For Safari 5.1 to 6.0 */
-            background: -o-linear-gradient(#057cb8,lavender); /* For Opera 11.1 to 12.0 */
-            background: -moz-linear-gradient(#057cb8,lavender); /* For Firefox 3.6 to 15 */
-            background: linear-gradient(#057cb8,lavender); /* Standard syntax */
+            background: -webkit-linear-gradient(#002B36,#002B36); /* For Safari 5.1 to 6.0 */
+            background: -o-linear-gradient(#002B36,#002B36); /* For Opera 11.1 to 12.0 */
+            background: -moz-linear-gradient(#002B36,#002B36); /* For Firefox 3.6 to 15 */
+            background: linear-gradient(#002B36,#002B36); /* Standard syntax */
+            color:white;
         }
         svg
         {
@@ -41,11 +42,16 @@
         }
         #upper
         {
-            margin:0;
-            padding:5px;
+            margin:auto;
+            display:block;
+            padding:7px;
             background-color:rgba(10,185,210,0.5);
+            background-color:#002B36;
             text-align:center;
             position:fixed;
+            left:0;
+            right:0;
+            
         }
         #statusbar
         {
@@ -56,17 +62,14 @@
             line-height:2em;
             width:100%;
             background-color:black;
-            color:#057cb8;
+            color:#eee;
             overflow:scroll;
             white-space:nowrap;
         }
-        .line, .ellipse, .polyline, .rect, .free
+        .l:hover
         {
-            cursor:crosshair;
-            -webkit-filter: drop-shadow( -5px -5px 5px #000 );
-            filter: drop-shadow( -5px -5px 5px #000 );
+            cursor: crosshair;
         }
-        
         </style>
     </head>
     <body>
@@ -75,12 +78,21 @@
                 <button onclick="akruti.selectOperation('rectangleMode')" id="rectangleBtn">Rectangle</button>
                 <button onclick="akruti.selectOperation('ellipseMode')" id="ellipseBtn">Ellipse</button>
                 <button onclick="akruti.selectOperation('freeMode')" id="freeBtn">Free</button>
-                <button onclick="akruti.selectOperation('selectMode')" id="selectBtn">Select</button>
-                <button onclick="akruti.test()" id="TBtn">Test</button>
+                <button onclick="akruti.selectOperation('fourMode')" id="Magic">Magic</button>
+                <button onclick="akruti.selectOperation('fourMode2')" id="Magic2">Magic2</button>
+                <button onclick="opQueue.undo()" id="TBtn">Undo</button>
+                <button onclick="opQueue.redo()" id="T2Btn">Redo</button>
+                <label>|Stroke Color </label><input class="color" value="ffffff" id="strokeColor" placeholder="StokeColor">
+                <label>|Fill Color </label><input class="color" value="transarent" id="fillColor" placeholder="FillColor">
+                <label>|Stroke Width </label><input type="text" value="2" id="strokeWidth" placeholder="StrokeWidth">
+                
         </div>
+        <div id="d"></div>
         <div id="statusbar">All fine!</div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="../jquery.min.js"><\/script>')</script>
+        <script>window.jQuery || document.write('<script src="jquery.min.js"><\/script>')</script>
+        <script src="opq.js"></script>
         <script src="akruti.js"></script>
+        <script src="jscolor/jscolor.js"></script>
     </body>
 </html>
