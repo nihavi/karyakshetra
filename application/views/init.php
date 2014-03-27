@@ -35,6 +35,7 @@
                             }
                             else {
                                 var base_script = '<?php echo base_url().'scripts/'.$base_script; ?>';
+                                var tmp_base_script = '<?php echo base_url().'scripts/'?>view.js';
                                 var module_script = '<?php echo base_url().'scripts/'.$module_script; ?>';
                                 $.when(
                                     $.ajax({
@@ -43,17 +44,22 @@
                                         cache: true,
                                     }),
                                     $.ajax({
+                                        url: tmp_base_script,
+                                        dataType: "script",
+                                        cache: true
+                                    }),
+                                    $.ajax({
                                         url: module_script,
                                         dataType: "script",
                                         cache: true
                                     }),
                                     $.ajax({
-                                        url: '<?php echo base_url(); ?>css/normalize.css',
+                                        url: '<?php echo base_url(); ?>styles/normalize.css',
                                         cache: true,
                                         success: applyCss
                                     }),
                                     $.ajax({
-                                        url: '<?php echo base_url(); ?>css/interface.css',
+                                        url: '<?php echo base_url(); ?>styles/css/interface.css',
                                         cache: true,
                                         success: applyCss
                                     })

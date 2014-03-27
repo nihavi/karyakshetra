@@ -1,0 +1,4 @@
+RewriteEngine on
+RewriteBase /~vivek.ghaisas/karyakshetra/
+RewriteCond $1 !^(index\.php|scripts|fonts|css|images|robots\.txt)
+RewriteRule ^(.*)$ index.php/$1 [L]
