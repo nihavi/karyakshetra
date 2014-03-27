@@ -190,6 +190,7 @@ Base = new (function(){
     ]
     
     var menus;//Kepps track and information of the menus
+    var menuMeta;
     var submenu;//Kepps track and information of the current submenu
     var menuId;
     
@@ -211,10 +212,10 @@ Base = new (function(){
         
         //Append menubar to interface
         //menubar contains whole menu with all submenus
-        $('<div class="menubar" id="menubar"></div>').appendTo('#interface');
+        $('<div class="toolbars" id="menubar"></div>').appendTo('#interface');
         
         //Append main to menubar
-        var mainMenu = $('<div class="level" id="mainMenu"></div>').appendTo('#menubar');
+        var mainMenu = $('<div class="bar bar-super" id="mainMenu"></div>').appendTo('#menubar');
         
         //Add main menu items inside this level
         //Items are defined in menus
@@ -257,7 +258,7 @@ Base = new (function(){
         var subMenuId = 0;
         
         //Append submenu to menubar
-        var subMenu = $('<div class="level level-two blue" id="subMenu"></div>').appendTo('#menubar');
+        var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
         
         //Append submenu items to submenu
         var item,i;
@@ -268,7 +269,7 @@ Base = new (function(){
                 id = 'menuItem'+subMenuId;
                 if( ('type' in item) && ('icon' in item) && ('callback' in item) ){
                     //Append menu item to DOM
-                    var menuItem = $('<div class="btn btn-icon-only" id="'+id+'"></div>').appendTo(subMenu);
+                    var menuItem = $('<div class="btn btn-icon" id="'+id+'"></div>').appendTo(subMenu);
                     $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                     if( item.type == 'color' ){
                     }
