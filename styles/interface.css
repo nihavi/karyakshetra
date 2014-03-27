@@ -83,3 +83,7 @@
     text-shadow: none;
     color: orange;
 }
+
+.sep {
+    float: left;
+}
