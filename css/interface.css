@@ -72,6 +72,10 @@
     cursor: pointer;
 }
 
+.btn-icon-only.active {
+    color: #000000;
+}
+
 .btn-icon-only:hover {
     xcolor: black;
     xtext-shadow: -1px -1px 2px #034872, 1px 1px 3px #000;

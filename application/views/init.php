@@ -8,6 +8,7 @@
         <script>
             function loadJquery(fallback)
             {
+                fallback = true;
                 var url='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js';
                 if(fallback)
                     url='<?php echo base_url().'scripts/jquery-1.11.0.min.js'; ?>';
@@ -59,8 +60,13 @@
                                 ).then(
                                     function(){
                                         //Scripts loaded
-                                        $( "#wait_message" ).remove();
-                                        linkCss('<?php echo base_url(); ?>css/font-awesome.min.css').load(Base.init);
+                                        linkCss('<?php echo base_url(); ?>css/font-awesome.min.css').load(function(){
+                                            $( "#wait_message" ).remove();
+                                            Base.init();
+                                        }).error(function(){
+                                            //Error: font-awesome error
+                                            document.write('Some error occured');
+                                        });
                                         linkCss('http://fonts.googleapis.com/css?family=Source+Sans+Pro');
                                         linkCss('http://fonts.googleapis.com/css?family=Open+Sans');
                                     },
