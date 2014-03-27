@@ -59,14 +59,14 @@
                                         success: applyCss
                                     }),
                                     $.ajax({
-                                        url: '<?php echo base_url(); ?>styles/css/interface.css',
+                                        url: '<?php echo base_url(); ?>styles/interface.css',
                                         cache: true,
                                         success: applyCss
                                     })
                                 ).then(
                                     function(){
                                         //Scripts loaded
-                                        linkCss('<?php echo base_url(); ?>css/font-awesome.min.css').load(function(){
+                                        linkCss('<?php echo base_url(); ?>styles/font-awesome.min.css').load(function(){
                                             $( "#wait_message" ).remove();
                                             Base.init();
                                         }).error(function(){
