@@ -190,7 +190,7 @@ Base = new (function(){
     ]
     
     var menus;//Kepps track and information of the menus
-    var menuMeta;
+    var menuMeta;//Maping of modules id and DOM id
     var submenu;//Kepps track and information of the current submenu
     var menuId;
     
@@ -221,28 +221,42 @@ Base = new (function(){
         //Items are defined in menus
         menuId = 0;
         menus = new Object();
-        var item, i;
+        menuMeta = new Object();
+        createMenu(defaultMenus);
+        activateMenu.bind($('#menuHead0'))();
+    }
+    createMenu = function(menuObject){
+        var item, i, menuItem;
         var id;
-        for( i in defaultMenus ) {
-            item = defaultMenus[i];
+        var mainMenu = $('#mainMenu');
+        for( i in menuObject ) {
+            item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){
                 //Insert menu into DOM
-                id = 'menuHead'+menuId;
-                var menuItem = $('<div class="btn btn-big" id="'+id+'"></div>').appendTo(mainMenu);
-                menuItem.click(activateMenu);
-                $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
-                $('<span> '+item.title+'</span>').appendTo(menuItem);
-                //Insert menu into menus
-                menus[id] = Object.create(item);
-                menuId++;
+                if(('id' in item) && (item.id in menuMeta)){
+                    id = menuMeta[item.id];
+                    menuItem = menus[id];
+                    menuItem.items = menuItem.items.concat(item.items);
+                }
+                else {
+                    id = 'menuHead'+menuId;
+                    var menuItem = $('<div class="btn btn-big" id="'+id+'"></div>').appendTo(mainMenu);
+                    menuItem.click(activateMenu);
+                    $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
+                    $('<span> '+item.title+'</span>').appendTo(menuItem);
+                    //Insert menu into menus
+                    if(('id' in item) && item.id){
+                        menuMeta[item.id] = id;
+                    }
+                    menus[id] = Object.create(item);
+                    menuId++;
+                }
             }
             else {
                 //Error: invalid menu item, ignored
             }
         }
-        activateMenu.bind($('#menuHead0'))();
     }
-    
     activateMenu = function(ev){
         //Onclick event handler on main menu items
         var id = $(this).attr('id');
