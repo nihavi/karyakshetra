@@ -449,6 +449,10 @@ Base = new (function(){
         edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
     }
     
+    $(window).resize(function(){
+        Base.setEditable();
+        //Call module's resize function
+    });
     
     
     /*
@@ -512,11 +516,170 @@ Base = new (function(){
         }
     }
     
+    
+    /*
+     * Keyboard shortcuts
+     *
+    
+    Prototype of shortcut object
+    {
+        ctrl: Boolean,
+        shift: Boolean,
+        alt: Boolean,
+        char: String,
+        callback: Function()
+    }
+    
+    */
+    
+    var registeredShortcuts = new Object();
+    
+    this.getShortcuts = function(){
+        /*
+         * Returns object containing all registered shortcuts
+         */
+        return registeredShortcuts;
+    }
+    
+    this.addShortcuts = function( shortcuts ){
+        /*
+         * Adds key shortcuts
+         * 
+         * Expects an Array of Objects as argument.
+         * Object is defined as followed
+        
+        {
+            ctrl: Boolean,
+            shift: Boolean,
+            alt: Boolean,
+            char: String,
+            callback: Function()
+        }
+        
+         */
+        var i;
+        for ( i = 0; i<shortcuts.length; i++ ){
+            var short = shortcuts[i];
+            if( short.char ){
+                short.char = short.char.charAt(0).toUpperCase();
+                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
+                    if( short.ctrl || short.shift || short.alt ){
+                        //Create key binding string
+                        var reg = '';
+                        if( short.ctrl )reg += 'ctrl+';
+                        if( short.shift )reg += 'shift+';
+                        if( short.alt )reg += 'alt+';
+                        reg += short.char;
+                        //If not already registered, register.
+                        if( !(reg in registeredShortcuts)){
+                            registeredShortcuts[reg] = short.callback;
+                        }
+                        else {
+                            //Error: Shortcut already registered
+                        }
+                    }
+                    else {
+                        //Error: Invalid controll key
+                    }
+                }
+                else {
+                    //Error: Invalid character
+                }
+            }
+            else {
+                //Error: Invalid character
+            }
+        }
+    };
+    
+    this.removeShortcuts = function( shortcuts ){
+        /*
+         * Removes key shortcuts
+         * 
+         * Expects an Array of Objects as argument.
+         * Object is defined as followed
+        
+        {
+            ctrl: Boolean,
+            shift: Boolean,
+            alt: Boolean,
+            char: String,
+        }
+        
+         */
+        var i;
+        for ( i = 0; i<shortcuts.length; i++ ){
+            var short = shortcuts[i];
+            if( short.char ){
+                short.char = short.char.charAt(0).toUpperCase();
+                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
+                    if( short.ctrl || short.shift || short.alt ){
+                        //Create key binding string
+                        var reg = '';
+                        if( short.ctrl )reg += 'ctrl+';
+                        if( short.shift )reg += 'shift+';
+                        if( short.alt )reg += 'alt+';
+                        reg += short.char;
+                        //If registered, remove.
+                        if( (reg in registeredShortcuts)){
+                            delete registeredShortcuts[reg] || registeredShortcuts[reg] = null;
+                        }
+                        else {
+                            //Error: Shortcut not registered
+                        }
+                    }
+                    else {
+                        //Error: Invalid controll key
+                    }
+                }
+                else {
+                    //Error: Invalid character
+                }
+            }
+            else {
+                //Error: Invalid character
+            }
+        }
+    };
+    
+    var handleKeyShortcuts = function(ev){
+        var comb = '';
+        if( ev.ctrlKey )comb += 'ctrl+';
+        if( ev.shiftKey )comb += 'shift+';
+        if( ev.altKey )comb += 'alt+';
+        comb += String.fromCharCode(ev.which);
+                
+        if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
+            registeredShortcuts[comb]();
+        }
+    }
+    
+    //Add event listener for key shortcuts
+    $(window).keydown(handleKeyShortcuts);
+    
+    //Add common shortcuts
+    this.addShortcuts([
+        {
+            ctrl: true,
+            char: 'Z',
+            callback: this.undo
+        },
+        {
+            ctrl: true,
+            shift: true,
+            char: 'Z',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'Y',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'R',
+            callback: this.redo
+        }
+    ]);
+    
 })();
-
-
-$(window).resize(function(){
-    Base.setEditable();
-    //Call module's resize function
-});
-
