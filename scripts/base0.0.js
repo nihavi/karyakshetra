@@ -9,8 +9,8 @@
 {
     type: 'group',
     id: String, //Id selected by module
+    multiple: Boolean,   //Is multiple select allowed, Default true
     items: Array //Items inside this group
-    multiple: Boolean   //Is multiple select allowed, Default true
 },
 {
     type: 'button',
@@ -236,16 +236,6 @@ Base = new (function(){
     var submenu;//Kepps track and information of the current submenu
     var menuId;
     
-    this.menu = function(){
-        console.log(menus);
-    }
-    this.submenu = function(){
-        console.log(submenu);
-    }
-    this.group = function(){
-        console.log(groupMeta);
-    }
-    
     this.init = function(){
         /*
          * init function for Base
@@ -267,7 +257,10 @@ Base = new (function(){
         menuId = 0;
         menus = new Object();
         menuMeta = new Object();
-        createMenu(defaultMenus);
+        //createMenu(defaultMenus);
+        //this.updateMenu(module.getMenu());
+        this.updateMenu();
+        
         activateMenu.bind($('#menuHead0'))();
         
         //Append editable to interface
@@ -276,20 +269,34 @@ Base = new (function(){
         
         //Call module's init
     }
+    
+    this.updateMenu = function(menuObject){
+        //Will be called by module with menuObject
+        //Will merge defaultMenus and menuObject and create menu
+        var menu = defaultMenus;
+        if ( menuObject ){
+            menu = menu.concat(menuObject);
+        }
+        createMenu(menu);
+    }
+    
     createMenu = function(menuObject){
         var item, i, menuItem;
         var id;
         var mainMenu = $('#mainMenu');
+        mainMenu.empty();
+        $('#subMenu').remove();
         for( i in menuObject ) {
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){
-                //Insert menu into DOM
                 if(('id' in item) && (item.id in menuMeta)){
+                    //Merge menus
                     id = menuMeta[item.id];
                     menuItem = menus[id];
                     menuItem.groups = menuItem.groups.concat(item.groups);
                 }
                 else {
+                    //Insert menu into DOM
                     id = 'menuHead'+menuId;
                     var menuItem = $('<div class="btn btn-big" id="'+id+'"></div>').appendTo(mainMenu);
                     menuItem.click(activateMenu);
@@ -308,6 +315,7 @@ Base = new (function(){
             }
         }
     }
+    
     activateMenu = function(ev){
         //Onclick event handler on main menu items
         var id = $(this).attr('id');
@@ -440,6 +448,70 @@ Base = new (function(){
         var menu = $('#menubar');
         edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
     }
+    
+    
+    
+    /*
+     * opQueue implementation
+     */
+    var exQueue = new Array();
+    var newQueue = new Array();
+    var exPointer = 0;
+    
+    this.addOp = function(pastState, newState){
+        /*
+         * pastState - previous state to be restored on undo
+         * newState - next state to be rendered on viewer
+         * 
+         * Will not return anything
+         */
+        exQueue[exPointer] = pastState;
+        exPointer++;
+        exQueue[exPointer] = null;
+        newQueue.push(newState);
+    };
+    
+    this.undo = function(){
+        /*
+         * if undo is possible,
+         * This function will call module's 'performOp' function with pastState
+         * Assuming module is an object with performOp function defined
+         * 
+         * module.performOp should return currState and newState in a object 
+         * with properties of same names
+         * 
+         * Will not return anything
+         */
+        if(exPointer > 0){
+            var op = module.performOp(exQueue[exPointer-1]);
+            if(exQueue.length == exPointer+1)
+                exQueue[exPointer+1] = null;
+            exQueue[exPointer] = op.currState;
+            exPointer--;
+            exQueue[exPointer] = null;
+            newQueue.push(op.newState);
+        }
+    }
+    this.redo = function(){
+        /*
+         * if redo is possible,
+         * This function will call module's 'performOp' function with newState
+         * Assuming module is an object with performOp function defined
+         * 
+         * module.performOp should return currState and newState in a object 
+         * with properties of same names
+         * 
+         * Will not return anything
+         */
+        if(exQueue[exPointer+1] != null){
+            var op = module.performOp(exQueue[exPointer+1]);
+            exQueue[exPointer] = op.currState;
+            exPointer++;
+            exQueue[exPointer] = null;
+            newQueue.push(op.newState);
+        }
+    }
+    
 })();
 
 
@@ -447,3 +519,4 @@ $(window).resize(function(){
     Base.setEditable();
     //Call module's resize function
 });
+
