@@ -13,10 +13,12 @@ Show = new (function(){
          */
         
         parent = $(parent);
-        $('<div class="sidebar" id="sidebar"></div>').appendTo(parent);
-        $('<div class="slides" id="slides"></div>').appendTo(parent);
+        var side = $('<div class="sidebar" id="sidebar"></div>').appendTo(parent);
+        var slide = $('<div class="slides" id="slides"></div>').appendTo(parent);
     }
     
     this.getMenu = function(){
     }
 })();
+
+module = Show;

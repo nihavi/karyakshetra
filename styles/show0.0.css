@@ -1,7 +1,11 @@
 .sidebar{
+    float: left;
     height: 100%;
+    background-color: green;
 }
 
 .slides{
+    float: left;
     height: 100%;
+    background-color: red;
 }

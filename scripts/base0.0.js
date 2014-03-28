@@ -264,10 +264,11 @@ Base = new (function(){
         activateMenu.bind($('#menuHead0'))();
         
         //Append editable to interface
-        $('<div class="editable" id="editable"></div>').appendTo('#interface');
+        var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
         this.setEditable();
         
         //Call module's init
+        module.init(edit.get(0));
     }
     
     this.updateMenu = function(menuObject){
