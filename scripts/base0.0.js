@@ -269,6 +269,12 @@ Base = new (function(){
         menuMeta = new Object();
         createMenu(defaultMenus);
         activateMenu.bind($('#menuHead0'))();
+        
+        //Append editable to interface
+        $('<div class="editable" id="editable"></div>').appendTo('#interface');
+        this.setEditable();
+        
+        //Call module's init
     }
     createMenu = function(menuObject){
         var item, i, menuItem;
@@ -428,4 +434,16 @@ Base = new (function(){
             }
         }
     }
+    
+    this.setEditable = function(){
+        var edit = $('#editable');
+        var menu = $('#menubar');
+        edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
+    }
 })();
+
+
+$(window).resize(function(){
+    Base.setEditable();
+    //Call module's resize function
+});

@@ -87,3 +87,8 @@
 .sep {
     float: left;
 }
+
+.editable {
+    width: 100%;
+    background-color: yellow;
+}
