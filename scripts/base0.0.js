@@ -26,7 +26,8 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: String, //Default color 
+    default: String, //Default color
+    text: String, //Text to show, aside
     callback: Function(String id, String color) //Callback on change
 },
 {
@@ -109,6 +110,24 @@ Base = new (function(){
                             icon: 'fa-pencil',
                             onoff: true,
                             callback: log
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'g3',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-picture-o',
+                            callback: log
+                        },
+                        {
+                            type: 'color',
+                            icon: 'fa-circle',
+                            default: 'green',
+                            callback: log,
+                            text: 'F'
                         }
                     ]
                 }
@@ -353,9 +372,20 @@ Base = new (function(){
                         id = 'menuItem'+subMenuId;
                         if( ('type' in item) && ('icon' in item) && ('callback' in item) ){
                             //Append menu item to DOM
-                            var menuItem = $('<div class="btn btn-icon" id="'+id+'"></div>').appendTo(subMenu);
+                            var menuItem = $('<div class="btn" id="'+id+'"></div>').appendTo(subMenu);
                             $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
+                            if (item.icon) {
+                                menuItem.addClass('btn-icon');
+                            }
                             if( item.type == 'color' ){
+                                menuItem.find('i').css('font-size', '0.5em');
+                                if (item.default) {
+                                    menuItem.find('i').css('color', item.default);    
+                                }
+                                if (item.text) {
+                                    $('<span class="btn-intext">' + item.text + '</span>').prependTo(menuItem);
+                                    menuItem.addClass('btn-text');
+                                }
                             }
                             else if( item.type == 'font' ){
                             }
@@ -381,7 +411,7 @@ Base = new (function(){
                         }
                     }
                     //If group is not last, append separator
-                    if( j == menu.groups.length-2 ){
+                    if( j <= menu.groups.length-2 ){
                         $('<div class="sep">|</div>').appendTo(subMenu);
                     }
                 }

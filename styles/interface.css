@@ -30,6 +30,7 @@
 .btn {
     background-color: transparent;
     color: #f5f5f5;
+    text-align: center;
 }
 
 .btn-big {
@@ -41,13 +42,27 @@
 }
 
 .btn-icon {
-    line-height: 1em;
-    height: 1em;
-    width: 1em;
-    padding: 4px;
-    margin: 6px;
+    line-height: 1.28571em;
+    height: 1.28571em;
+    width: 1.28571em;
+    padding: 2px;
+    margin: 4px;
     border: 1px solid transparent;
     transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
+}
+
+.btn-text {
+    width: auto;
+}
+
+/* Custom fixed width */
+i.fa.fa-cfw {
+    width: 1em;
+    text-align: center;
+}
+
+.btn-text .btn-intext {
+    margin-right: 2px;
 }
 
 .btn-icon i {
@@ -100,7 +115,7 @@
     color: white;
     line-height: 1em;
     height: 1em;
-    padding: 10px 7px;
+    padding: 10px 4px;
     color: white;
     opacity: 0.5;
 }
