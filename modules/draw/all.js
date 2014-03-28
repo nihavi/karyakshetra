@@ -118,6 +118,7 @@ var akruti = new(function () {
         this.element.setAttribute('version', '1.1');
         this.element.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         this.element.setAttribute('style', 'background-color:black;');
+        this.element.setAttribute('preserveAspectRatio', 'none');
 
         /* Provided Attributes | They will be applied only if they are in svgAA */
         var j;
@@ -892,6 +893,8 @@ var akruti = new(function () {
                     return [[x, y], [(w - x), y], [x, (h - y)], [(w - x), (h - y)]];
                 },
                 getAll: function (x, y, h, w) {
+                    if (x == w/2 || x == (x-1)/2)
+                        return [  ];
                     var arr1 = svgOn.fourMode._getAll(x, y, h, w);
                     var a = Math.max(arr1[0][0], arr1[1][0]);
                     var b = Math.min(arr1[0][1], arr1[1][1]);

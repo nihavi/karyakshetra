@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start something!</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="ThisIsPurelyTestingBase">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'-->
+        <style>
+        *
+        {
+            box-sizing:border-box;
+            -moz-box-sizing:border-box;
+            margin:0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body, html
+        {
+            background-color:#002b36;
+            color:white;
+            height:100%;
+            font-family: 'Monaco', sans-serif;            
+        }
+        
+        #upper
+        {
+            background-color:#057cb8;
+            min-height:40px;
+            padding:5px;
+            height:10%;
+            sbackground: -webkit-linear-gradient(#518002,#427119); /* For Safari 5.1 to 6.0 */
+            sbackground: -o-linear-gradient(#518002,#427119); /* For Opera 11.1 to 12.0 */
+            sbackground: -moz-linear-gradient(#518002,#427119); /* For Firefox 3.6 to 15 */
+            sbackground: linear-gradient(#518002,#42711  9); /* Standard syntax */
+        }
+        #upper > button, #upper > lable, #upper > span, #upper > input
+        {
+            vertical-align: middle;
+            
+        }
+        #upper:before
+        {
+              content: '';
+              display: inline-block;
+              height: 100%; 
+              vertical-align: middle;
+        }
+        #statusbar
+        {
+            position:fixed;
+            bottom:0;
+            height:3em;
+            line-height:2em;
+            width:100%;
+            background-color:black;
+            color:#eee;
+            overflow:scroll;
+            white-space:nowrap;
+            display:none;
+        }
+        
+        input
+        {
+            width:60px;
+        }
+        #svgParent
+        {
+            overflow:auto;
+            width:100%;
+            height:90%;
+            padding:0;
+            text-align:center;
+            background-color:#eee;
+        }
+        svg
+        {
+            background-color:#eee;
+        }
+        </style>
+    </head>
+    <body>
+        <div id="upper">
+                <button onclick="akruti.selectOperation('createLineMode')" id="lineBtn">Line</button>
+                <button onclick="akruti.selectOperation('selectMode')" id="selectBtn">Select</button>
+                <button onclick="" id="TBtn">Undo</button>
+                <button onclick="" id="T2Btn">Redo</button>
+                <label>| Stroke Color </label><input class="color" value="5D2CE6" id="strokeColor" placeholder="StokeColor">
+                <label>| Fill Color </label><input class="color" value="transarent" id="fillColor" placeholder="FillColor">
+                <label>| Stroke Width </label><input type="text" value="2" id="strokeWidth" placeholder="StrokeWidth">
+                <label>| Zoom </label>
+                <input type="text" name="points" id="zoom" onchange="akruti.zoom(this.value)" style="width:100px">
+                <span id="zoomValue" >100%</span>
+                
+        </div>
+        <div id="svgParent"></div>
+        <div id="statusbar">All fine!</div>
+        <script src="jquery.min.js"></script>
+        <script src="opq.js"></script>
+        <script src="line2.js"></script>
+        <script src="jscolor/jscolor.js"></script>
+    </body>
+</html>

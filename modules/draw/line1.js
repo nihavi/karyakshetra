@@ -1,5 +1,5 @@
 var gx;
-var akruti = new(function () {
+var akruti = new (function () {
 
     /* Globals */
 
@@ -803,11 +803,3 @@ function log(arg) {
     document.getElementById('statusbar').innerHTML = string;
     return string;
 }
-
-/*
-a.onclick = function(){console.log('click');log('click');};
-a.onmousedown = function(){console.log('down');log('down');}
-a.ondblclick = function(){console.log('dblclick');log('dblclick');};
-a.ondrag = function(){console.log('drag');log('drag');}
-a.ondragstart = function(){console.log('dragStart');log('dragStart');}
-*/

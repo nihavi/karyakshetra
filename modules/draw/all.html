@@ -75,7 +75,11 @@
     <body>
         <div id="upper">
                 <button onclick="akruti.selectOperation('lineMode')" id="lineBtn">Line</button>
-                <button onclick="akruti.selectOperation('selectMode')" id="selectBtn">Select</button>
+                <button onclick="akruti.selectOperation('rectangleMode')" id="rectangleBtn">Rectangle</button>
+                <button onclick="akruti.selectOperation('ellipseMode')" id="ellipseBtn">Ellipse</button>
+                <button onclick="akruti.selectOperation('freeMode')" id="freeBtn">Free</button>
+                <button onclick="akruti.selectOperation('fourMode')" id="Magic">Magic</button>
+                <button onclick="akruti.selectOperation('fourMode2')" id="Magic2">Magic2</button>
                 <button onclick="opQueue.undo()" id="TBtn">Undo</button>
                 <button onclick="opQueue.redo()" id="T2Btn">Redo</button>
                 <label>|Stroke Color </label><input class="color" value="ffffff" id="strokeColor" placeholder="StokeColor">
@@ -85,9 +89,10 @@
         </div>
         <div id="d"></div>
         <div id="statusbar">All fine!</div>
-        <script src="jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="jquery.min.js"><\/script>')</script>
         <script src="opq.js"></script>
-        <script src="new.js"></script>
+        <script src="all.js"></script>
         <script src="jscolor/jscolor.js"></script>
     </body>
 </html>
