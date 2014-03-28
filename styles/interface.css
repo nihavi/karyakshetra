@@ -4,7 +4,8 @@
 
 .toolbars {
     background-color: #333;
-    box-shadow: 0 0 2px 2px #333;
+    position: relative;
+    z-index: 10;
 }
 
 .bar:before,
@@ -42,8 +43,10 @@
     line-height: 1em;
     height: 1em;
     width: 1em;
-    padding: 10px;
+    padding: 4px;
+    margin: 6px;
     border: 1px solid transparent;
+    transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
 }
 
 .btn-icon i {
@@ -76,19 +79,38 @@
 }
 
 .btn-icon:hover {
-    text-shadow: -3px -3px 7px #A0D0D6, 3px 3px 7px #A0D0D6;
+    text-shadow: none;
+    background-color: #0F88C4;
+    xborder-color: #006BA0;
+    border-radius: 4px;
+    box-shadow: 0 0 1px 2px #0672A8;
+    transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
 }
 
-.btn-icon.active {
-    text-shadow: none;
+.btn-icon.active,
+.btn-icon:active {
     color: orange;
+    xtext-shadow: -3px -3px 7px #A0D0D6, 3px 3px 7px #A0D0D6;
+    text-shadow: none;
 }
 
 .sep {
     float: left;
+    color: white;
+    line-height: 1em;
+    height: 1em;
+    padding: 10px 7px;
+    color: white;
+    opacity: 0.5;
+}
+
+.bar.bar-sub {
+    box-shadow: 0 0 1px 2px #252525;
 }
 
 .editable {
     width: 100%;
-    background-color: yellow;
+    background-color: #eee;
+    position: relative;
+    z-index: 0;
 }
