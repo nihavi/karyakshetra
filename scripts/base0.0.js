@@ -299,7 +299,7 @@ Base = new (function(){
         createMenu(menu);
     }
     
-    createMenu = function(menuObject){
+    var createMenu = function(menuObject){
         var item, i, menuItem;
         var id;
         var mainMenu = $('#mainMenu');
@@ -335,7 +335,7 @@ Base = new (function(){
         }
     }
     
-    activateMenu = function(ev){
+    var activateMenu = function(ev){
         //Onclick event handler on main menu items
         var id = $(this).attr('id');
         var menu = menus[id];
