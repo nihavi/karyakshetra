@@ -9,3 +9,4 @@ application/logs/*
 !application/logs/.htaccess
 
 *.komodoproject
+*.swp
