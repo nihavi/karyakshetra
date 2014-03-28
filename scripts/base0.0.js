@@ -622,7 +622,9 @@ Base = new (function(){
                         reg += short.char;
                         //If registered, remove.
                         if( (reg in registeredShortcuts)){
-                            delete registeredShortcuts[reg] || registeredShortcuts[reg] = null;
+                            if(delete registeredShortcuts[reg]){
+                                registeredShortcuts[reg] = null;
+                            }
                         }
                         else {
                             //Error: Shortcut not registered

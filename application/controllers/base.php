@@ -12,7 +12,7 @@ class Base extends CI_Controller
             'dash' => 'dash0.0.js',
             'akruti' => 'akruti0.0.js'
         );
-        if(  !array_key_exists($module, $module_scripts_repo) )
+        if( !array_key_exists($module, $module_scripts_repo) )
         {
             echo "Module not found";
             exit;
