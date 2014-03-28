@@ -13,10 +13,10 @@ RewriteRule ^(.*)$ index.php/$1 [L]
      Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
   </ifModule>
 </filesMatch>
-AuthUserFile /ug/ug2k13/cse/vivek.ghaisas/public_html/karyakshetra/.htpasswd 
-AuthName "Please Log In"
-AuthType Basic
-require valid-user
+#AuthUserFile /ug/ug2k13/cse/vivek.ghaisas/public_html/karyakshetra/.htpasswd 
+#AuthName "Please Log In"
+#AuthType Basic
+#require valid-user
 <IfModule mod_deflate.c>
 
     # Force compression for mangled headers.
