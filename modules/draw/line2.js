@@ -437,9 +437,8 @@ var akruti = new (function() {
         };
 
         Line.prototype.activateElement = activateElement;
-
-
-        var lineMoveLeft = function(ctrlKey, shiftKey){
+        
+        var lineMove = function(type, ctrlKey, shiftKey) {
             var d;
             if (ctrlKey)
                 d = 1;
@@ -447,62 +446,43 @@ var akruti = new (function() {
                 d = 10;
             else
                 d = 4;
-
-             if ( this.x1 >= d && this.x2 >= d )
-             {
-                 this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
-             }
+            
+            switch (type) {
+                
+                case 'up':
+                    this.changeAttributes({y1:this.y1-d,y2:this.y2-d});
+                    if (!( this.y1 >= d && this.y2 >= d )) {
+                        var svg = allSvg[this.pid];
+                        svg.reqH += d/svg.zoomFactor;
+                        svg.svgH += d;
+                        svg.element.setAttribute('height',svg.svgH);
+                    }
+                    break;
+            
+                case 'down':
+                    this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
+                    if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h ) {
+                        this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
+                    }
+                    break;
+                
+                case 'left':
+                    if ( this.x1 >= d && this.x2 >= d ) {
+                        this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
+                    }
+                    break;
+            
+                    case 'right':
+                    if ( this.x1 + d <= allSvg[this.pid].w && this.x2 + d <= allSvg[this.pid].w ) {
+                        this.changeAttributes({x1:this.x1+d,x2:this.x2+d});
+                    }
+                break;
+            
+            }
+            this.activate();
         };
 
-        var lineMoveRight = function(ctrlKey, shiftKey){
-            var d;
-            if (ctrlKey)
-                d = 1;
-            else if (shiftKey)
-                d = 10;
-            else
-                d = 4;
-
-             if ( this.x1 + d <= allSvg[this.pid].w && this.x2 + d <= allSvg[this.pid].w )
-             {
-                 this.changeAttributes({x1:this.x1+d,x2:this.x2+d});
-             }
-        };
-
-        var lineMoveUp = function(ctrlKey, shiftKey){
-            var d;
-            if (ctrlKey)
-                d = 1;
-            else if (shiftKey)
-                d = 10;
-            else
-                d = 4;
-
-             if ( this.y1 >= d && this.y2 >= d )
-             {
-                 this.changeAttributes({y1:this.y1-d,y2:this.y2-d});
-             }
-        };
-
-        var lineMoveDown = function(ctrlKey, shiftKey){
-            var d;
-            if (ctrlKey)
-                d = 1;
-            else if (shiftKey)
-                d = 10;
-            else
-                d = 4;
-
-             if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h )
-             {
-                 this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
-             }
-        };
-
-        Line.prototype.moveLeft = lineMoveLeft;
-        Line.prototype.moveRight = lineMoveRight;
-        Line.prototype.moveUp = lineMoveUp;
-        Line.prototype.moveDown = lineMoveDown;
+        Line.prototype.move = lineMove;
 
         var svgOnMouseDown = function(e) {
 
@@ -559,14 +539,14 @@ var akruti = new (function() {
                         clearInterval(keyInterval);
 
                         actives.forEach(function(element){
-                            element.moveLeft(e.ctrlKey, e.shiftKey);
+                            element.move('left', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
                                 actives.forEach(function(element){
-                                    element.moveLeft(e.ctrlKey, e.shiftKey);
+                                    element.move('left', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
                             },100);
@@ -582,14 +562,14 @@ var akruti = new (function() {
                         clearInterval(keyInterval);
 
                         actives.forEach(function(element){
-                            element.moveUp(e.ctrlKey, e.shiftKey);
+                            element.move('up',e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
                                 actives.forEach(function(element){
-                                    element.moveUp(e.ctrlKey, e.shiftKey);
+                                    element.move('up',e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
                             },100);
@@ -605,14 +585,14 @@ var akruti = new (function() {
                         clearInterval(keyInterval);
 
                         actives.forEach(function(element){
-                            element.moveRight(e.ctrlKey, e.shiftKey);
+                            element.move('right', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
                                 actives.forEach(function(element){
-                                    element.moveRight(e.ctrlKey, e.shiftKey);
+                                    element.move('right', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
                             },100);
@@ -628,14 +608,14 @@ var akruti = new (function() {
                         clearInterval(keyInterval);
 
                         actives.forEach(function(element){
-                            element.moveDown(e.ctrlKey, e.shiftKey);
+                            element.move('down', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
                                 actives.forEach(function(element){
-                                    element.moveDown(e.ctrlKey, e.shiftKey);
+                                    element.move('down', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
                             },100);
@@ -757,7 +737,7 @@ var akruti = new (function() {
                         element.changeAttributes({x2:x,y2:y});
                     }
 
-                    element.pivots = [ [changes.x1, element.y1], [element.x2, element.y2]];
+                    element.pivots = [ [element.x1, element.y1], [element.x2, element.y2]];
                     $(element.g).on('mousedown', lineOn.mousedown);
                     allSvg[element.pid].children.push(element);
                     opQueue.addOp({
@@ -775,129 +755,32 @@ var akruti = new (function() {
                         'pid':element.pid
                     });
                 },
-
+                
                 snap: function(x1,y1,x2,y2) {
-
-                    var dx = x2 - x1;
-                    var dy = y2 - y1;
-                    var slope = dy / dx;
-                    var c1 = Math.tan(Math.PI/8);//0.41421356237309504880168872420969807856967187537694;
-                    var c2 = Math.tan(3*Math.PI/8);//2.41421356237309504880168872420969807856967187537694;
-
-                    if (dx >= 0 && dy < 0) {
-
-                        if ((slope < 0) && (slope >= -c1)) {
-
-                            return ({
-                                x2: x2,
-                                y2: y1
-                            });
-
-                        } else
-                        if ((slope < -c1) && (slope >= -c2)) {
-
-                            if (slope > -1) {
-
-                                return ({
-                                    x2: x2,
-                                    y2: x1 - x2 + y1
-                                });
-                            } else {
-                                return ({
-                                    x2: x1 - y2 + y1,
-                                    y2: y2
-                                });
-                            }
-                        } else {
-                            return ({
-                                x2: x1,
-                                y2: y2,
-                            });
-                        }
-
-                    } else
-                    if ((dx < 0) && (dy < 0)) {
-
-                        if (slope < c1) {
-                            return ({
-                                x2: x2,
-                                y2: y1,
-                            });
-                        } else
-                        if ((slope >= c1) && (slope < c2)) {
-
-                            if (slope < 1) {
-                                return ({
-                                    x2: x2,
-                                    y2: y1 - x1 + x2,
-                                });
-                            } else {
-                                return ({
-                                    x2: y2 - y1 + x1,
-                                    y2: y2,
-                                });
-                            }
-                        } else {
-                            return ({
-                                x2: x1,
-                                y2: y2,
-                            });
-                        }
-                    } else
-                    if ((dx < 0) && (dy >= 0)) {
-
-                        if (slope < -c2) {
-                            return ({
-                                x2: x1,
-                                y2: y2,
-                            });
-                        } else
-                        if ((slope >= -c2) && (slope < -c1)) {
-
-                            if (slope < -1) {
-                                return ({
-                                    x2: x1 - y2 + y1,
-                                    y2: y2,
-                                });
-                            } else {
-                                return ({
-                                    x2: x2,
-                                    y2: x1 + y1 - x2,
-                                });
-                            }
-                        } else {
-                            return ({
-                                x2: x2,
-                                y2: y1,
-                            });
-                        }
-                    } else {
-                        if (slope < c1) {
-                            return ({
-                                x2: x2,
-                                y2: y1,
-                            });
-                        } else
-                        if ((slope >= c1) && (slope < c2)) {
-                            if (slope < 1) {
-                                return ({
-                                    x2: x2,
-                                    y2: x2 - x1 + y1,
-                                });
-                            } else {
-                                return ({
-                                    x2: y2 - y1 + x1,
-                                    y2: y2,
-                                });
-                            }
-                        } else {
-                            return ({
-                                x2: x1,
-                                y2: y2,
-                            });
-                        }
+                    var dy=y2-y1;
+                    var dx=x2-x1;
+                    var deg = (Math.atan(dy/dx))*180/Math.PI;
+                    if(dx < 0 ){
+                        deg = 180 - deg;
                     }
-
+                    else if(deg < 0)
+                        deg = 360 + deg;
+                    
+                    var line = Math.round(deg/45);
+                    if(line==8)line=0;
+                    
+                    if(line%2){
+                        dx = (dx/Math.abs(dx)) * Math.max(Math.abs(dx),Math.abs(dy));
+                        dy = (dy/Math.abs(dy)) * Math.max(Math.abs(dx),Math.abs(dy));
+                    }
+                    else if(line%4==0)
+                        dy = 0;
+                    else
+                        dx = 0;
+                        
+                    x2 = x1 + dx
+                    y2 = y1 + dy
+                    return {'x2':x2, 'y2':y2}
                 },
             },
             selectMode: {
