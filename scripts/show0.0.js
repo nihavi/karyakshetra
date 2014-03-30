@@ -110,7 +110,6 @@ Show = new (function(){
     }
     */
     
-    
     var Slide = function(){
         /*
          * Constructor of class Slide
@@ -227,8 +226,15 @@ Show = new (function(){
                     });
                     
                     //Actual element for text
-                    elemText = $('<div class="elem-text" contentEditable>').text(elem.text).css(elem.style).appendTo(elemDOM)
+                    elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
                     elemText.focus(textFocus);
+                    elemText.blur(textBlur);
+                    elemText.bind('keyup keydown keypress', function(ev){
+                        $(this).parent('.elem').data('elem').text = $(this).html();
+                    });
+                    
+                    //To move
+                    elemDOM.mousedown(moveInit);
                     
                     //To resize
                     $('<div class="resize resize-r">')
@@ -242,6 +248,18 @@ Show = new (function(){
                         .appendTo(elemDOM);
                     $('<div class="resize resize-b">')
                         .mousedown(resizeBottomInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-tr">')
+                        .mousedown(resizeTopRightInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-tl">')
+                        .mousedown(resizeTopLeftInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-bl">')
+                        .mousedown(resizeBottomLeftInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-br">')
+                        .mousedown(resizeBottomRightInit)
                         .appendTo(elemDOM);
                     
                     elem.elemDOM = elemDOM;
@@ -323,6 +341,22 @@ Show = new (function(){
     
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
+        if(!activeElement)
+            activeElement = $(this).parent('.elem').data('elem');
+        activeElement.elemDOM.css({
+            cursor: 'auto',
+            overflow: 'visible'
+        });
+    };
+    var textBlur = function(ev){
+        //Will be called when a contentEdtable is focused
+        if(activeElement){
+            activeElement.elemDOM.css({
+                cursor: 'move',
+                overflow: 'hidden'
+            });
+        }
+        activeElement = null;
     };
     
     /*
@@ -335,6 +369,7 @@ Show = new (function(){
         $('#slides').bind('mousemove',resizeRightMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeRightMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
             activeElement = null;
         });
         ev.preventDefault();
@@ -357,6 +392,7 @@ Show = new (function(){
         $('#slides').bind('mousemove',resizeLeftMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeLeftMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
             activeElement = null;
         });
         ev.preventDefault();
@@ -380,6 +416,7 @@ Show = new (function(){
         $('#slides').bind('mousemove',resizeTopMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeTopMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
             activeElement = null;
         });
         ev.preventDefault();
@@ -406,6 +443,7 @@ Show = new (function(){
         $('#slides').bind('mousemove',resizeBottomMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
             activeElement = null;
         });
         ev.preventDefault();
@@ -419,6 +457,126 @@ Show = new (function(){
             height: elemY - activeElement.top
         });
         ev.preventDefault();
+    }
+    
+    var resizeTopRightInit = function(ev){
+        if (ev.which != 1)return;
+        var elem = $(this).parent('.elem');
+        activeElement = elem.data('elem');
+        $('#slides').bind('mousemove',resizeTopMove);
+        $('#slides').bind('mousemove',resizeRightMove);
+        $(window).one('mouseup', function(){
+            $('#slides').unbind('mousemove',resizeTopMove);
+            $('#slides').unbind('mousemove',resizeRightMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
+            activeElement = null;
+        });
+        ev.preventDefault();
+    }
+    
+    var resizeTopLeftInit = function(ev){
+        if (ev.which != 1)return;
+        var elem = $(this).parent('.elem');
+        activeElement = elem.data('elem');
+        $('#slides').bind('mousemove',resizeTopMove);
+        $('#slides').bind('mousemove',resizeLeftMove);
+        $(window).one('mouseup', function(){
+            $('#slides').unbind('mousemove',resizeTopMove);
+            $('#slides').unbind('mousemove',resizeLeftMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
+            activeElement = null;
+        });
+        ev.preventDefault();
+    }
+    
+    var resizeBottomLeftInit = function(ev){
+        if (ev.which != 1)return;
+        var elem = $(this).parent('.elem');
+        activeElement = elem.data('elem');
+        $('#slides').bind('mousemove',resizeBottomMove);
+        $('#slides').bind('mousemove',resizeLeftMove);
+        $(window).one('mouseup', function(){
+            $('#slides').unbind('mousemove',resizeBottomMove);
+            $('#slides').unbind('mousemove',resizeLeftMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
+            activeElement = null;
+        });
+        ev.preventDefault();
+    }
+    
+    var resizeBottomRightInit = function(ev){
+        if (ev.which != 1)return;
+        var elem = $(this).parent('.elem');
+        activeElement = elem.data('elem');
+        $('#slides').bind('mousemove',resizeBottomMove);
+        $('#slides').bind('mousemove',resizeRightMove);
+        $(window).one('mouseup', function(){
+            $('#slides').unbind('mousemove',resizeBottomMove);
+            $('#slides').unbind('mousemove',resizeRightMove);
+            activeElement.elemDOM.css('overflow', 'hidden');
+            activeElement = null;
+        });
+        ev.preventDefault();
+    }
+    
+    /*
+     * Move elements
+     */
+    var moveInit = function(ev){
+        if (ev.which != 1 || (activeElement && activeElement == $(ev.target).parent('.elem').data('elem')))return;
+        if (!$(ev.target).hasClass('elem-text') && $(ev.target).parents('.elem-text').length == 0)return;
+        
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        
+        elem = $(this);
+        activeElement = elem.data('elem');
+        activeElement.origMousePos = {
+            y: ev.clientY,
+            x: ev.clientX
+        }
+        activeElement.lastMousePos = {
+            y: ev.clientY,
+            x: ev.clientX
+        }
+        activeElement.elemDOM.css('overflow', 'visible');
+        $('#slides').bind('mousemove', moveElement);
+        $(window).one('mouseup', function(ev){
+            $('#slides').unbind('mousemove', moveElement);
+            activeElement.elemDOM.css('overflow', 'hidden');
+            if(ev.clientX == activeElement.origMousePos.x && ev.clientY == activeElement.origMousePos.y){
+                activeElement.elemDOM.find('.elem-text').focus();
+                activeElement.elemDOM.css('cursor', 'auto');
+                delete activeElement.origMousePos;
+                delete activeElement.lastMousePos;
+            }
+            else {
+                delete activeElement.origMousePos;
+                delete activeElement.lastMousePos;
+                activeElement = null;
+            }
+        });
+    }
+    var moveElement = function(ev){
+        if (ev.which != 1) return;
+        var slide = $('.slide');
+        var mouseXold = activeElement.lastMousePos.x;
+        var mouseYold = activeElement.lastMousePos.y;
+        var mouseX = ev.clientX;
+        var mouseY = ev.clientY;
+        activeElement.lastMousePos = {
+            y: ev.clientY,
+            x: ev.clientX
+        }
+        var elemX = activeElement.left + ((mouseX - mouseXold)*100/slide.width());
+        var elemY = activeElement.top + ((mouseY - mouseYold)*100/slide.height());
+        
+        activeElement.editElement({
+            top: elemY,
+            left: elemX
+        });
+        //ev.preventDefault();
     }
     
     var removeInsertOp = function(){
