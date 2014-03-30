@@ -5,28 +5,28 @@ var akruti = new (function() {
 
     var allSvg = new Object(),
 
-        svgId = 1,
+    svgId = 1,
 
-        svgAA = {
-        },
+    svgAA = {
+    },
 
-        lineAA = {
-        'x1':'x1',
-        'y1':'y1',
-        'x2':'x2',
-        'y2':'y2',
-        'sc':'stroke',
-        'sw':'stroke-width',
-        },
+    lineAA = {
+    'x1':'x1',
+    'y1':'y1',
+    'x2':'x2',
+    'y2':'y2',
+    'sc':'stroke',
+    'sw':'stroke-width',
+    },
 
-        allAA = {
-        'x1':'x1',
-        'y1':'y1',
-        'x2':'x2',
-        'y2':'y2',
-        'sc':'stroke',
-        'sw':'stroke-width',
-        };
+    allAA = {
+    'x1':'x1',
+    'y1':'y1',
+    'x2':'x2',
+    'y2':'y2',
+    'sc':'stroke',
+    'sw':'stroke-width',
+    };
 
     var Svg = function(arg, parent, editable) {
 
@@ -38,8 +38,8 @@ var akruti = new (function() {
         this.element.setAttribute( 'id', this.id );
 
         /* Setting class  and type*/
-        this.element.setAttribute( 'class', (editable)?'eS':'vS' ); //sE -> Editable Svg | sV -> Viewer Svg
-        this.t = (editable)?'eS':'vS'; //sE -> Editable Svg | sV -> Viewer Svg
+        this.element.setAttribute( 'class', (editable)?'eS':'vS' ); //eS -> Editable Svg | vS -> Viewer Svg
+        this.t = (editable)?'eS':'vS'; //eS -> Editable Svg | vS -> Viewer Svg
 
 
         /* Provided Attributes | They will be applied only if they are in svgAA */
@@ -103,7 +103,6 @@ var akruti = new (function() {
             this.element.appendChild(defs);
         }
 
-
         /* Making page */
         {
             this.page = document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -119,6 +118,8 @@ var akruti = new (function() {
         /* Getting page height width */
         this.pageH = arg.h;
         this.pageW = arg.w;
+        this.page.setAttribute('width', this.pageW);
+        this.page.setAttribute('height', this.pageH);
 
         /* Default required svg Height Width | svgH and svgW can't be less than this */
         this.reqH = this.pageH;
@@ -129,14 +130,11 @@ var akruti = new (function() {
         var h = parentDimension.height;
         var w = parentDimension.width;
 
-        this.svgH = Math.max(h, this.reqH+50);
-        this.svgW = Math.max(w, this.reqW+50);
+        this.svgH = Math.max(h, this.reqH);
+        this.svgW = Math.max(w, this.reqW);
         this.element.setAttribute('height',this.svgH);
         this.element.setAttribute('width', this.svgW);
-
-        this.page.setAttribute('width', this.pageW);
-        this.page.setAttribute('height', this.pageH);
-
+        
         this.element.setAttribute( 'viewBox', '0 0 '+this.svgW+' '+this.svgH);
         this.zoomFactor = 1;
         this.g.setAttribute('transform','translate('+(this.svgW-this.pageW)/2+','+(this.svgH-this.pageH)/2+')');
@@ -160,21 +158,17 @@ var akruti = new (function() {
     };
 
     var _resize = function(zoom){
-        var transFactorX,transFactorY;
-        {
-            transFactorX = 1;
-        }
         var parentDimension = this.element.parentNode.getBoundingClientRect();
         var h = parentDimension.height;
         var w = parentDimension.width;
-        this.svgH = Math.max(h, (this.zoomFactor*(this.reqH))+50);
-        this.svgW = Math.max(w, (this.zoomFactor*(this.reqW))+50);
+        this.svgH = Math.max(h, (this.zoomFactor*this.reqH));
+        this.svgW = Math.max(w, (this.zoomFactor*this.reqW));
         this.element.setAttribute('height',this.svgH);
         this.element.setAttribute('width', this.svgW);
 
         if(!zoom){
-            var viewBoxW = Math.max(this.reqW+50, w/this.zoomFactor);
-            var viewBoxH = Math.max(this.reqH+50, h/this.zoomFactor);
+            var viewBoxW = Math.max(this.reqW, w/this.zoomFactor);
+            var viewBoxH = Math.max(this.reqH, h/this.zoomFactor);
             this.element.setAttribute( 'viewBox', '0 0 '+viewBoxW+' '+viewBoxH);
         }
         this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
@@ -183,6 +177,7 @@ var akruti = new (function() {
     Svg.prototype.resize = _resize;
 
     this.resize = function () {
+        var i;
         for(var i in allSvg)
             allSvg[i].resize();
     };
@@ -193,14 +188,14 @@ var akruti = new (function() {
         var w = parentDimension.width;
 
         this.zoomFactor = ratio;
-        var viewBoxW = Math.max(this.reqW+50, w/this.zoomFactor);
-        var viewBoxH = Math.max(this.reqH+50, h/this.zoomFactor);
+        var viewBoxW = Math.max(this.reqW, w/this.zoomFactor);
+        var viewBoxH = Math.max(this.reqH, h/this.zoomFactor);
 
         this.element.setAttribute('viewBox', '0 0 '+viewBoxW+' '+viewBoxH);
 
-        this.svgH = Math.max(h, (this.zoomFactor*(this.reqH))+50);
-        this.svgW = Math.max(w, (this.zoomFactor*(this.reqW))+50);
-
+        this.svgH = Math.max(h, (this.zoomFactor*(this.reqH)));
+        this.svgW = Math.max(w, (this.zoomFactor*(this.reqW)));
+        
         this.element.setAttribute('height', this.svgH);
         this.element.setAttribute('width', this.svgW);
         this.resize(true);
@@ -625,7 +620,7 @@ var akruti = new (function() {
                     break;
 
                 default:
-                    log(e.which);
+                    console.log(e.which);
             }
         });
 
@@ -691,10 +686,10 @@ var akruti = new (function() {
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     var attributes = {
-                        'x1':x,
-                        'y1':y,
-                        'x2':x,
-                        'y2':y,
+                        'x1':x/mySvgObject.zoomFactor,
+                        'y1':y/mySvgObject.zoomFactor,
+                        'x2':x/mySvgObject.zoomFactor,
+                        'y2':y/mySvgObject.zoomFactor,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
                     }
@@ -705,8 +700,8 @@ var akruti = new (function() {
                 mousemove: function(e) {
 
                     var element = e.data;
-
-                    var offset = allSvg[element.pid].page.getBoundingClientRect();
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     if (e.shiftKey) {
@@ -715,15 +710,15 @@ var akruti = new (function() {
                     }
                     else
                     {
-                        element.changeAttributes({'x2':x,'y2':y});
+                        element.changeAttributes({'x2':x/mySvgObject.zoomFactor,'y2':y/mySvgObject.zoomFactor});
                     }
                 },
 
                 mouseup: function(e) {
 
                     var element = e.data;
-
-                    var offset = allSvg[element.pid].page.getBoundingClientRect();
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
 
@@ -734,7 +729,7 @@ var akruti = new (function() {
                     }
                     else
                     {
-                        element.changeAttributes({x2:x,y2:y});
+                        element.changeAttributes({x2:x/mySvgObject.zoomFactor,y2:y/mySvgObject.zoomFactor});
                     }
 
                     element.pivots = [ [element.x1, element.y1], [element.x2, element.y2]];
@@ -858,10 +853,12 @@ var akruti = new (function() {
 
 
 window.onresize = function(){
+    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
     akruti.resize();
 };
 
 window.onload = function(){
+    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
     akruti.init({
         parent:document.getElementById('svgParent'),
         attributes:{
@@ -869,6 +866,7 @@ window.onload = function(){
             'w':800,
         }
     });
+    window.onresize();
     module = akruti;
 }
 
@@ -881,6 +879,6 @@ function log(arg) {
     }
     else
         string = arg;
-    document.getElementById('statusbar').innerHTML=string;
+    //document.getElementById('statusbar').innerHTML=string;
     return string;
 }
