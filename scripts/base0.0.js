@@ -65,8 +65,8 @@ Base = new (function(){
     var defaultMenus = [
         {
             type: 'main',
-            id: 'create',
-            title: 'Create', //Name of menu
+            id: 'edit',
+            title: 'Edit', //Name of menu
             icon: 'fa-plus', //Font awesome icon name
             groups: [
                 {
@@ -75,14 +75,12 @@ Base = new (function(){
                     items: [
                         {
                             type: 'button',
-                            icon: 'fa-print',
-                            onoff: true,
+                            icon: 'fa-undo',
                             callback: log
                         },
                         {
                             type: 'button',
-                            icon: 'fa-coffee',
-                            onoff: true,
+                            icon: 'fa-repeat',
                             callback: log
                         }
                     ]
@@ -113,50 +111,6 @@ Base = new (function(){
                     ]
                 }
             ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-pencil', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'dsafgf',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-qrcode',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-laptop',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-edit',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-coffee',
-                            callback: log
-                        }
-                    ] //Items inside this menu
-                }
-            ]
         },
         {
             type: 'main',
@@ -257,9 +211,7 @@ Base = new (function(){
         menuId = 0;
         menus = new Object();
         menuMeta = new Object();
-        //createMenu(defaultMenus);
-        //this.updateMenu(module.getMenu());
-        this.updateMenu();
+        this.updateMenu(module.getMenu());
         
         activateMenu.bind($('#menuHead0'))();
         
@@ -453,6 +405,7 @@ Base = new (function(){
     $(window).resize(function(){
         Base.setEditable();
         //Call module's resize function
+        module.resize();
     });
     
     
