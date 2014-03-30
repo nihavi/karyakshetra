@@ -857,6 +857,10 @@ var akruti = new (function() {
 })();
 
 
+window.onresize = function(){
+    akruti.resize();
+};
+
 window.onload = function(){
     akruti.init({
         parent:document.getElementById('svgParent'),
@@ -867,9 +871,6 @@ window.onload = function(){
     });
     module = akruti;
 }
-window.onresize = function(){
-    akruti.resize();
-};
 
 function log(arg) {
     var string = '| ';
