@@ -1,0 +1,73 @@
+.sidebar{
+    float: left;
+    height: 100%;
+    overflow:auto;
+    background-color: green;
+}
+
+.slides{
+    float: left;
+    height: 100%;
+    overflow:auto;
+    background-color: red;
+    position: relative;
+}
+
+.slide{
+    margin: auto;
+    position: relative;
+}
+
+.slide-title{
+    position: absolute;
+    width:100%;
+}
+
+.slide-text{
+    position: absolute;
+    width:100%;
+}
+
+.elem{
+    border: 1px solid #888;
+    margin: 0;
+    padding: 0;
+}
+
+.elem-text{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.resize{
+    position: absolute;
+}
+.resize-r{
+    right: -2px;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    cursor: e-resize;
+}
+.resize-l{
+    left: -2px;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    cursor: w-resize;
+}
+.resize-t{
+    left: 0;
+    top: -2px;
+    width: 100%;
+    height: 5px;
+    cursor: n-resize;
+}
+.resize-b{
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 5px;
+    cursor: s-resize;
+}
