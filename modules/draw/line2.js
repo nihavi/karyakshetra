@@ -1,31 +1,22 @@
-var gx;
 var akruti = new (function() {
-
+    
     /* Globals */
-
+    
     var allSvg = new Object(),
-
+    
     svgId = 1,
-
-    svgAA = {
-    },
-
-    lineAA = {
-    'x1':'x1',
-    'y1':'y1',
-    'x2':'x2',
-    'y2':'y2',
-    'sc':'stroke',
-    'sw':'stroke-width',
-    },
-
+    
     allAA = {
-    'x1':'x1',
-    'y1':'y1',
-    'x2':'x2',
-    'y2':'y2',
-    'sc':'stroke',
-    'sw':'stroke-width',
+        s:{
+        },
+        l:{
+            'x1':'x1',
+            'y1':'y1',
+            'x2':'x2',
+            'y2':'y2',
+            'sc':'stroke',
+            'sw':'stroke-width',
+        }
     };
 
     var Svg = function(arg, parent, editable) {
@@ -44,9 +35,9 @@ var akruti = new (function() {
 
         /* Provided Attributes | They will be applied only if they are in svgAA */
         var j;
-        for (j in svgAA) {
+        for (j in allAA['s']) {
             if (j in arg) {
-                this.element.setAttribute(svgAA[j],arg[j]);
+                this.element.setAttribute(allAA['s'][j],arg[j]);
                 this[j] = arg[j];
             }
         }
@@ -64,7 +55,7 @@ var akruti = new (function() {
         /* Making page background */
         {
             var alphaSize = 15;
-            var colorDark = '#eee';
+            var colorDark = '#ccc';
             var colorLight = '#fff';
             var defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
             var pattern = document.createElementNS('http://www.w3.org/2000/svg','pattern');
@@ -109,7 +100,7 @@ var akruti = new (function() {
             this.page.setAttribute('id', this.id+'p');
             this.page.setAttribute('x', 0);
             this.page.setAttribute('y', 0);
-            this.page.setAttribute('stroke', '#fff');
+            this.page.setAttribute('stroke', '#aaa');
             this.page.setAttribute('stroke-width', '1');
             this.page.setAttribute('fill', 'url(#alpha)');
             this.g.appendChild(this.page);
@@ -237,12 +228,9 @@ var akruti = new (function() {
 
         /* Provided Attributes */
         var j;
-        for (j in lineAA) {
+        for (j in allAA['l']) {
             if (j in arg) {
-                /*if (j[0] == 'x' || j[0] == 'y') {
-                    arg[j] /= parent.zoomFactor;
-                }*/
-                this.element.setAttribute(lineAA[j],arg[j]);
+                this.element.setAttribute(allAA['l'][j],arg[j]);
                 this[j] = arg[j];
             }
         }
@@ -269,22 +257,13 @@ var akruti = new (function() {
     };
 
     var changeAttributes = function(arg) {
-
+        var initial = {};
         var j;
-        var forEx = {
-            'op':'ch',
-            'id':this.id
-        };
-
         var ele = (this.element)?this.element:document.getElementById(this.id);
         for(j in arg) {
-            if (j in allAA) {
-                /*if (j[0] == 'x' || j[0] == 'y') {
-                    arg[j] /= allSvg[this.pid].zoomFactor;
-                }*/
-                forEx[j] = this[j];
-
-                ele.setAttribute(allAA[j],arg[j]);
+            if (j in allAA[this.t]) {
+                initial[j] = this[j];
+                ele.setAttribute(allAA[this.t][j],arg[j]);
                 this[j] = arg[j];
             }
         }
@@ -304,24 +283,41 @@ var akruti = new (function() {
     };
 
     Line.prototype.changeAttributes = changeAttributes;
+    
+    var getLinePivots = function(){
+        return [
+            {
+                x:this.x1,
+                y:this.y1
+            },{
+                x:this.x1,
+                y:this.y1
+            },
+        ];
+    };
+    
+    Line.prototype.getPivots = getLinePivots;
+    
+    
 
     var activate = function() {
 
         this.deactivate();
+        var pivots = this.getPivots();
         var g = document.createElementNS('http://www.w3.org/2000/svg','g');
         var ends = new Array();
         var i;
-        for (i=0;i<this.pivots.length;i++) {
+        for (i=0;i<pivots.length;i++) {
             ends[i] = document.createElementNS('http://www.w3.org/2000/svg','circle');
             ends[i].setAttribute('r',+Math.max(+this.sw,4));
             ends[i].setAttribute('fill','#057cb8');
             ends[i].setAttribute('stroke','#fff');
             g.appendChild(ends[i]);
-            ends[i].setAttribute('cx', this.pivots[i][0]);
-            ends[i].setAttribute('cy', this.pivots[i][1]);
+            ends[i].setAttribute('cx', pivots[i][0]);
+            ends[i].setAttribute('cy', pivots[i][1]);
         }
         g.setAttribute('id',this.id +'ga');
-        allSvg[this.pid].g.appendChild(g);
+        this.g.appendChild(g);
         this.active = g;
         return this;
     }
@@ -330,7 +326,7 @@ var akruti = new (function() {
     var deactivate = function(){
 
         if(this.active)  {
-            this.active.remove(this.active);
+            this.active.remove();
             delete this.active;
         }
         return this;
@@ -351,16 +347,6 @@ var akruti = new (function() {
         this.g.remove();
         var arr = allSvg[this.pid].children;
         arr.splice(arr.indexOf(this),1);
-        var forEx = {
-            'op':'d',
-            't' :this.t
-        };
-        for ( var i in allAA ) {
-            if( i in this ) {
-                forEx[i] = this[i];
-            }
-        }
-        opQueue.addOp(forEx,{});
     };
 
     Line.prototype.delete = deleteSelf;
@@ -379,24 +365,48 @@ var akruti = new (function() {
 
 
     this.performOp = function(data) {
-        switch (data.op) {
+        var ret;
+        switch (data.ex) {
 
             case 'cr':
-                document.getElementById(data.id).parentNode.myObject.delete();
+                switch (data.t) {
+                    case 'l':
+                        var myObject = new Line(data);
+                        //$(myObject.g).on('mousedown', editor.lineOn.mousedown);
+                        allSvg[myObject.pid].children.push(myObject);
+                }
+                var forEx = {
+                    'op':'d',
+                    't' :myObject.t,
+                    'id':myObject.id,
+                    'pid':myObject.pid,
+                };
+                ret = forEx;
                 break;
 
             case 'd':
-                switch (data.t) {
-                    case 'l':
-                        var newEle = new Line(data);
-                    break;
-                }
+                var myObject = $('#'+data.id).data('myObject');
+                var forEx = {
+                    'op':'cr',
+                    't' :myObject.t,
+                    'id':myObject.id,
+                    'pid':myObject.pid,
+                };
+                for ( var i in allAA[myObject.t] ) {
+                    if( i in this ) {
+                        forEx[i] = this[i];
+                    }
+                };
+                myObject.delete();
+                ret = forEx;
                 break;
 
             case 'ch':
-                document.getElementById(data.id).parentNode.myObject.changeAttributes(data);
+                var myObject = $('#'+data.id).data('myObject');
+                ret = myObject.changeAttributes(data);
                 break;
         }
+        return ret;
     };
 
     var editor = new (function() {
@@ -692,7 +702,7 @@ var akruti = new (function() {
                         'y2':y/mySvgObject.zoomFactor,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
-                    }
+                    };
                     var element = new Line(attributes,mySvgObject);
                     return element;
                 },
@@ -704,13 +714,19 @@ var akruti = new (function() {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
+                    
                     if (e.shiftKey) {
                         var changes = svgOn.lineMode.snap(activeElement.x1,activeElement.y1,x,y);
-                        element.changeAttributes(changes);
+                        element.changeAttributes({
+                            'x2':changes.x2/mySvgObject.zoomFactor,
+                            'y2':changes.y2/mySvgObject.zoomFactor
+                            });
                     }
                     else
                     {
-                        element.changeAttributes({'x2':x/mySvgObject.zoomFactor,'y2':y/mySvgObject.zoomFactor});
+                        element.changeAttributes({
+                            'x2':x/mySvgObject.zoomFactor,
+                            'y2':y/mySvgObject.zoomFactor});
                     }
                 },
 
@@ -725,18 +741,23 @@ var akruti = new (function() {
                     if (e.shiftKey) {
 
                         var changes = svgOn.lineMode.snap(this.x1,this.y1,x,y);
-                        element.changeAttributes(changes);
+                        element.changeAttributes({
+                            'x2':changes.x2/mySvgObject.zoomFactor,
+                            'y2':changes.y2/mySvgObject.zoomFactor
+                            });
                     }
                     else
                     {
-                        element.changeAttributes({x2:x/mySvgObject.zoomFactor,y2:y/mySvgObject.zoomFactor});
+                        element.changeAttributes({
+                            'x2':x/mySvgObject.zoomFactor,
+                            'y2':y/mySvgObject.zoomFactor
+                            });
                     }
-
-                    element.pivots = [ [element.x1, element.y1], [element.x2, element.y2]];
+                    
                     $(element.g).on('mousedown', lineOn.mousedown);
-                    allSvg[element.pid].children.push(element);
+                    mySvgObject.children.push(element);
                     opQueue.addOp({
-                        'ex':'d',           //ex = [d]elete; when this objects come, delete the Object
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
                         'id':element.id,
                         'pid':element.pid,
                         },{
