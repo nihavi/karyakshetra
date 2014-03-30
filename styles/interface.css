@@ -8,17 +8,19 @@
     box-shadow: 0 0 2px 2px #333;
     z-index: 10;
 }
-
+.clearfloat:before,
+.clearfloat:after,
 .bar:before,
 .bar:after {
     content: " ";
     display: table;
 }
-
+.clearfloat:after,
 .bar:after {
     clear: both;
 }
 
+.clearfloat,
 .bar {
     *zoom: 1;
 }
@@ -129,4 +131,33 @@ i.fa.fa-cfw {
     background-color: #eee;
     position: relative;
     z-index: 0;
+}
+
+.randombox {
+    width: 200px;
+    background-color: white;
+    padding: 10px;
+    position: absolute;
+    top: 200px;
+    left: 200px;
+    z-index: 100;
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 3px 10px 2px #aaa;
+}
+
+.color {
+    height: 18px;
+    width: 18px;
+    background-color: #ccc;
+    float: left;
+    margin: 1px;
+}
+
+.color.active {
+    outline: 2px solid #444;
+}
+
+.color:hover {
+    cursor: pointer;
+    outline: 2px solid #111;
 }
