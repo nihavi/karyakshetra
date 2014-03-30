@@ -203,7 +203,7 @@ Base = new (function(){
                         {
                             type: 'color',
                             icon: 'fa-circle',
-                            'default': '#000',
+                            default: '#000',
                             callback: log,
                             text: 'F'
                         }
@@ -394,6 +394,8 @@ Base = new (function(){
             var selectedColor = $(this).css('background-color');
             $('#' + $('.randombox').data('caller')).find('i').css('color', selectedColor);
             //TODO callback
+            var item = submenu[$('.randombox').data('caller')];
+            item.callback(item.id, selectedColor);
         }
 
         $('.randombox .color').bind('click', onColorClick);
