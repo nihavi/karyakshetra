@@ -55,7 +55,7 @@ var akruti = new (function() {
         /* Making page background */
         {
             var alphaSize = 15;
-            var colorDark = '#ccc';
+            var colorDark = '#eee';
             var colorLight = '#fff';
             var defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
             var pattern = document.createElementNS('http://www.w3.org/2000/svg','pattern');
@@ -100,7 +100,7 @@ var akruti = new (function() {
             this.page.setAttribute('id', this.id+'p');
             this.page.setAttribute('x', 0);
             this.page.setAttribute('y', 0);
-            this.page.setAttribute('stroke', '#aaa');
+            this.page.setAttribute('stroke', '#fff');
             this.page.setAttribute('stroke-width', '1');
             this.page.setAttribute('fill', 'url(#alpha)');
             this.g.appendChild(this.page);
@@ -161,8 +161,9 @@ var akruti = new (function() {
             var viewBoxW = Math.max(this.reqW, w/this.zoomFactor);
             var viewBoxH = Math.max(this.reqH, h/this.zoomFactor);
             this.element.setAttribute( 'viewBox', '0 0 '+viewBoxW+' '+viewBoxH);
+            this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
         }
-        this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
+        
     };
 
     Svg.prototype.resize = _resize;
@@ -190,7 +191,8 @@ var akruti = new (function() {
         this.element.setAttribute('height', this.svgH);
         this.element.setAttribute('width', this.svgW);
         this.resize(true);
-        this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
+        var pageD=this.page.getBoundingClientRect();
+        //this.g.setAttribute('transform','translate('+(this.svgW-(pageD.right-pageD.left))/2+','+(this.svgH-(pageD.bottom-pageD.top))/2+')');
     }
 
     Svg.prototype.zoom = _zoom;
@@ -815,14 +817,16 @@ var akruti = new (function() {
                     e.stopImmediatePropagation();
                     $(this).data('myObject').activateElement();
                     for(var i=0;i<actives.length;i++) {
-                        move[actives[i].t].mousedown(e,actives[i]);
+                        e.data = actives[i];
+                        move[actives[i].t].mousedown(e);
                     }
                     $(superParent).on('mousemove',lineOn.mousemove).on('mouseup',lineOn.mouseup);
                 }
             },
             mousemove : function(e){
                 for(var i=0;i<actives.length;i++) {
-                    move[actives[i].t].mousemove(e,actives[i]);
+                    e.data = actives[i];
+                    move[actives[i].t].mousemove(e);
                     actives[i].activate();
                 }
             },
@@ -836,7 +840,10 @@ var akruti = new (function() {
 
             l : {
 
-                mousedown: function(e,element) {
+                mousedown: function(e) {
+                    
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
 
                     var offset = allSvg[element.pid].page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
@@ -847,18 +854,20 @@ var akruti = new (function() {
                     element.dy2 = (element.y2 - y)/mySvgObject.zoomFactor;
                 },
 
-                mousemove:function(e,element){
+                mousemove:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                                        
                     var offset = allSvg[element.pid].page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     var changes = {
                         'x1':element.dx1+x/mySvgObject.zoomFactor,
-                        'y1':element.dy1+y,
-                        'x2':element.dx2+x,
-                        'y2':element.dy2+y,
+                        'y1':element.dy1+y/mySvgObject.zoomFactor,
+                        'x2':element.dx2+x/mySvgObject.zoomFactor,
+                        'y2':element.dy2+y/mySvgObject.zoomFactor,
                     }
                     element.changeAttributes(changes);
-                    element.pivots = [ [changes.x1, changes.y1], [changes.x2, changes.y2]];
 
                 },
 
