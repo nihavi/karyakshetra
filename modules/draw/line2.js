@@ -290,8 +290,8 @@ var akruti = new (function() {
                 x:this.x1,
                 y:this.y1
             },{
-                x:this.x1,
-                y:this.y1
+                x:this.x2,
+                y:this.y2
             },
         ];
     };
@@ -312,9 +312,9 @@ var akruti = new (function() {
             ends[i].setAttribute('r',+Math.max(+this.sw,4));
             ends[i].setAttribute('fill','#057cb8');
             ends[i].setAttribute('stroke','#fff');
+            ends[i].setAttribute('cx', pivots[i]['x']);
+            ends[i].setAttribute('cy', pivots[i]['y']);
             g.appendChild(ends[i]);
-            ends[i].setAttribute('cx', pivots[i][0]);
-            ends[i].setAttribute('cy', pivots[i][1]);
         }
         g.setAttribute('id',this.id +'ga');
         this.g.appendChild(g);
@@ -465,7 +465,6 @@ var akruti = new (function() {
                     break;
             
                 case 'down':
-                    this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
                     if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h ) {
                         this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
                     }
@@ -842,10 +841,10 @@ var akruti = new (function() {
                     var offset = allSvg[element.pid].page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
-                    element.dx1 = element.x1 - x;
-                    element.dy1 = element.y1 - y;
-                    element.dx2 = element.x2 - x;
-                    element.dy2 = element.y2 - y;
+                    element.dx1 = (element.x1 - x)/mySvgObject.zoomFactor;
+                    element.dy1 = (element.y1 - y)/mySvgObject.zoomFactor;
+                    element.dx2 = (element.x2 - x)/mySvgObject.zoomFactor;
+                    element.dy2 = (element.y2 - y)/mySvgObject.zoomFactor;
                 },
 
                 mousemove:function(e,element){
@@ -853,7 +852,7 @@ var akruti = new (function() {
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     var changes = {
-                        'x1':element.dx1+x,
+                        'x1':element.dx1+x/mySvgObject.zoomFactor,
                         'y1':element.dy1+y,
                         'x2':element.dx2+x,
                         'y2':element.dy2+y,
