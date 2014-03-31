@@ -312,10 +312,11 @@ var akruti = new (function() {
             ends[i].setAttribute('r',+Math.max(+this.sw,4));
             ends[i].setAttribute('fill','#057cb8');
             ends[i].setAttribute('stroke','#fff');
-            ends[i].setAttribute('cx', pivots[i]['x']);
-            ends[i].setAttribute('cy', pivots[i]['y']);
+            ends[i].setAttribute('cx', pivots[i].x);
+            ends[i].setAttribute('cy', pivots[i].y);
             g.appendChild(ends[i]);
         }
+
         g.setAttribute('id',this.id +'ga');
         this.g.appendChild(g);
         this.active = g;
@@ -465,6 +466,7 @@ var akruti = new (function() {
                     break;
             
                 case 'down':
+                    this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
                     if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h ) {
                         this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
                     }
@@ -629,7 +631,7 @@ var akruti = new (function() {
                     break;
 
                 default:
-                    console.log(e.which);
+             //       console.log(e.which);
             }
         });
 
@@ -710,12 +712,13 @@ var akruti = new (function() {
 
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
+
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     
                     if (e.shiftKey) {
-                        var changes = svgOn.lineMode.snap(activeElement.x1,activeElement.y1,x,y);
+                        var changes = svgOn.createLineMode.snap(element.x1,element.y1,x,y);
                         element.changeAttributes({
                             'x2':changes.x2/mySvgObject.zoomFactor,
                             'y2':changes.y2/mySvgObject.zoomFactor
@@ -733,13 +736,14 @@ var akruti = new (function() {
 
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
+
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
 
                     if (e.shiftKey) {
 
-                        var changes = svgOn.lineMode.snap(this.x1,this.y1,x,y);
+                        var changes = svgOn.createLineMode.snap(element.x1,element.y1,x,y);
                         element.changeAttributes({
                             'x2':changes.x2/mySvgObject.zoomFactor,
                             'y2':changes.y2/mySvgObject.zoomFactor
@@ -800,8 +804,7 @@ var akruti = new (function() {
             },
             selectMode: {
                 mousedown:function(e){
-                    return;
-                    log('unimplemented: svgOn -> selectMode -> mousedown fired');
+                    
                 },
                 mousemove:function(e){},
                 mouseup:function(e){},
@@ -813,7 +816,18 @@ var akruti = new (function() {
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
                     e.stopImmediatePropagation();
-                    $(this).data('myObject').activateElement();
+                    if(actives.length==0) {
+                        $(this).data('myObject').activateElement();
+                    }
+                    else {
+                         if(e.ctrlKey) {
+                            $(this).data('myObject').activateElement();
+                        }
+                        else {
+                            deselectAll();
+                            $(this).data('myObject').activateElement();
+                        }
+                    }
                     for(var i=0;i<actives.length;i++) {
                         move[actives[i].t].mousedown(e,actives[i]);
                     }
