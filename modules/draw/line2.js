@@ -290,8 +290,8 @@ var akruti = new (function() {
                 x:this.x1,
                 y:this.y1
             },{
-                x:this.x2,
-                y:this.y2
+                x:this.x1,
+                y:this.y1
             },
         ];
     };
@@ -312,9 +312,9 @@ var akruti = new (function() {
             ends[i].setAttribute('r',+Math.max(+this.sw,4));
             ends[i].setAttribute('fill','#057cb8');
             ends[i].setAttribute('stroke','#fff');
-            ends[i].setAttribute('cx', pivots[i]['x']);
-            ends[i].setAttribute('cy', pivots[i]['y']);
             g.appendChild(ends[i]);
+            ends[i].setAttribute('cx', pivots[i][0]);
+            ends[i].setAttribute('cy', pivots[i][1]);
         }
         g.setAttribute('id',this.id +'ga');
         this.g.appendChild(g);
@@ -455,46 +455,33 @@ var akruti = new (function() {
             switch (type) {
                 
                 case 'up':
-                    var svg = allSvg[this.pid];
-                    //console.log(this.y1, d);
                     this.changeAttributes({y1:this.y1-d,y2:this.y2-d});
-                    if (this.y1 <= 0 || this.y2 <= 0) {
+                    if (!( this.y1 >= d && this.y2 >= d )) {
+                        var svg = allSvg[this.pid];
                         svg.reqH += d/svg.zoomFactor;
-                        console.log(svg.reqH);
                         svg.svgH += d;
                         svg.element.setAttribute('height',svg.svgH);
                     }
                     break;
             
                 case 'down':
-                    var svg = allSvg[this.pid];
                     this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
-                    if (this.y1 > svg.reqH || this.y2 > svg.reqH ) {
-                        svg.reqH += d/svg.zoomFactor;
-                        svg.svgH += d;
-                        svg.element.setAttribute('height',svg.svgH);
+                    if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h ) {
+                        this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
                     }
                     break;
                 
                 case 'left':
-                    this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
-                    if (!(this.x1 >= d && this.x2 >= d )) {
-                        var svg = allSvg[this.pid];
-                        svg.reqW += d/svg.zoomFactor;
-                        svg.svgW += d;
-                        svg.element.setAttribute('width', svg.svgW);
+                    if ( this.x1 >= d && this.x2 >= d ) {
+                        this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
                     }
                     break;
             
                     case 'right':
+                    if ( this.x1 + d <= allSvg[this.pid].w && this.x2 + d <= allSvg[this.pid].w ) {
                         this.changeAttributes({x1:this.x1+d,x2:this.x2+d});
-                        if (!(this.x1 <= d && this.x2 <= d)) {
-                            var svg = allSvg[this.pid];
-                            svg.reqW += d/svg.zoomFactor;
-                            svg.svgW += d;
-                            svg.element.setAttribute('width', svg.svgW);
-                        }
-                        break;
+                    }
+                break;
             
             }
             this.activate();
