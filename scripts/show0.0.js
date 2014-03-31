@@ -570,12 +570,16 @@ Show = new (function(){
             }
         }
         if ($(ev.target).closest('.elem-text').length == 0){
+            ev.preventDefault();
+            var elem = $(this);
+            elem.addClass('active');
+            activeElement = elem.data('elem');
             return;
         }
         
         ev.preventDefault();
         
-        elem = $(this);
+        var elem = $(this);
         elem.addClass('active');
         activeElement = elem.data('elem');
         activeElement.origMousePos = {
