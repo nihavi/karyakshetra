@@ -41,6 +41,16 @@ Show = new (function(){
             });
         newSlide.renderSlide();
         this.slides = allSlides;
+        
+        //Event handlers on slides to manage activeElement
+        $('#slides').bind('mousedown',function(ev){
+            if(activeElement){
+                if (activeElement != $(ev.target).closest('.elem').data('elem')){
+                    activeElement.elemDOM.find('.elem-text').blur();
+                    activeElement = null;
+                }
+            }
+        });
     }
     
     this.getMenu = function(){
@@ -224,13 +234,15 @@ Show = new (function(){
                         width: (slide.width()*elem.width)/100,
                         fontSize: (slide.height()*elem.fontSize)/100
                     });
+                    if(activeElement && activeElement == elem)
+                        elemDOM.addClass('active');
                     
                     //Actual element for text
                     elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
                     elemText.bind('keyup keydown keypress', function(ev){
-                        $(this).parent('.elem').data('elem').text = $(this).html();
+                        $(this).closest('.elem').data('elem').text = $(this).html();
                     });
                     
                     //To move
@@ -342,7 +354,9 @@ Show = new (function(){
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
         if(!activeElement)
-            activeElement = $(this).parent('.elem').data('elem');
+            activeElement = $(this).closest('.elem').data('elem');
+        activeElement.elemDOM.addClass('active');
+        activeElement.elemDOM.addClass('edit');
         activeElement.elemDOM.css({
             cursor: 'auto',
             overflow: 'visible'
@@ -356,6 +370,9 @@ Show = new (function(){
                 overflow: 'hidden'
             });
         }
+        activeElement.elemDOM.removeClass('active');
+        activeElement.elemDOM.removeClass('edit');
+        activeElement.editable = false;
         activeElement = null;
     };
     
@@ -364,13 +381,15 @@ Show = new (function(){
      */
     var resizeRightInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeRightMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
@@ -387,13 +406,15 @@ Show = new (function(){
     
     var resizeLeftInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeLeftMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
@@ -411,13 +432,15 @@ Show = new (function(){
     
     var resizeTopInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeTopMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
@@ -438,13 +461,15 @@ Show = new (function(){
     
     var resizeBottomInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeBottomMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
@@ -461,7 +486,10 @@ Show = new (function(){
     
     var resizeTopRightInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeTopMove);
         $('#slides').bind('mousemove',resizeRightMove);
@@ -469,14 +497,16 @@ Show = new (function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
     
     var resizeTopLeftInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeTopMove);
         $('#slides').bind('mousemove',resizeLeftMove);
@@ -484,14 +514,16 @@ Show = new (function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
     
     var resizeBottomLeftInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeBottomMove);
         $('#slides').bind('mousemove',resizeLeftMove);
@@ -499,14 +531,16 @@ Show = new (function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
     
     var resizeBottomRightInit = function(ev){
         if (ev.which != 1)return;
-        var elem = $(this).parent('.elem');
+        if(activeElement){
+            activeElement.elemDOM.find('.elem-text').blur();
+        }
+        var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
         $('#slides').bind('mousemove',resizeBottomMove);
         $('#slides').bind('mousemove',resizeRightMove);
@@ -514,7 +548,6 @@ Show = new (function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
-            activeElement = null;
         });
         ev.preventDefault();
     }
@@ -523,14 +556,27 @@ Show = new (function(){
      * Move elements
      */
     var moveInit = function(ev){
-        if (ev.which != 1 || (activeElement && activeElement == $(ev.target).parent('.elem').data('elem')))return;
-        if (!$(ev.target).hasClass('elem-text') && $(ev.target).parents('.elem-text').length == 0)return;
+        if(ev.which != 1)return;
         
-        if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+        var secondClick = false;
+        if (activeElement){
+            if(activeElement == $(ev.target).closest('.elem').data('elem')){
+                secondClick = true;
+                if(activeElement.editable)
+                    return;
+            }
+            else {
+                activeElement.elemDOM.find('.elem-text').blur();
+            }
+        }
+        if ($(ev.target).closest('.elem-text').length == 0){
+            return;
         }
         
+        ev.preventDefault();
+        
         elem = $(this);
+        elem.addClass('active');
         activeElement = elem.data('elem');
         activeElement.origMousePos = {
             y: ev.clientY,
@@ -540,23 +586,43 @@ Show = new (function(){
             y: ev.clientY,
             x: ev.clientX
         }
-        activeElement.elemDOM.css('overflow', 'visible');
+        //activeElement.elemDOM.css('overflow', 'visible');
         $('#slides').bind('mousemove', moveElement);
-        $(window).one('mouseup', function(ev){
-            $('#slides').unbind('mousemove', moveElement);
-            activeElement.elemDOM.css('overflow', 'hidden');
-            if(ev.clientX == activeElement.origMousePos.x && ev.clientY == activeElement.origMousePos.y){
-                activeElement.elemDOM.find('.elem-text').focus();
-                activeElement.elemDOM.css('cursor', 'auto');
-                delete activeElement.origMousePos;
-                delete activeElement.lastMousePos;
-            }
-            else {
-                delete activeElement.origMousePos;
-                delete activeElement.lastMousePos;
-                activeElement = null;
-            }
-        });
+        
+        if(secondClick){
+            $(window).one('mouseup', function(ev){
+                $('#slides').unbind('mousemove', moveElement);
+                activeElement.elemDOM.css('overflow', 'hidden');
+                if(ev.clientX == activeElement.origMousePos.x && ev.clientY == activeElement.origMousePos.y){
+                    activeElement.elemDOM.find('.elem-text').focus();
+                    activeElement.editable = true;
+                    delete activeElement.origMousePos;
+                    delete activeElement.lastMousePos;
+                    ev.preventDefault();
+                }
+                else {
+                    delete activeElement.origMousePos;
+                    delete activeElement.lastMousePos;
+                    //activeElement = null;
+                }
+            });
+        }
+        else {
+            $(window).one('mouseup', function(ev){
+                $('#slides').unbind('mousemove', moveElement);
+                activeElement.elemDOM.css('overflow', 'hidden');
+                if(ev.clientX == activeElement.origMousePos.x && ev.clientY == activeElement.origMousePos.y){
+                    delete activeElement.origMousePos;
+                    delete activeElement.lastMousePos;
+                    ev.preventDefault();
+                }
+                else {
+                    delete activeElement.origMousePos;
+                    delete activeElement.lastMousePos;
+                    //activeElement = null;
+                }
+            });
+        }
     }
     var moveElement = function(ev){
         if (ev.which != 1) return;

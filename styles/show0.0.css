@@ -29,11 +29,18 @@
 }
 
 .elem{
-    border: 1px solid #888;
+    border: 2px dotted #888;
     margin: 0;
     padding: 0;
     cursor: move;
     overflow: hidden;
+    box-sizing: border-box;
+}
+.elem.active{
+    box-shadow: 0px 0px 5px 2px red;
+}
+.elem.active.edit{
+    box-shadow: 0px 0px 5px 2px blue;
 }
 
 .elem-text{
