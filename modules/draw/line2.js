@@ -841,10 +841,10 @@ var akruti = new (function() {
                     var offset = allSvg[element.pid].page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
-                    element.dx1 = (element.x1 - x)/mySvgObject.zoomFactor;
-                    element.dy1 = (element.y1 - y)/mySvgObject.zoomFactor;
-                    element.dx2 = (element.x2 - x)/mySvgObject.zoomFactor;
-                    element.dy2 = (element.y2 - y)/mySvgObject.zoomFactor;
+                    element.dx1 = element.x1 - x;
+                    element.dy1 = element.y1 - y;
+                    element.dx2 = element.x2 - x;
+                    element.dy2 = element.y2 - y;
                 },
 
                 mousemove:function(e,element){
@@ -852,7 +852,7 @@ var akruti = new (function() {
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
                     var changes = {
-                        'x1':element.dx1+x/mySvgObject.zoomFactor,
+                        'x1':element.dx1+x,
                         'y1':element.dy1+y,
                         'x2':element.dx2+x,
                         'y2':element.dy2+y,
