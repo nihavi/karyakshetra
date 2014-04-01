@@ -5,6 +5,21 @@
     background-color: green;
 }
 
+.side-no{
+    float: left;
+    clear:left;
+    width: 10%;
+}
+.side-slide{
+    margin-top:5px;
+    float: left;
+    clear: right;
+    width: 90%;
+    height: 100px;
+    position: relative;
+    overflow: hidden;
+}
+
 .slides{
     float: left;
     height: 100%;
@@ -42,7 +57,13 @@
 .elem.active.edit{
     box-shadow: 0px 0px 5px 2px blue;
 }
-
+.elem-side{
+    margin: 0;
+    padding: 0;
+    cursor: move;
+    overflow: hidden;
+    box-sizing: border-box;
+}
 .elem-text{
     margin: 0;
     padding: 0;

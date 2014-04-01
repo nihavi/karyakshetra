@@ -72,8 +72,9 @@ Show = new (function(){
                         },
                         {
                             type: 'button',
-                            icon: 'fa-question-circle',
-                            callback: console.log
+                            icon: 'fa-list-alt',
+                            id: 'insert-slide',
+                            callback: insertSlide
                         },
                         {
                             type: 'button',
@@ -120,6 +121,43 @@ Show = new (function(){
     }
     */
     
+    var Sidebar = {
+        render: function(){
+            var slide;
+            var sidebar = $('#sidebar');
+            sidebar.empty();
+            for (var i = 0; i<allSlides.length; i++){
+                sidebar.append('<div class="side-no">'+(i+1)+'.</div>');
+                slide = $('<div class="side-slide" id="side'+allSlides[i].id+'"></div>').appendTo(sidebar);
+                slide.data('slideId',i);
+                slide.data('slide', allSlides[i]);
+                slide.css({
+                    height: slide.width()/allSlides[i].ratio,
+                    backgroundColor: allSlides[i].bgColor
+                });
+                slide.click(function(){
+                    allSlides[$(this).data('slideId')].renderSlide();
+                });
+                allSlides[i].renderSlideSide();
+            }
+        }
+    };
+    
+    var insertSlide = function(id){
+        var newSlide = new Slide();
+        newSlide.addElem({
+                type: 'title',
+                top: 5,
+                left: 5,
+                width: 90,
+                height: 13,
+                fontSize: 10,
+                text: 'New Slide',
+                style: {textAlign: 'center'}
+            });
+        newSlide.renderSlide();
+    }
+    
     var Slide = function(){
         /*
          * Constructor of class Slide
@@ -131,6 +169,7 @@ Show = new (function(){
         this.elemId = 0;
         allSlides.push(this);
         slideId++;
+        //Update sidebar
     }
     
     Slide.prototype = {
@@ -148,6 +187,7 @@ Show = new (function(){
             
             $('.slide').remove();
             var slideDOM = $('<div class="slide" id="'+slide.id+'">').appendTo('#slides');
+            slideDOM.data('slide', slide);
             
             var contain = $('#slides');
             var slideH = contain.height();
@@ -173,6 +213,16 @@ Show = new (function(){
             }
             
             activeSlide = slide;
+            Sidebar.render();
+        },
+        renderSlideSide: function(){
+            var slide = this;
+            if('elems' in slide){
+                var i;
+                for(i in slide.elems){
+                    slide.elems[i].renderElemSide(slide.id);
+                }
+            }
         },
         addElem: function(obj){
             var elem = new Elem(obj);
@@ -220,6 +270,7 @@ Show = new (function(){
             var elem = this;
             
             var slide = $('.slide');
+            var slideObj = slide.data('slide');
             
             $('#'+elem.id).remove();
             
@@ -243,6 +294,7 @@ Show = new (function(){
                     elemText.blur(textBlur);
                     elemText.bind('keyup keydown keypress', function(ev){
                         $(this).closest('.elem').data('elem').text = $(this).html();
+                        Sidebar.render();
                     });
                     
                     //To move
@@ -285,7 +337,32 @@ Show = new (function(){
                 //Error: Elem type is not defined
             }
         },
+        renderElemSide: function(slideId){
+            //First render in sidebar
+            var elem = this;
+            
+            var slide = $('#side'+slideId);
+            var slideObj = slide.data('slide');
+            
+            $('#'+slideId+elem.id).remove();
+            
+            if('type' in elem){
+                if(elem.type == 'title' || elem.type == 'text'){
+                    var elemDOM = $('<div class="elem-side slide-'+elem.type+'" id="'+slideId+elem.id+'">');
+                    elemDOM.css({
+                        top: (slide.height()*elem.top)/100,
+                        left: (slide.width()*elem.left)/100,
+                        height: (slide.height()*elem.height)/100,
+                        width: (slide.width()*elem.width)/100,
+                        fontSize: (slide.height()*elem.fontSize)/100
+                    });
+                    var elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                    elemDOM.appendTo(slide);
+                }
+            }
+        },
         editElement: function(changes){
+            Sidebar.render();
             var i;
             for (i in changes){
                 if(i != 'style')
