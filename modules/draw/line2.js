@@ -22,6 +22,7 @@ var akruti = new (function() {
             'y':'y',
             'h':'height',
             'w':'width'
+        },
         e:{
             'cx':'cx',
             'cy':'cy',
@@ -386,6 +387,15 @@ var akruti = new (function() {
     
     Line.prototype.getPivots = getLinePivots;
     
+    var getEllipsePivots = function(){
+        return {
+            x:[this.cx-this.rx, this.cx+this.rx, this.cx-this.rx, this.cx+this.rx ],
+            y:[this.cy-this.ry, this.cy-this.ry, this.cy+this.ry, this.cy+this.ry ]
+        }
+    };
+    
+    Ellipse.prototype.getPivots = getEllipsePivots;
+    
     var getRectanglePivots = function(){
         return {
             x:[this.x,  this.x+this.w,  this.x,         this.x+this.w],
@@ -393,7 +403,10 @@ var akruti = new (function() {
         }
     };
     
-    var SelectRef = ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight', 'rotate']
+    var SelectRef =  ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight', 'rotate']
+    var resizeCursorRef = ['nw-resize', 'n-resize' , 'ne-resize', 'w-resize',
+                           'e-resize', 'sw-resize', 's-resize','se-resize']
+    
     
     var SelectArea = function(x,y,w,h, mySvgObject) { //arg has x,y,h,w
         
@@ -461,7 +474,7 @@ var akruti = new (function() {
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
     };
-    
+    /*
     var activate = function() {
         this.deactivate();
         var pivots = this.getPivots();
@@ -487,7 +500,8 @@ var akruti = new (function() {
 
     Line.prototype.deactivate = deactivate;
     //Ellipse.prototype.deactivate = deactivate;
-
+*/
+    
     var fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
     };
@@ -586,29 +600,52 @@ var akruti = new (function() {
             return document.getElementById('fillColor').value;
         }
 
-        var activateElement = function(){
-            actives.list.push(this);
-            var pivots = new Array();
-            for (var i=0;i<actives.length;i++) {
-                
+        var select = function(obj) {
+            var pivotsX = new Array();
+            var pivotsY = new Array();
+            for (var i=0;i<actives.list.length;i++) {
+                var getP = actives.list[i].getPivots();
+                pivotsX = pivotsX.concat(getP.x);
+                pivotsY = pivotsY.concat(getP.y);
             }
-            var x1 = Math.min.apply(undefined, pivots.x);
-            var y1 = Math.min.apply(undefined, pivots.y);
-            var x2 = Math.max.apply(undefined, pivots.x);
-            var y2 = Math.max.apply(undefined, pivots.y);
-            this.active = new SelectArea(x1,y1,x2-x1, y2-y1,allSvg[this.pid]);
-            
-            
-            
-            
-            
-            if (actives.length == 0) {
-                $(superParent).one('mousedown',deselectAll);
-                actives.select = new SelectArea();
+            var x1 = Math.min.apply(undefined, pivotsX);
+            var y1 = Math.min.apply(undefined, pivotsY);
+            var x2 = Math.max.apply(undefined, pivotsX);
+            var y2 = Math.max.apply(undefined, pivotsY);
+            if (actives.select) {
+                actives.select.g.remove();
+                delete actives.select;
+            }
+            actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[obj.pid]);
+            var pivots = actives.select.p;
+            for (var i=0;i<pivots.length;i++) {
+                $(pivots[i]).on('click',resizeElement).css('cursor',resizeCursorRef[i]);
             }
             
-            actives.list.push(this);
         };
+        
+        var activateElement = function(){
+            
+            if (actives.list.length == 0) {
+                $(superParent).one('mousedown',deactivateAll);
+            }
+            actives.list.push(this);
+            select(this);
+        };
+        
+        var deactivateElement = function(){
+            actives.list.splice(actives.list.indexOf(this),1);
+            select(this);
+        };
+        
+        var deactivateAll = function(e){
+            if (actives.select)
+            {
+                actives.select.g.remove();
+                delete actives.select;
+                actives.list.length = 0;
+            }
+        }
 
         var lineMove = function(type, ctrlKey, shiftKey) {
             var d;
@@ -671,14 +708,6 @@ var akruti = new (function() {
             }
         };
 
-        var deselectAll = function(e){
-            if (actives.select)
-            {
-                actives.select.g.remove();
-                delete actives.select;
-                actives.list.length = 0;
-            }
-        }
 
         this.makeEditable = function(element) {
             $(element).on('mousedown', svgOnMouseDown);
@@ -869,7 +898,6 @@ var akruti = new (function() {
                     var element = new Ellipse(attributes,mySvgObject);
                     element.shiftX = x;
                     element.shiftY = y;
-                    console.log(element.cx);
                     return element;
                 },
 
@@ -1097,6 +1125,7 @@ var akruti = new (function() {
                 },
                 
                 mousemove:function(e){
+                    return;
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     
@@ -1124,30 +1153,35 @@ var akruti = new (function() {
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
                     e.stopImmediatePropagation();
-                    if(e.ctrlKey) {
-                        if (actives.list.indexOf(this) == -1) {
-                            activateElement.apply(this);
+                    var myObject = $(this).data('myObject');
+                    
+                    if (actives.list.indexOf(myObject) == -1) {
+                        if (e.ctrlKey) {
+                            activateElement.apply(myObject);
                         }
                         else {
-                            deactivateElement.apply(this);
+                            deactivateAll();
+                            activateElement.apply(myObject);
                         }
                     }
                     else {
-                        deselectAll();
-                        activateElement.apply(this);
+                        if (e.ctrlKey) {
+                            deactivateElement.apply(myObject);
+                        }
                     }
                     
-                    for(var i=0;i<actives.length;i++) {
-                        move[actives[i].t].mousedown(e,actives.list[i]);
+                    for(var i=0;i<actives.list.length;i++) {
+                        elementMove[actives.list[i].t].mousedown(e,actives.list[i]);
                     }
                     $(superParent).on('mousemove',elementOn.mousemove).on('mouseup',elementOn.mouseup);
                 }
             },
             mousemove : function(e){
-                for(var i=0;i<actives.length;i++) {
-                    move[actives[i].t].mousemove(e,actives[i]);
-                    actives[i].activate();
+                for(var i=0;i<actives.list.length;i++) {
+                    elementMove[actives.list[i].t].mousemove(e,actives.list[i]);
+                    
                 }
+                if (actives.list[0]) select(actives.list[0]);
             },
             mouseup : function(e){
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
@@ -1155,7 +1189,7 @@ var akruti = new (function() {
         };
 
         
-        move = {
+        var elementMove = {
 
             l : {
 
@@ -1192,6 +1226,11 @@ var akruti = new (function() {
 
             },
         }
+  
+        var resizeElement = function(e){
+            alert("please Implement")
+        };
+  
   
     })();
     
