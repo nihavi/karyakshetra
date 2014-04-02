@@ -16,6 +16,16 @@ var akruti = new (function() {
             'y2':'y2',
             'sc':'stroke',
             'sw':'stroke-width',
+        },
+        e:{
+            'cx':'cx',
+            'cy':'cy',
+            'rx':'rx',
+            'ry':'ry',
+            'sc':'stroke',
+            'sw':'stroke-width',
+            'f':'fill',
+            //'sd' : 'stroke-dasharray',
         }
     };
 
@@ -246,6 +256,60 @@ var akruti = new (function() {
         return this;
     };
 
+    var Ellipse = function(arg, parent) {
+
+        if (!parent) {
+            parent = allSvg[arg.pid];
+        }
+
+        /* Creating DOM Element */
+        this.g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        this.element = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+
+        /* Setting Class and type */
+        this.g.setAttribute( 'class', 'e');
+        this.t = 'e';
+
+        /* Setting Id */
+        this.pid = parent.id;
+        this.id = this.pid+this.t+ parent.childrenId++;
+
+        this.element.setAttribute( 'id', this.id);
+        this.g.setAttribute( 'id', this.id + 'g');
+
+        /* Default Attributes */
+        this.element.setAttribute('stroke-linecap','round');
+
+        /* Provided Attributes */
+        var j;
+        for (j in allAA['e']) {
+            if (j in arg) {
+                this.element.setAttribute(allAA['e'][j],arg[j]);
+                this[j] = arg[j];
+            }
+        }
+
+        if ( this.sw < 7 ) {
+            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+            this.pseudo.setAttribute('stroke','transparent');
+            this.pseudo.setAttribute('stroke-width',7);
+            this.pseudo.setAttribute('class','e');
+            this.pseudo.setAttribute('cx',this.cx);
+            this.pseudo.setAttribute('cy',this.cy);
+            this.pseudo.setAttribute('rx',this.rx);
+            this.pseudo.setAttribute('ry',this.ry);
+            this.g.appendChild(this.pseudo);
+        }
+
+        /* Adding Elements to DOM */
+        this.g.appendChild(this.element);
+        parent.g.appendChild(this.g);
+
+        $(this.g).data('myObject',this);
+
+        return this;
+    };
+
     var Line = function(arg, parent) {
 
         if (!parent) {
@@ -300,7 +364,10 @@ var akruti = new (function() {
         return this;
     };
 
+    
+
     Line.prototype.changeAttributes = changeAttributes;
+    Ellipse.prototype.changeAttributes = changeAttributes;
     
     var getLinePivots = function(){
         return [
@@ -413,7 +480,10 @@ var akruti = new (function() {
 
 
     Line.prototype.activate = activate;
+    //Ellipse.prototype.activate = activate;
+
     Line.prototype.deactivate = deactivate;
+    //Ellipse.prototype.deactivate = deactivate;
 
     var fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
@@ -429,6 +499,7 @@ var akruti = new (function() {
     };
 
     Line.prototype.delete = deleteSelf;
+    Ellipse.prototype.delete = deleteSelf;
 
 
 
@@ -498,17 +569,17 @@ var akruti = new (function() {
 
         var getStrokeWidth = function(){
 
-            return +document.getElementById('strokeWidth').value;
+            return document.getElementById('strokeWidth').value;
         }
 
         var getStrokeColor = function(){
 
-            return '#'+document.getElementById('strokeColor').value;
+            return document.getElementById('strokeColor').value;
         }
 
         var getFillColor = function(){
 
-            return '#'+document.getElementById('fillColor').value;
+            return document.getElementById('fillColor').value;
         }
 
         var activateElement = function(){
@@ -521,7 +592,7 @@ var akruti = new (function() {
         };
 
         Line.prototype.activateElement = activateElement;
-        
+
         var lineMove = function(type, ctrlKey, shiftKey) {
             var d;
             if (ctrlKey)
@@ -762,8 +833,117 @@ var akruti = new (function() {
             }
         });
 
-
         var svgOn = {
+            createEllipseMode: {
+
+                mousedown: function(e) {
+                    var mySvgObject = e.data;
+
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var attributes = {
+                        'cx':x,
+                        'cy':y,
+                        'rx':0,
+                        'ry':0,
+                        'sc':getStrokeColor(),
+                        'sw':getStrokeWidth(),
+                        'f':getFillColor(),
+                    };
+                    var element = new Ellipse(attributes,mySvgObject);
+                    element.shiftX = x;
+                    element.shiftY = y;
+                    console.log(element.cx);
+                    return element;
+                },
+
+                mousemove: function(e) {
+
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
+                    if (e.shiftKey) {
+                        var changes = svgOn.createEllipseMode.snap(element.shiftX,element.shiftY,x,y);
+                        element.changeAttributes({
+                            'cx': changes.cx,
+                            'cy': changes.cy,
+                            'rx': changes.radius,
+                            'ry': changes.radius,
+                            });
+                    }
+                    else
+                    {
+                        element.changeAttributes({
+                            'cx': (x + element.shiftX) / 2,
+                            'cy': (y + element.shiftY) / 2,
+                            'rx': (Math.abs(x - element.shiftX)) / 2,
+                            'ry': (Math.abs(y - element.shiftY)) / 2,
+                            });
+                    }
+                },
+
+                mouseup: function(e) {
+
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+
+                    if (e.shiftKey) {
+                        var changes = svgOn.createEllipseMode.snap(element.shiftX,element.shiftY,x,y);
+                        element.changeAttributes({
+                            'cx': changes.cx,
+                            'cy': changes.cy,
+                            'rx': changes.radius,
+                            'ry': changes.radius,
+                            });
+                    }
+                    else
+                    {
+                        element.changeAttributes({
+                            'cx': (x + element.shiftX) / 2,
+                            'cy': (y + element.shiftY) / 2,
+                            'rx': (Math.abs(x - element.shiftX)) / 2,
+                            'ry': (Math.abs(y - element.shiftY)) / 2,
+                            });
+                    }
+                    
+                    $(element.g).on('mousedown', elementOn.mousedown);
+                    mySvgObject.children.push(element);
+                    opQueue.addOp({
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                        'id':element.id,
+                        'pid':element.pid,
+                        },{
+                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                        'cx':element.cx,
+                        'cy':element.cy,
+                        'rx':element.rx,
+                        'ry':element.ry,
+                        'sc':element.sc,
+                        'sw':element.sw,
+                        'f' :element.f,
+                        'pid':element.pid
+                    });
+                },
+                snap: function(sx,sy,x,y) {
+                    var radius = Math.max((Math.abs(x - sx)) / 2, (Math.abs(y - sy)) / 2);
+                    var cx = (x > sx) ?
+                        (sx + radius) :
+                        (sx - radius);
+                    var cy = (y > sy) ?
+                        (sy + radius) :
+                        (sy - radius);
+                    return {'cx':cx, 'cy':cy, 'radius':radius}
+                },
+            },
 
             createLineMode: {
 
@@ -881,6 +1061,7 @@ var akruti = new (function() {
                     return {'x2':x2, 'y2':y2}
                 },
             },
+
             selectMode: {
                 mousedown:function(e){
                     
@@ -961,8 +1142,8 @@ var akruti = new (function() {
                 },
 
             },
-        }
-
+        },
+        
     })();
 })();
 
