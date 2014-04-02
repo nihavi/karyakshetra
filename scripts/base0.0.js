@@ -54,7 +54,7 @@
     title: String, //Name of button
     icon: String, //Font awesome icon name
     default: String, //Default size
-    list = Object, //An associative array with key = Id and value = Text
+    list = Array, //Array of Objects. Object is defined as {id: String, value: String}
     callback: Function(String id, Number selectedItemId)    //Callback on change
 }
 */
