@@ -18,6 +18,7 @@
     title: String, //Name of button
     icon: String, //Font awesome icon name
     onoff: Boolean,  //Is a on/off button
+    currState: Boolean,   //Is on or off, Only if onoff is true
     callback: Function(String id),  //If onoff is false
     callback: Function(String id, Boolean state)    //If onoff is true, state will represent if it turned on or off
 },
