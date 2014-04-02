@@ -16,6 +16,12 @@ var akruti = new (function() {
             'y2':'y2',
             'sc':'stroke',
             'sw':'stroke-width',
+        },
+        sA:{
+            'x':'x',
+            'y':'y',
+            'h':'height',
+            'w':'width'
         }
     };
 
@@ -219,7 +225,6 @@ var akruti = new (function() {
         document.getElementById('zoomValue').innerHTML = value;
     }
 
-    
     var changeAttributes = function(arg) {
         var initial = {};
         var j;
@@ -231,19 +236,23 @@ var akruti = new (function() {
                 this[j] = arg[j];
             }
         }
-
+        
         if (this.pseudo) {
             if (this.sw > 7) {
                 this.pseudo.remove();
+                delete this.pseudo;
             }
             else {
-                this.pseudo.setAttribute('x1',this.x1);
-                this.pseudo.setAttribute('y1',this.y1);
-                this.pseudo.setAttribute('x2',this.x2);
-                this.pseudo.setAttribute('y2',this.y2);
+                switch (this.t) {
+                    case 'l':
+                        this.pseudo.setAttribute('x1',this.x1);
+                        this.pseudo.setAttribute('y1',this.y1);
+                        this.pseudo.setAttribute('x2',this.x2);
+                        this.pseudo.setAttribute('y2',this.y2);
+                }
             }
         }
-        return this;
+        return initial;
     };
 
     var Line = function(arg, parent) {
@@ -303,112 +312,107 @@ var akruti = new (function() {
     Line.prototype.changeAttributes = changeAttributes;
     
     var getLinePivots = function(){
-        return [
-            {
-                x:this.x1,
-                y:this.y1
-            },{
-                x:this.x2,
-                y:this.y2
-            },{
-                x:this.x1,
-                y:this.y2
-            },{
-                x:this.x2,
-                y:this.y1
-            },{
-                x:(this.x1+this.x2)/2,
-                y:this.y1
-            },{
-                x:(this.x1+this.x2)/2,
-                y:this.y2
-            },{
-                x:this.x1,
-                y:(this.y1+this.y2)/2
-            },{
-                x:this.x2,
-                y:(this.y1+this.y2)/2
-            },
-        ];
+        return {
+            x:[this.x1,this.x2,this.x1,this.x2],
+            y:[this.y1,this.y2,this.y2,this.y1]
+        }
     };
     
     Line.prototype.getPivots = getLinePivots;
-
+    
     var getRectanglePivots = function(){
-        return [
-            {
-                x:this.x,
-                y:this.y
-            },{
-                x:this.x+this.w,
-                y:this.y
-            },{
-                x:this.x,
-                y:this.y+this.h
-            },{
-                x:this.x+this.w,
-                y:this.y+this.h
-            },
-        ];
+        return {
+            x:[this.x,  this.x+this.w,  this.x,         this.x+this.w],
+            y:[this.y,  this.y,         this.y+this.h,  this.y+this.h]
+        }
     };
     
-    var SelectRectangle = function(arg, mySvgObject){
+    var SelectRef = ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight', 'rotate']
+    
+    var SelectArea = function(x,y,w,h, mySvgObject) { //arg has x,y,h,w
         
-        this.element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         this.g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        this.rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
-        this.pid = parent.id;
-        this.id = parent.id + 'sr' + (parent.myObject.childrenId++);
-        this.element.setAttribute('id', this.id);
-        this.g.setAttribute('id', this.id);
+        this.pid = mySvgObject.id;
         
-        this.g.appendChild(this.element);
-        this.g.appendChild(this.pseudo);
-        mySvgObject.g.appendChild(this.element);
+        this.rect.setAttribute('fill','none');
+        this.rect.setAttribute('stroke','#0096fd');
+        this.rect.setAttribute('stroke-width',2/mySvgObject.zoomFactor);
+        //this.rect.setAttribute('stroke-dasharray','6 2');
         
-        this.element.setAttribute('fill','none');
-        this.element.setAttribute('stroke','#03d0f0');
-        this.element.setAttribute('stroke-width','1');
-        this.pseudo.setAttribute('fill','none');
-        this.pseudo.setAttribute('stroke','none');
-        this.pseudo.setAttribute('stroke-width','7');
+        this.rect.setAttribute('x', x);
+        this.rect.setAttribute('y', y);
+        this.rect.setAttribute('height', h);
+        this.rect.setAttribute('width', w);
         
         
+        this.g.appendChild(this.rect);
+        mySvgObject.g.appendChild(this.g);
+        
+        this.p = new Array();
+        var radius = 4;
+        for (var i=0;i<8;i++) {
+            this.p[i] = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            this.p[i].setAttribute('fill','#0096fd');
+            this.p[i].setAttribute('stroke','#fff');
+            this.p[i].setAttribute('stroke-width',0.5);
+            this.p[i].setAttribute('height',2*radius);
+            this.p[i].setAttribute('width',2*radius);
+            this.p[i].id = 'sap'+i;
+            this.g.appendChild(this.p[i]);
+        }
+        this.p[0].setAttribute('x',x-radius);
+        this.p[0].setAttribute('y',y-radius);
+        this.p[1].setAttribute('x',x+w/2-radius);
+        this.p[1].setAttribute('y',y-radius);
+        this.p[2].setAttribute('x',x+w-radius);
+        this.p[2].setAttribute('y',y-radius);
+        this.p[3].setAttribute('x',x-radius);
+        this.p[3].setAttribute('y',y+h/2-radius);
+        this.p[4].setAttribute('x',x+w-radius);
+        this.p[4].setAttribute('y',y+h/2-radius);
+        this.p[5].setAttribute('x',x-radius);
+        this.p[5].setAttribute('y',y+h-radius);
+        this.p[6].setAttribute('x',x+w/2-radius);
+        this.p[6].setAttribute('y',y+h-radius);
+        this.p[7].setAttribute('x',x+w-radius);
+        this.p[7].setAttribute('y',y+h-radius);
+        
+        this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.p[8].setAttribute('r',radius);
+        this.p[8].setAttribute('fill','#0096fd');
+        this.p[8].setAttribute('stroke','#fff');
+        this.p[8].setAttribute('stroke-width',0.5);
+        this.p[8].setAttribute('cx',x+w/2);
+        this.p[8].setAttribute('cy',y-20);
+        this.g.appendChild(this.p[8]);
+        //<path d="M150 0 L75 200 L225 200 Z" />
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke','#0096fd');
+        path.setAttribute('stroke-width',1);
+        path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
+        this.g.appendChild(path);
     };
     
     var activate = function() {
-
         this.deactivate();
         var pivots = this.getPivots();
-        var g = document.createElementNS('http://www.w3.org/2000/svg','g');
-        var ends = new Array();
-        var i;
-        for (i=0;i<pivots.length;i++) {
-            ends[i] = document.createElementNS('http://www.w3.org/2000/svg','circle');
-            ends[i].setAttribute('r',+Math.max(+this.sw,4));
-            ends[i].setAttribute('fill','#057cb8');
-            ends[i].setAttribute('stroke','#fff');
-            ends[i].setAttribute('cx', pivots[i].x);
-            ends[i].setAttribute('cy', pivots[i].y);
-            ends[i].classList.add('test')
-            g.appendChild(ends[i]);
-        }
-
-        g.setAttribute('id',this.id +'ga');
-        allSvg[this.pid].g.appendChild(g);
-        this.active = g;
-        return this;
+        var x1 = Math.min.apply(undefined, pivots.x);
+        var y1 = Math.min.apply(undefined, pivots.y);
+        var x2 = Math.max.apply(undefined, pivots.x);
+        var y2 = Math.max.apply(undefined, pivots.y);
+        this.active = new SelectArea(x1,y1,x2-x1, y2-y1,allSvg[this.pid]);
     }
     
 
     var deactivate = function(){
 
         if(this.active)  {
-            this.active.remove();
+            this.active.g.remove();
             delete this.active;
         }
-        return this;
     };
 
 
@@ -494,7 +498,8 @@ var akruti = new (function() {
 
         this.currentMode = 'createLineMode';
 
-        var actives = new Array();
+        var actives = new Object();
+        actives.list = new Array();
 
         var getStrokeWidth = function(){
 
@@ -503,24 +508,37 @@ var akruti = new (function() {
 
         var getStrokeColor = function(){
 
-            return '#'+document.getElementById('strokeColor').value;
+            return document.getElementById('strokeColor').value;
         }
 
         var getFillColor = function(){
 
-            return '#'+document.getElementById('fillColor').value;
+            return document.getElementById('fillColor').value;
         }
 
         var activateElement = function(){
-            if (actives.length == 0) {
-                $(superParent).on('mousedown',deselectAll);
+            actives.list.push(this);
+            var pivots = new Array();
+            for (var i=0;i<actives.length;i++) {
+                
             }
-            this.activate();
-            actives.push(this);
-            return this;
+            var x1 = Math.min.apply(undefined, pivots.x);
+            var y1 = Math.min.apply(undefined, pivots.y);
+            var x2 = Math.max.apply(undefined, pivots.x);
+            var y2 = Math.max.apply(undefined, pivots.y);
+            this.active = new SelectArea(x1,y1,x2-x1, y2-y1,allSvg[this.pid]);
+            
+            
+            
+            
+            
+            if (actives.length == 0) {
+                $(superParent).one('mousedown',deselectAll);
+                actives.select = new SelectArea();
+            }
+            
+            actives.list.push(this);
         };
-
-        Line.prototype.activateElement = activateElement;
         
         var lineMove = function(type, ctrlKey, shiftKey) {
             var d;
@@ -584,14 +602,12 @@ var akruti = new (function() {
         };
 
         var deselectAll = function(e){
-
-            if(e) $(superParent).off('mousedown',deselectAll);
-            var i;
-            for(i=0;i<actives.length;i++)
+            if (actives.select)
             {
-                actives[i].deactivate();
+                actives.select.g.remove();
+                delete actives.select;
+                actives.list.length = 0;
             }
-            actives.length = 0;
         }
 
         this.makeEditable = function(element) {
@@ -791,7 +807,7 @@ var akruti = new (function() {
 
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
-
+                    
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
@@ -881,13 +897,47 @@ var akruti = new (function() {
                     return {'x2':x2, 'y2':y2}
                 },
             },
+            
             selectMode: {
                 mousedown:function(e){
+                    return
+                    var mySvgObject = e.data;
+                    
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var attributes = {
+                        'x': x,
+                        'y': y,
+                        'h': 0,
+                        'w': 0
+                    };
+                    element = new SelectArea(attributes, mySvgObject);
+                    element.shiftX = x;
+                    element.shiftY = y;
+                },
+                
+                mousemove:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
+                    element.changeAttributes({
+                            'h': Math.abs(element.shiftY - y),
+                            'w': Math.abs(element.shiftX - x),
+                            'x': Math.min(element.shiftX,  x),
+                            'y': Math.min(element.shiftY,  y),
+                        });
+                },
+                
+                mouseup:function(e){
                     
                 },
-                mousemove:function(e){},
-                mouseup:function(e){},
             },
+            
         };
 
         var elementOn = {
@@ -895,20 +945,21 @@ var akruti = new (function() {
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
                     e.stopImmediatePropagation();
-                    if(actives.length==0) {
-                        $(this).data('myObject').activateElement();
-                    }
-                    else {
-                         if(e.ctrlKey) {
-                            $(this).data('myObject').activateElement();
+                    if(e.ctrlKey) {
+                        if (actives.list.indexOf(this) == -1) {
+                            activateElement.apply(this);
                         }
                         else {
-                            deselectAll();
-                            $(this).data('myObject').activateElement();
+                            deactivateElement.apply(this);
                         }
                     }
+                    else {
+                        deselectAll();
+                        activateElement.apply(this);
+                    }
+                    
                     for(var i=0;i<actives.length;i++) {
-                        move[actives[i].t].mousedown(e,actives[i]);
+                        move[actives[i].t].mousedown(e,actives.list[i]);
                     }
                     $(superParent).on('mousemove',elementOn.mousemove).on('mouseup',elementOn.mouseup);
                 }
@@ -964,6 +1015,7 @@ var akruti = new (function() {
         }
 
     })();
+    
 })();
 
 
