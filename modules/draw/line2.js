@@ -169,8 +169,19 @@ var akruti = new (function() {
 
     this.resize = function () {
         var i;
-        for(var i in allSvg)
+        var flag = false;
+        if (document.getElementById('zoomValue').innerHTML == 'fit') {
+            flag = true;
+        }
+        for(var i in allSvg) {
+            if (flag) {
+                var off = allSvg['s1'].element.parentNode.getBoundingClientRect();
+                var rx = (off.right - off.left)/allSvg['s1'].reqW;
+                var ry = (off.bottom - off.top)/allSvg['s1'].reqH;
+                allSvg[i].zoomFactor = Math.min(rx,ry);
+            }
             allSvg[i].resize();
+        }
     };
 
     var _zoom = function(ratio) {
@@ -196,11 +207,44 @@ var akruti = new (function() {
     Svg.prototype.zoom = _zoom;
 
     this.zoom = function(value) {
-        document.getElementById('zoomValue').innerHTML = value*100;
-        allSvg['s1'].zoom(value);
+        if (value == 'fit') {
+            var off = allSvg['s1'].element.parentNode.getBoundingClientRect();
+            var rx = (off.right - off.left)/allSvg['s1'].reqW;
+            var ry = (off.bottom - off.top)/allSvg['s1'].reqH;
+            allSvg['s1'].zoom(Math.min(rx,ry));
+        }
+        else {
+            allSvg['s1'].zoom(value);
+        }
+        document.getElementById('zoomValue').innerHTML = value;
     }
 
-    /* --------------------------------Line-------------------------------- */
+    
+    var changeAttributes = function(arg) {
+        var initial = {};
+        var j;
+        var ele = (this.element)?this.element:document.getElementById(this.id);
+        for(j in arg) {
+            if (j in allAA[this.t]) {
+                initial[j] = this[j];
+                ele.setAttribute(allAA[this.t][j],arg[j]);
+                this[j] = arg[j];
+            }
+        }
+
+        if (this.pseudo) {
+            if (this.sw > 7) {
+                this.pseudo.remove();
+            }
+            else {
+                this.pseudo.setAttribute('x1',this.x1);
+                this.pseudo.setAttribute('y1',this.y1);
+                this.pseudo.setAttribute('x2',this.x2);
+                this.pseudo.setAttribute('y2',this.y2);
+            }
+        }
+        return this;
+    };
 
     var Line = function(arg, parent) {
 
@@ -256,32 +300,6 @@ var akruti = new (function() {
         return this;
     };
 
-    var changeAttributes = function(arg) {
-        var initial = {};
-        var j;
-        var ele = (this.element)?this.element:document.getElementById(this.id);
-        for(j in arg) {
-            if (j in allAA[this.t]) {
-                initial[j] = this[j];
-                ele.setAttribute(allAA[this.t][j],arg[j]);
-                this[j] = arg[j];
-            }
-        }
-
-        if (this.pseudo) {
-            if (this.sw > 7) {
-                this.pseudo.remove();
-            }
-            else {
-                this.pseudo.setAttribute('x1',this.x1);
-                this.pseudo.setAttribute('y1',this.y1);
-                this.pseudo.setAttribute('x2',this.x2);
-                this.pseudo.setAttribute('y2',this.y2);
-            }
-        }
-        return this;
-    };
-
     Line.prototype.changeAttributes = changeAttributes;
     
     var getLinePivots = function(){
@@ -292,14 +310,73 @@ var akruti = new (function() {
             },{
                 x:this.x2,
                 y:this.y2
+            },{
+                x:this.x1,
+                y:this.y2
+            },{
+                x:this.x2,
+                y:this.y1
+            },{
+                x:(this.x1+this.x2)/2,
+                y:this.y1
+            },{
+                x:(this.x1+this.x2)/2,
+                y:this.y2
+            },{
+                x:this.x1,
+                y:(this.y1+this.y2)/2
+            },{
+                x:this.x2,
+                y:(this.y1+this.y2)/2
             },
         ];
     };
     
     Line.prototype.getPivots = getLinePivots;
-    
-    
 
+    var getRectanglePivots = function(){
+        return [
+            {
+                x:this.x,
+                y:this.y
+            },{
+                x:this.x+this.w,
+                y:this.y
+            },{
+                x:this.x,
+                y:this.y+this.h
+            },{
+                x:this.x+this.w,
+                y:this.y+this.h
+            },
+        ];
+    };
+    
+    var SelectRectangle = function(arg, mySvgObject){
+        
+        this.element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        this.g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        
+        this.pid = parent.id;
+        this.id = parent.id + 'sr' + (parent.myObject.childrenId++);
+        this.element.setAttribute('id', this.id);
+        this.g.setAttribute('id', this.id);
+        
+        this.g.appendChild(this.element);
+        this.g.appendChild(this.pseudo);
+        mySvgObject.g.appendChild(this.element);
+        
+        this.element.setAttribute('fill','none');
+        this.element.setAttribute('stroke','#03d0f0');
+        this.element.setAttribute('stroke-width','1');
+        this.pseudo.setAttribute('fill','none');
+        this.pseudo.setAttribute('stroke','none');
+        this.pseudo.setAttribute('stroke-width','7');
+        
+        
+    };
+    
     var activate = function() {
 
         this.deactivate();
@@ -314,11 +391,12 @@ var akruti = new (function() {
             ends[i].setAttribute('stroke','#fff');
             ends[i].setAttribute('cx', pivots[i].x);
             ends[i].setAttribute('cy', pivots[i].y);
+            ends[i].classList.add('test')
             g.appendChild(ends[i]);
         }
 
         g.setAttribute('id',this.id +'ga');
-        this.g.appendChild(g);
+        allSvg[this.pid].g.appendChild(g);
         this.active = g;
         return this;
     }
@@ -855,12 +933,12 @@ var akruti = new (function() {
 
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
-                    var x = e.clientX - offset.left;
-                    var y = e.clientY - offset.top;
-                    element.dx1 = element.x1 - x/mySvgObject.zoomFactor;
-                    element.dy1 = element.y1 - y/mySvgObject.zoomFactor;
-                    element.dx2 = element.x2 - x/mySvgObject.zoomFactor;
-                    element.dy2 = element.y2 - y/mySvgObject.zoomFactor;
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    element.dx1 = element.x1 - x;
+                    element.dy1 = element.y1 - y;
+                    element.dx2 = element.x2 - x;
+                    element.dy2 = element.y2 - y;
                 },
 
                 mousemove:function(e,element){
@@ -905,17 +983,4 @@ window.onload = function(){
     });
     window.onresize();
     module = akruti;
-}
-
-function log(arg) {
-    var string = '| ';
-    if (typeof(arg) == 'object') {
-        for (var i in arg) {
-            string += i+' -> '+arg[i]+' | '
-        }
-    }
-    else
-        string = arg;
-    //document.getElementById('statusbar').innerHTML=string;
-    return string;
 }
