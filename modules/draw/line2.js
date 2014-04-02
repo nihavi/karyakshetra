@@ -1103,7 +1103,7 @@ var akruti = new (function() {
             mouseup : function(e){
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
             },
-        }
+        };
 
         
         move = {
@@ -1142,11 +1142,10 @@ var akruti = new (function() {
                 },
 
             },
-        },
-        
+        }
+  
     })();
 })();
-
 
 window.onresize = function(){
     document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
