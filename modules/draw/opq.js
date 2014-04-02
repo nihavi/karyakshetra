@@ -1,4 +1,3 @@
-
 var exQueue = new Array();
 
 var newQueue = new Array();
@@ -6,9 +5,9 @@ var newQueue = new Array();
 var exPointer = 0;
 
 opQueue = {
-    
-    addOp: function(pastState, newState){
-    
+
+    addOp: function (pastState, newState) {
+
     /*
     
     * pastState - previous state to be restored on undo
@@ -20,19 +19,19 @@ opQueue = {
     * Will not return anything
     
     */
-    
-    exQueue[exPointer] = pastState;
-    
-    exPointer++;
-    
-    exQueue[exPointer] = null;
-    
-    newQueue.push(newState);
-    
+
+        exQueue[exPointer] = pastState;
+
+        exPointer++;
+
+        exQueue[exPointer] = null;
+
+        newQueue.push(newState);
+
     },
-    
-    undo: function(){
-    
+
+    undo: function () {
+
     /*
     
     * if undo is possible,
@@ -43,7 +42,7 @@ opQueue = {
     
     *
     
-    * module.performOp should return currState and newState in a object
+    * module.performOp should return currState and newState in an object
     
     * with properties of same names
     
@@ -52,30 +51,30 @@ opQueue = {
     * Will not return anything
     
     */
-    
-    if(exPointer > 0){
-    
-    var op = module.performOp(exQueue[exPointer-1]);
-    
-    if(exQueue.length == exPointer+1)
-    
-    exQueue[exPointer+1] = null;
-    
-    exQueue[exPointer] = op.currState;
-    
-    exPointer--;
-    
-    exQueue[exPointer] = null;
-    
-    newQueue.push(op.newState);
-    
-    }
-    
+
+        if (exPointer > 0) {
+
+            var op = module.performOp(exQueue[exPointer - 1]);
+
+            if (exQueue.length == exPointer + 1)
+
+                exQueue[exPointer + 1] = null;
+
+            exQueue[exPointer] = op.currState;
+
+            exPointer--;
+
+            exQueue[exPointer] = null;
+
+            newQueue.push(op.newState);
+
+        }
+
     },
-    
-    redo: function(){
-    
-    /*
+
+    redo: function () {
+
+        /*
     
     * if redo is possible,
     
@@ -94,22 +93,21 @@ opQueue = {
     * Will not return anything
     
     */
-    
-    if(exQueue[exPointer+1] != null){
-    
-    var op = module.performOp(exQueue[exPointer+1]);
-    
-    exQueue[exPointer] = op.currState;
-    
-    exPointer++;
-    
-    exQueue[exPointer] = null;
-    
-    newQueue.push(op.newState);
-    
-    }
-    
+
+        if (exQueue[exPointer + 1] != null) {
+
+            var op = module.performOp(exQueue[exPointer + 1]);
+
+            exQueue[exPointer] = op.currState;
+
+            exPointer++;
+
+            exQueue[exPointer] = null;
+
+            newQueue.push(op.newState);
+
+        }
+
     }
 
 }
-

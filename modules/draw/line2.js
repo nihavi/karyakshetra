@@ -366,14 +366,14 @@ var akruti = new (function() {
 
 
     this.performOp = function(data) {
-        var ret;
+        var returnValue;
         switch (data.ex) {
 
             case 'cr':
                 switch (data.t) {
                     case 'l':
                         var myObject = new Line(data);
-                        //$(myObject.g).on('mousedown', editor.lineOn.mousedown);
+                        //$(myObject.g).on('mousedown', editor.elementOn.mousedown);
                         allSvg[myObject.pid].children.push(myObject);
                 }
                 var forEx = {
@@ -382,7 +382,7 @@ var akruti = new (function() {
                     'id':myObject.id,
                     'pid':myObject.pid,
                 };
-                ret = forEx;
+                returnValue = {currState:forEx, newState:data};
                 break;
 
             case 'd':
@@ -399,15 +399,15 @@ var akruti = new (function() {
                     }
                 };
                 myObject.delete();
-                ret = forEx;
+                returnValue = {currState:forEx, newState:data};
                 break;
 
             case 'ch':
                 var myObject = $('#'+data.id).data('myObject');
-                ret = myObject.changeAttributes(data);
+                returnValue = myObject.changeAttributes(data);
                 break;
         }
-        return ret;
+        return returnValue;
     };
 
     var editor = new (function() {
@@ -487,9 +487,9 @@ var akruti = new (function() {
             }
             this.activate();
         };
-
+        
         Line.prototype.move = lineMove;
-
+        
         var svgOnMouseDown = function(e) {
 
             if (e.which == 1) {
@@ -694,16 +694,17 @@ var akruti = new (function() {
                     var mySvgObject = e.data;
 
                     var offset = mySvgObject.page.getBoundingClientRect();
-                    var x = e.clientX - offset.left;
-                    var y = e.clientY - offset.top;
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     var attributes = {
-                        'x1':x/mySvgObject.zoomFactor,
-                        'y1':y/mySvgObject.zoomFactor,
-                        'x2':x/mySvgObject.zoomFactor,
-                        'y2':y/mySvgObject.zoomFactor,
+                        'x1':x,
+                        'y1':y,
+                        'x2':x,
+                        'y2':y,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
                     };
+                    
                     var element = new Line(attributes,mySvgObject);
                     return element;
                 },
@@ -714,21 +715,22 @@ var akruti = new (function() {
                     var mySvgObject = allSvg[element.pid];
 
                     var offset = mySvgObject.page.getBoundingClientRect();
-                    var x = e.clientX - offset.left;
-                    var y = e.clientY - offset.top;
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     
                     if (e.shiftKey) {
                         var changes = svgOn.createLineMode.snap(element.x1,element.y1,x,y);
                         element.changeAttributes({
-                            'x2':changes.x2/mySvgObject.zoomFactor,
-                            'y2':changes.y2/mySvgObject.zoomFactor
+                            'x2':changes.x2,
+                            'y2':changes.y2
                             });
                     }
                     else
                     {
                         element.changeAttributes({
-                            'x2':x/mySvgObject.zoomFactor,
-                            'y2':y/mySvgObject.zoomFactor});
+                            'x2':x,
+                            'y2':y
+                            });
                     }
                 },
 
@@ -738,26 +740,25 @@ var akruti = new (function() {
                     var mySvgObject = allSvg[element.pid];
 
                     var offset = mySvgObject.page.getBoundingClientRect();
-                    var x = e.clientX - offset.left;
-                    var y = e.clientY - offset.top;
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
 
                     if (e.shiftKey) {
 
                         var changes = svgOn.createLineMode.snap(element.x1,element.y1,x,y);
                         element.changeAttributes({
-                            'x2':changes.x2/mySvgObject.zoomFactor,
-                            'y2':changes.y2/mySvgObject.zoomFactor
+                            'x2':changes.x2,
+                            'y2':changes.y2
                             });
                     }
-                    else
-                    {
+                    else {
                         element.changeAttributes({
-                            'x2':x/mySvgObject.zoomFactor,
-                            'y2':y/mySvgObject.zoomFactor
+                            'x2':x,
+                            'y2':y
                             });
                     }
                     
-                    $(element.g).on('mousedown', lineOn.mousedown);
+                    $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     opQueue.addOp({
                         'op':'d',           //op = [d]elete; when this objects come, delete the Object
@@ -811,7 +812,7 @@ var akruti = new (function() {
             },
         };
 
-        lineOn = {
+        var elementOn = {
 
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
@@ -831,7 +832,7 @@ var akruti = new (function() {
                     for(var i=0;i<actives.length;i++) {
                         move[actives[i].t].mousedown(e,actives[i]);
                     }
-                    $(superParent).on('mousemove',lineOn.mousemove).on('mouseup',lineOn.mouseup);
+                    $(superParent).on('mousemove',elementOn.mousemove).on('mouseup',elementOn.mouseup);
                 }
             },
             mousemove : function(e){
@@ -841,30 +842,33 @@ var akruti = new (function() {
                 }
             },
             mouseup : function(e){
-                $(superParent).off('mousemove',lineOn.mousemove).off('mouseup',lineOn.mouseup);
+                $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
             },
         }
 
-
+        
         move = {
 
             l : {
 
                 mousedown: function(e,element) {
 
-                    var offset = allSvg[element.pid].page.getBoundingClientRect();
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
                     var x = e.clientX - offset.left;
                     var y = e.clientY - offset.top;
-                    element.dx1 = element.x1 - x;
-                    element.dy1 = element.y1 - y;
-                    element.dx2 = element.x2 - x;
-                    element.dy2 = element.y2 - y;
+                    element.dx1 = element.x1 - x/mySvgObject.zoomFactor;
+                    element.dy1 = element.y1 - y/mySvgObject.zoomFactor;
+                    element.dx2 = element.x2 - x/mySvgObject.zoomFactor;
+                    element.dy2 = element.y2 - y/mySvgObject.zoomFactor;
                 },
 
                 mousemove:function(e,element){
-                    var offset = allSvg[element.pid].page.getBoundingClientRect();
-                    var x = e.clientX - offset.left;
-                    var y = e.clientY - offset.top;
+                    
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     var changes = {
                         'x1':element.dx1+x,
                         'y1':element.dy1+y,
@@ -872,7 +876,6 @@ var akruti = new (function() {
                         'y2':element.dy2+y,
                     }
                     element.changeAttributes(changes);
-                    element.pivots = [ [changes.x1, changes.y1], [changes.x2, changes.y2]];
 
                 },
 
