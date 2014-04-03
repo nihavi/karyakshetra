@@ -41,6 +41,7 @@ var akruti = new (function() {
         this.element = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg');
 
         /* Setting ID */
+        this.pid = parent.id;
         this.id = 's'+svgId++;
         this.element.setAttribute( 'id', this.id );
 
@@ -164,7 +165,7 @@ var akruti = new (function() {
         return this;
     };
 
-    var _resize = function(zoom){
+    var svgResize = function(zoom){
         var parentDimension = this.element.parentNode.getBoundingClientRect();
         var h = parentDimension.height;
         var w = parentDimension.width;
@@ -181,7 +182,7 @@ var akruti = new (function() {
         this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
     };
 
-    Svg.prototype.resize = _resize;
+    Svg.prototype.resize = svgResize;
 
     this.resize = function () {
         var i;
@@ -200,7 +201,7 @@ var akruti = new (function() {
         }
     };
 
-    var _zoom = function(ratio) {
+    var svgZoom = function(ratio) {
         var parentDimension = this.element.parentNode.getBoundingClientRect();
         var h = parentDimension.height;
         var w = parentDimension.width;
@@ -220,7 +221,7 @@ var akruti = new (function() {
         this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
     }
 
-    Svg.prototype.zoom = _zoom;
+    Svg.prototype.zoom = svgZoom;
 
     this.zoom = function(value) {
         if (value == 'fit') {
@@ -582,7 +583,7 @@ var akruti = new (function() {
 
         this.currentMode = 'createLineMode';
 
-        var actives = new Object();
+        actives = new Object();
         actives.list = new Array();
 
         var getStrokeWidth = function(){
@@ -1152,6 +1153,7 @@ var akruti = new (function() {
 
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
+                    
                     e.stopImmediatePropagation();
                     var myObject = $(this).data('myObject');
                     
@@ -1171,21 +1173,26 @@ var akruti = new (function() {
                     }
                     
                     for(var i=0;i<actives.list.length;i++) {
-                        elementMove[actives.list[i].t].mousedown(e,actives.list[i]);
+                        e.data = actives.list[i];
+                        elementMove[actives.list[i].t].mousedown(e);
+                        
                     }
                     $(superParent).on('mousemove',elementOn.mousemove).on('mouseup',elementOn.mouseup);
                 }
             },
+            
             mousemove : function(e){
                 for(var i=0;i<actives.list.length;i++) {
-                    elementMove[actives.list[i].t].mousemove(e,actives.list[i]);
-                    
+                    e.data = actives.list[i];
+                    elementMove[actives.list[i].t].mousemove(e);
                 }
                 if (actives.list[0]) select(actives.list[0]);
             },
+            
             mouseup : function(e){
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
             },
+            
         };
 
         
@@ -1193,8 +1200,9 @@ var akruti = new (function() {
 
             l : {
 
-                mousedown: function(e,element) {
-
+                mousedown: function(e) {
+                    
+                    var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
@@ -1205,8 +1213,9 @@ var akruti = new (function() {
                     element.dy2 = element.y2 - y;
                 },
 
-                mousemove:function(e,element){
+                mousemove:function(e){
                     
+                    var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
@@ -1225,6 +1234,35 @@ var akruti = new (function() {
                 },
 
             },
+            
+            e:{
+                mousedown:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    element.diff = {};
+                    element.diff.cx = element.cx - x;
+                    element.diff.cy = element.cy - y;
+                },
+                
+                mousemove:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var changes = {
+                        'cx':element.diff.cx+x,
+                        'cy':element.diff.cy+y,
+                    }
+                    element.changeAttributes(changes);
+                },
+                mouseup:function(e){
+                    
+                }
+            }
         }
   
         var resizeElement = function(e){
