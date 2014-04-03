@@ -16,6 +16,7 @@ var akruti = new (function() {
             'y2':'y2',
             'sc':'stroke',
             'sw':'stroke-width',
+            'so':'stroke-opacity',
         },
         sA:{
             'x':'x',
@@ -30,8 +31,24 @@ var akruti = new (function() {
             'ry':'ry',
             'sc':'stroke',
             'sw':'stroke-width',
-            'f':'fill',
-            //'sd' : 'stroke-dasharray',
+            'f' :'fill',
+            'sd': 'stroke-dasharray',
+            'so':'stroke-opacity',
+            'fo':'fill-opacity',
+        },
+        r:{
+            'x': 'x',
+            'y': 'y',
+            'rx': 'rx',
+            'ry': 'ry',
+            'h': 'height',
+            'w': 'width',
+            'f': 'fill',
+            'sc': 'stroke',
+            'sw': 'stroke-width',
+            'sd' : 'stroke-dasharray',
+            'so':'stroke-opacity',
+            'fo':'fill-opacity',
         }
     };
 
@@ -260,6 +277,60 @@ var akruti = new (function() {
                         this.pseudo.setAttribute('y1',this.y1);
                         this.pseudo.setAttribute('x2',this.x2);
                         this.pseudo.setAttribute('y2',this.y2);
+                        break;
+                    case 'e':
+                        this.pseudo.setAttribute('cx',this.cx);
+                        this.pseudo.setAttribute('cy',this.cy);
+                        this.pseudo.setAttribute('rx',this.rx);
+                        this.pseudo.setAttribute('ry',this.ry);
+                        break;
+                    case 'r':
+                        this.pseudo.setAttribute('x',this.x-3);
+                        this.pseudo.setAttribute('y',this.y-3);
+                        this.pseudo.setAttribute('h',this.h);
+                        this.pseudo.setAttribute('w',this.w);
+                        break;
+                }
+            }
+        }
+        else {
+            if (this.sw < 7) {
+                switch (this.t) {
+                    case 'l':
+                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
+                        this.pseudo.setAttribute('stroke','transparent');
+                        this.pseudo.setAttribute('stroke-width',7);
+                        this.pseudo.setAttribute('class','l');
+                        this.pseudo.setAttribute('x1',this.x1);
+                        this.pseudo.setAttribute('y1',this.y1);
+                        this.pseudo.setAttribute('x2',this.x2);
+                        this.pseudo.setAttribute('y2',this.y2);
+                        this.g.appendChild(this.pseudo);
+                        break;
+                    case 'e':
+                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+                        this.pseudo.setAttribute('stroke','transparent');
+                        this.pseudo.setAttribute('fill','none');
+                        this.pseudo.setAttribute('stroke-width',7);
+                        this.pseudo.setAttribute('class','e');
+                        this.pseudo.setAttribute('cx',this.cx);
+                        this.pseudo.setAttribute('cy',this.cy);
+                        this.pseudo.setAttribute('rx',this.rx);
+                        this.pseudo.setAttribute('ry',this.ry);
+                        this.g.appendChild(this.pseudo);
+                        break;
+                    case 'r':
+                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
+                        this.pseudo.setAttribute('stroke','transparent');
+                        this.pseudo.setAttribute('fill','none');
+                        this.pseudo.setAttribute('stroke-width',7);
+                        this.pseudo.setAttribute('class','r');
+                        this.pseudo.setAttribute('x',this.x-3);
+                        this.pseudo.setAttribute('y',this.y-3);
+                        this.pseudo.setAttribute('h',this.h);
+                        this.pseudo.setAttribute('w',this.w);
+                        this.g.appendChild(this.pseudo);
+                        break;
                 }
             }
         }
@@ -302,6 +373,7 @@ var akruti = new (function() {
         if ( this.sw < 7 ) {
             this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
             this.pseudo.setAttribute('stroke','transparent');
+            this.pseudo.setAttribute('fill','none');
             this.pseudo.setAttribute('stroke-width',7);
             this.pseudo.setAttribute('class','e');
             this.pseudo.setAttribute('cx',this.cx);
@@ -337,7 +409,6 @@ var akruti = new (function() {
         /* Setting Id */
         this.pid = parent.id;
         this.id = this.pid+this.t+ parent.childrenId++;
-
         this.element.setAttribute( 'id', this.id);
         this.g.setAttribute( 'id', this.id + 'g');
 
@@ -368,16 +439,70 @@ var akruti = new (function() {
         /* Adding Elements to DOM */
         this.g.appendChild(this.element);
         parent.g.appendChild(this.g);
-
+        
         $(this.g).data('myObject',this);
-
+        
         return this;
     };
 
-    
+    var Rectangle = function (arg, parent) {
+        
+        if (!parent) {
+            parent = allSvg[arg.pid];
+        }
+
+        /* Creating DOM Element */
+        this.g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        this.element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        
+        /* Setting Class and type */
+        this.g.setAttribute( 'class', 'r');
+        this.t = 'r';
+
+        /* Setting Id */
+        this.pid = parent.id;
+        this.id = parent.id + 'r' + (parent.childrenId++);
+        this.element.setAttribute('id', this.id);
+        this.g.setAttribute( 'id', this.id + 'g');
+        
+        /* Default Attributes */
+        this.element.setAttribute('rx', 0);
+        this.element.setAttribute('ry', 0);
+
+        /* Provided Attributes */
+        var j;
+        for (j in allAA['r']) {
+            if (j in arg) {
+                this.element.setAttribute(allAA['r'][j],arg[j]);
+                this[j] = arg[j];
+            }
+        }
+        
+        if ( this.sw < 7 ) {
+            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
+            this.pseudo.setAttribute('stroke','transparent');
+            this.pseudo.setAttribute('fill','none');
+            this.pseudo.setAttribute('stroke-width',7);
+            this.pseudo.setAttribute('class','r');
+            this.pseudo.setAttribute('x',this.x-3);
+            this.pseudo.setAttribute('y',this.y-3);
+            this.pseudo.setAttribute('h',this.h);
+            this.pseudo.setAttribute('w',this.w);
+            this.g.appendChild(this.pseudo);
+        }
+
+        /* Adding Elements to DOM */
+        this.g.appendChild(this.element);
+        parent.g.appendChild(this.g);
+        
+        $(this.g).data('myObject',this);
+        
+        return this;
+    }
 
     Line.prototype.changeAttributes = changeAttributes;
     Ellipse.prototype.changeAttributes = changeAttributes;
+    Rectangle.prototype.changeAttributes = changeAttributes;
     
     var getLinePivots = function(){
         return {
@@ -397,12 +522,14 @@ var akruti = new (function() {
     
     Ellipse.prototype.getPivots = getEllipsePivots;
     
-    var getRectanglePivots = function(){
+    var getRectanglePivots = function() {
         return {
-            x:[this.x,  this.x+this.w,  this.x,         this.x+this.w],
-            y:[this.y,  this.y,         this.y+this.h,  this.y+this.h]
+            x:[this.x, this.x+this.w,   this.x,         this.x+this.w],
+            y:[this.y, this.y,          this.y+this.h,  this.y+this.h]
         }
     };
+    
+    Rectangle.prototype.getPivots = getRectanglePivots;
     
     var SelectRef =  ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight', 'rotate']
     var resizeCursorRef = ['nw-resize', 'n-resize' , 'ne-resize', 'w-resize',
@@ -620,7 +747,7 @@ var akruti = new (function() {
             actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[obj.pid]);
             var pivots = actives.select.p;
             for (var i=0;i<pivots.length;i++) {
-                $(pivots[i]).on('click',resizeElement).css('cursor',resizeCursorRef[i]);
+                $(pivots[i]).on('mousedown',resizeElement).css('cursor',resizeCursorRef[i]);
             }
             
         };
@@ -894,7 +1021,7 @@ var akruti = new (function() {
                         'ry':0,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
-                        'f':getFillColor(),
+                        'f' :getFillColor(),
                     };
                     var element = new Ellipse(attributes,mySvgObject);
                     element.shiftX = x;
@@ -977,6 +1104,7 @@ var akruti = new (function() {
                         'pid':element.pid
                     });
                 },
+                
                 snap: function(sx,sy,x,y) {
                     var radius = Math.max((Math.abs(x - sx)) / 2, (Math.abs(y - sy)) / 2);
                     var cx = (x > sx) ?
@@ -994,7 +1122,6 @@ var akruti = new (function() {
                 mousedown: function(e) {
 
                     var mySvgObject = e.data;
-
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
@@ -1105,6 +1232,122 @@ var akruti = new (function() {
                     return {'x2':x2, 'y2':y2}
                 },
             },
+            
+            createRectangleMode:{
+                mousedown:function(e){
+                    var mySvgObject = e.data;
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var attributes = {
+                        'x' :x,
+                        'y' :y,
+                        'h' :0,
+                        'w' :0,
+                        'sc': getStrokeColor(),
+                        'sw': getStrokeWidth(),
+                        'f' : getFillColor()
+                    };
+                    
+                    var element = new Rectangle(attributes,mySvgObject);
+                    element.shiftX = x;
+                    element.shiftY = y;
+                    return element;
+                
+                },
+                
+                mousemove:function(e){
+                    
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
+                    if (e.shiftKey) {
+                        var changes = svgOn.createRectangleMode.snap(element.shiftX,element.shiftY,x,y);
+                        element.changeAttributes({
+                            'x': changes.x,
+                            'y': changes.y,
+                            'h': changes.sideLength,
+                            'w': changes.sideLength,
+                            });
+                    }
+                    else
+                    {
+                        element.changeAttributes({
+                            'h': Math.abs(element.shiftY - y),
+                            'w': Math.abs(element.shiftX - x),
+                            'x': Math.min(element.shiftX, x),
+                            'y': Math.min(element.shiftY, y),
+                        });
+                    }
+                },
+                
+                mouseup:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
+                    if (e.shiftKey) {
+                        var changes = svgOn.createRectangleMode.snap(element.shiftX,element.shiftY,x,y);
+                        element.changeAttributes({
+                            'x': changes.x,
+                            'y': changes.y,
+                            'h': changes.sideLength,
+                            'w': changes.sideLength,
+                            });
+                    }
+                    else
+                    {
+                        element.changeAttributes({
+                            'h': Math.abs(element.shiftY - y),
+                            'w': Math.abs(element.shiftX - x),
+                            'x': Math.min(element.shiftX, x),
+                            'y': Math.min(element.shiftY, y),
+                        });
+                    }
+                    
+                    $(element.g).on('mousedown', elementOn.mousedown);
+                    mySvgObject.children.push(element);
+                    opQueue.addOp({
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                        'id':element.id,
+                        'pid':element.pid,
+                        },{
+                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                        'x':element.x,
+                        'y':element.y,
+                        'h':element.h,
+                        'w':element.w,
+                        'sc':element.sc,
+                        'sw':element.sw,
+                        'f' :element.f,
+                        'pid':element.pid
+                    });
+                    
+                },
+                
+                snap:function(sx, sy, x, y){
+                    var sideLength = Math.max(
+                            Math.abs(sy - y),
+                            Math.abs(sx - x)
+                        );
+                        return {
+
+                            'x': (x > sx) ?
+                                sx : sx - sideLength,
+
+                            'y': (y > sy) ?
+                                sy : sy - sideLength,
+
+                            'sideLength': sideLength,
+                        };
+                },
+                
+            },
         
             selectMode: {
                 mousedown:function(e){
@@ -1195,7 +1438,6 @@ var akruti = new (function() {
             
         };
 
-        
         var elementMove = {
 
             l : {
@@ -1262,12 +1504,35 @@ var akruti = new (function() {
                 mouseup:function(e){
                     
                 }
+            },
+            
+            r:{
+                mousedown:function(e){
+                    
+                },
+                mousemove:function(e){
+                    
+                },
+                mouseup:function(e){
+                    
+                },
             }
         }
   
         var resizeElement = function(e){
-            alert("please Implement")
+            console.log("please Implement");
+            e.stopPropagation();
         };
+        
+        var elementResize = {
+            e:{
+                left:{
+                    mousedown:function(rect){
+                        
+                    }
+                }
+            }
+        }
   
   
     })();
