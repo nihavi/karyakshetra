@@ -3,7 +3,7 @@
     cursor:move;
 }
 
-ellipse
+ellipse, rect
 {
     pointer-events:visibleFill;
 }
