@@ -18,6 +18,7 @@
     title: String, //Name of button
     icon: String, //Font awesome icon name
     onoff: Boolean,  //Is a on/off button
+    currState: Boolean,   //Is on or off, Only if onoff is true
     callback: Function(String id),  //If onoff is false
     callback: Function(String id, Boolean state)    //If onoff is true, state will represent if it turned on or off
 },
@@ -26,7 +27,8 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: String, //Default color 
+    default: String, //Default color
+    text: String, //Text to show, aside
     callback: Function(String id, String color) //Callback on change
 },
 {
@@ -53,12 +55,90 @@
     title: String, //Name of button
     icon: String, //Font awesome icon name
     default: String, //Default size
-    list = Object, //An associative array with key = Id and value = Text
+    list = Array, //Array of Objects. Object is defined as {id: String, value: String}
     callback: Function(String id, Number selectedItemId)    //Callback on change
 }
 */
 
 Base = new (function(){
+    var defaultPalette = [
+        'e6b9b1',
+        'f2cbcb',
+        'fae3cd',
+        'fff1cc',
+        'd9e8d3',
+        'd1e0e3',
+        'cbdbf7',
+        'd0e2f2',
+        'd9d3e8',
+        'e8d1db',
+        'db7e6b',
+        'e89999',
+        'f7ca9c',
+        'ffe499',
+        'b7d6a9',
+        'a1c2c7',
+        'a5c2f2',
+        '9ec4e6',
+        'b3a7d4',
+        'd4a5bc',
+        'cc4227',
+        'de6666',
+        'f5b06c',
+        'ffd966',
+        '92c27c',
+        '76a4ad',
+        '6ea0eb',
+        '70a9db',
+        '8d7cc2',
+        'c27ca0',
+        'a61c00',
+        'cc0000',
+        'e68f39',
+        'f0c032',
+        '6ba650',
+        '45808c',
+        '3c7ad6',
+        '3c7ad6',
+        '654ea6',
+        'a64e78',
+        '851f0d',
+        '990000',
+        'b35d07',
+        'bd8e00',
+        '39751d',
+        '13505c',
+        '1256cc',
+        '0c5494',
+        '331c73',
+        '731c46',
+        '590d00',
+        '660000',
+        '783e05',
+        '7d5e00',
+        '274d13',
+        '0c323b',
+        '1c4485',
+        '083761',
+        '20124d',
+        '4a112e',
+        'GGGGGGG',
+        '-123'
+    ];
+
+    var palette;
+
+    this.setPalette = function(newPalette) {
+        palette = new Array();
+        for (var i = 0; i < newPalette.length; ++i) {
+            var val = parseInt('0x' + newPalette[i]);
+            if (!isNaN(val) && val >= 0 && val <= 0xFFFFFF)
+                palette.push(newPalette[i]);
+        }
+        if (palette.length == 0)
+            palette = defaultPalette;
+    }
+    
     var log = function(id,t){
         console.log(id,t);
     }
@@ -107,6 +187,24 @@ Base = new (function(){
                             icon: 'fa-pencil',
                             onoff: true,
                             callback: log
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'g3',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-picture-o',
+                            callback: log
+                        },
+                        {
+                            type: 'color',
+                            icon: 'fa-circle',
+                            default: '#000',
+                            callback: log,
+                            text: 'F'
                         }
                     ]
                 }
@@ -195,6 +293,9 @@ Base = new (function(){
          * init function for Base
          * To be called when all js and css are loaded for the first time
          */
+
+        //Set default palette
+        this.setPalette(defaultPalette);
         
         //Append interface div that contains everything inside body
         $('<div class="interface" id="interface"></div>').appendTo('body');
@@ -214,7 +315,7 @@ Base = new (function(){
         this.updateMenu(module.getMenu());
         
         activateMenu.bind($('#menuHead0'))();
-        
+
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
         this.setEditable();
@@ -222,6 +323,38 @@ Base = new (function(){
         //Call module's init
         module.init(edit.get(0));
     }
+
+    function createColorPicker() {
+
+        var domElement = $('<div class="randombox clearfloat"></div>');
+
+        for (var i=0;i<palette.length;++i) {
+            domElement.append('<div class="color" style="background-color: #' + palette[i] + '"></div>');
+        }
+
+        //domElement.append('<div><label for="colorcode"><span style="width: 30%;">Hex #</span><input type="text" style="font-family:monospace;width:70%;text-align:center;padding: 0.2em; line-height: 1.2em;"></label></div>');
+
+        domElement.css({
+            'position'  :  'absolute',
+            'z-index'   :  '20'
+        });
+
+        domElement.hide();
+        $('.toolbars').append(domElement);
+
+        var onColorClick = function(e) {
+            $('.randombox .color.active').removeClass('active');
+            $(this).addClass('active');
+            var selectedColor = $(this).css('background-color');
+            $('#' + $('.randombox').data('caller')).find('i').css('color', selectedColor);
+            //TODO callback
+            var item = submenu[$('.randombox').data('caller')];
+            item.callback(item.id, selectedColor);
+        }
+
+        $('.randombox .color').bind('click', onColorClick);
+        
+    };
     
     this.updateMenu = function(menuObject){
         //Will be called by module with menuObject
@@ -231,9 +364,9 @@ Base = new (function(){
             menu = menu.concat(menuObject);
         }
         createMenu(menu);
-    }
+    };
     
-    createMenu = function(menuObject){
+    var createMenu = function(menuObject){
         var item, i, menuItem;
         var id;
         var mainMenu = $('#mainMenu');
@@ -267,9 +400,10 @@ Base = new (function(){
                 //Error: invalid menu item, ignored
             }
         }
+        createColorPicker();
     }
     
-    activateMenu = function(ev){
+    var activateMenu = function(ev){
         //Onclick event handler on main menu items
         var id = $(this).attr('id');
         var menu = menus[id];
@@ -306,9 +440,20 @@ Base = new (function(){
                         id = 'menuItem'+subMenuId;
                         if( ('type' in item) && ('icon' in item) && ('callback' in item) ){
                             //Append menu item to DOM
-                            var menuItem = $('<div class="btn btn-icon" id="'+id+'"></div>').appendTo(subMenu);
+                            var menuItem = $('<div class="btn" id="'+id+'"></div>').appendTo(subMenu);
                             $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
+                            if (item.icon) {
+                                menuItem.addClass('btn-icon');
+                            }
                             if( item.type == 'color' ){
+                                menuItem.find('i').css('font-size', '0.5em');
+                                if (item.default) {
+                                    menuItem.find('i').css('color', item.default);    
+                                }
+                                if (item.text) {
+                                    $('<span class="btn-intext">' + item.text + '</span>').prependTo(menuItem);
+                                    menuItem.addClass('btn-text');
+                                }
                             }
                             else if( item.type == 'font' ){
                             }
@@ -334,7 +479,7 @@ Base = new (function(){
                         }
                     }
                     //If group is not last, append separator
-                    if( j == menu.groups.length-2 ){
+                    if( j <= menu.groups.length-2 ){
                         $('<div class="sep">|</div>').appendTo(subMenu);
                     }
                 }
@@ -342,6 +487,7 @@ Base = new (function(){
                     //Error: empty/invalid group, ignored
                 }
             }            
+            
         }
         else {
             //Error: empty menu item, ignored
@@ -353,8 +499,40 @@ Base = new (function(){
         var itemId = $(this).attr('id');
         var item = submenu[itemId];
         
+        
         if( item.type == 'color' ){
+                    
+            var hideColorPicker = function(e) {
+                if (!$(e.target).hasClass('randombox')
+                    && ($(e.target).parents('.randombox').length == 0)
+                    && ($(e.target).parents('#' + itemId).length == 0)
+                    && ($(e.target).attr('id') !== itemId)) {
+
+                    $(window).unbind('click', hideColorPicker);
+                    $('.randombox').hide();
+                }
+            }
+
+            if ($('.randombox').css('display') == 'none') {
+                    
+                var x = elem.offset().left;
+                var y = $('.toolbars').height() + 1;
+                
+                $('.randombox').css({
+                    'top': y,
+                    'left': x
+                });
+
+                $('.randombox').show().data('caller', itemId);
+                $(window).bind('click', hideColorPicker);
+            }
+            
+            else {
+                $('.randombox').hide().data('caller', '');
+                $(window).unbind('click', hideColorPicker);
+            }
         }
+        
         else if( item.type == 'font' ){
         }
         else if( item.type == 'size' ){
