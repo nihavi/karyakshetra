@@ -136,7 +136,7 @@ var akruti = new (function() {
             this.page.setAttribute('y', 0);
             this.page.setAttribute('stroke', '#aaa');
             this.page.setAttribute('stroke-width', '1');
-            this.page.setAttribute('fill', 'url(#alpha)');
+            this.page.setAttribute('fill', 'white');
             this.g.appendChild(this.page);
         }
 
@@ -546,6 +546,7 @@ var akruti = new (function() {
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
         this.rect.setAttribute('stroke-width',2/mySvgObject.zoomFactor);
+        this.rect.setAttribute('pointer-events','none');
         //this.rect.setAttribute('stroke-dasharray','6 2');
         
         this.rect.setAttribute('x', x);
@@ -767,6 +768,8 @@ var akruti = new (function() {
         };
         
         var deactivateAll = function(e){
+            console.log(e);
+            x=e;
             if (actives.select)
             {
                 actives.select.g.remove();
@@ -1399,7 +1402,7 @@ var akruti = new (function() {
                     
                     e.stopImmediatePropagation();
                     var myObject = $(this).data('myObject');
-                    
+                    console.log('down', actives.list.indexOf(myObject), e.ctrlKey)
                     if (actives.list.indexOf(myObject) == -1) {
                         if (e.ctrlKey) {
                             activateElement.apply(myObject);
