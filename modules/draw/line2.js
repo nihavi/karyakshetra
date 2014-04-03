@@ -546,7 +546,7 @@ var akruti = new (function() {
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
         this.rect.setAttribute('stroke-width',2/mySvgObject.zoomFactor);
-        this.rect.setAttribute('pointer-events','none');
+        this.rect.style.pointerEvents = 'none';
         //this.rect.setAttribute('stroke-dasharray','6 2');
         
         this.rect.setAttribute('x', x);
