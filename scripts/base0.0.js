@@ -145,6 +145,25 @@ Base = new (function(){
     var defaultMenus = [
         {
             type: 'main',
+            id: 'file',
+            title: 'File', //Name of menu
+            icon: 'fa-file', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'g1',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-save',
+                            callback: log
+                        }
+                    ]
+                }
+            ]
+        }
+        /*{
+            type: 'main',
             id: 'edit',
             title: 'Edit', //Name of menu
             icon: 'fa-plus', //Font awesome icon name
@@ -279,13 +298,13 @@ Base = new (function(){
                     ] //Items inside this menu
                 }
             ]
-        }
+        }*/
     ]
     
-    var menus;//Kepps track and information of the menus
-    var menuMeta;//Maping of modules id and DOM id
+    var menus;//Keeps track and information of the menus
+    var menuMeta;//Mapping of modules id and DOM id
     var groupMeta;//Keeps information about groups in current submenu
-    var submenu;//Kepps track and information of the current submenu
+    var submenu;//Keeps track and information of the current submenu
     var menuId;
     
     this.init = function(){
