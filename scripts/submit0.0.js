@@ -2,13 +2,14 @@ Submit = new(function(){
     /*
      * JSON
      */
-    var form = new (function(){
+    
+    var Form = function(){
 
-        var page = function(){
+    };
+    
+    var Page = function(){
 
-        }
-
-    })();
+    };
 
 
     /*
@@ -16,12 +17,18 @@ Submit = new(function(){
      */
 
     this.init = function(){
-    }
+    
+    };
+
     this.getMenu = function(){
+    
         return {}
-    }
+    };
+    
     this.resize = function(){
-    }
+    
+    };
+
 })();
 
 module = Submit;
