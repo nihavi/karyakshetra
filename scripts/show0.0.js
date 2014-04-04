@@ -40,7 +40,6 @@ Show = new (function(){
                 style: {textAlign: 'center'}
             });
         newSlide.renderSlide();
-        this.slides = allSlides;
         
         //Event handlers on slides to manage activeElement
         $('#slides').bind('mousedown',function(ev){
@@ -51,6 +50,8 @@ Show = new (function(){
                 }
             }
         });
+        
+        Sidebar.init();
     }
     
     this.getMenu = function(){
@@ -96,6 +97,8 @@ Show = new (function(){
         
         if(activeSlide)
             activeSlide.renderSlide();
+        
+        Sidebar.init();
     }
     
     /*
@@ -122,24 +125,34 @@ Show = new (function(){
     */
     
     var Sidebar = {
-        render: function(){
+        /*
+         * Sidebar object
+         * 
+         * FIXME: Different sizes with and without scrollbar
+         */
+        init: function(){
             var slide;
             var sidebar = $('#sidebar');
             sidebar.empty();
             for (var i = 0; i<allSlides.length; i++){
-                sidebar.append('<div class="side-no">'+(i+1)+'.</div>');
-                slide = $('<div class="side-slide" id="side'+allSlides[i].id+'"></div>').appendTo(sidebar);
-                slide.data('slideId',i);
-                slide.data('slide', allSlides[i]);
-                slide.css({
-                    height: slide.width()/allSlides[i].ratio,
-                    backgroundColor: allSlides[i].bgColor
-                });
-                slide.click(function(){
-                    allSlides[$(this).data('slideId')].renderSlide();
-                });
-                allSlides[i].renderSlideSide();
+                this.addSlide(allSlides[i]);
             }
+        },
+        addSlide: function(slide){
+            var sidebar = $('#sidebar');
+            var sNo = slide.slideId+1;
+            
+            sidebar.append('<div class="side-no">'+sNo+'.</div>');
+            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(sidebar);
+            slideDOM.data('slide', slide);
+            slideDOM.css({
+                height: slideDOM.width()/slide.ratio,
+                backgroundColor: slide.bgColor
+            });
+            slideDOM.click(function(){
+                $(this).data('slide').renderSlide();
+            });
+            slide.renderSlideSide();
         }
     };
     
@@ -156,12 +169,14 @@ Show = new (function(){
                 style: {textAlign: 'center'}
             });
         newSlide.renderSlide();
+        Sidebar.addSlide(newSlide);
     }
     
     var Slide = function(){
         /*
          * Constructor of class Slide
          */
+        this.slideId=slideId;
         this.id = 'slide'+slideId;
         this.ratio = 4/3;
         this.bgColor = 'white';
@@ -169,7 +184,6 @@ Show = new (function(){
         this.elemId = 0;
         allSlides.push(this);
         slideId++;
-        //Update sidebar
     }
     
     Slide.prototype = {
@@ -213,7 +227,6 @@ Show = new (function(){
             }
             
             activeSlide = slide;
-            Sidebar.render();
         },
         renderSlideSide: function(){
             var slide = this;
@@ -229,6 +242,7 @@ Show = new (function(){
             elem.id = 'elem'+this.elemId;
             this.elemId++;
             this.elems[elem.id] = elem;
+            elem.parent = this;
             return elem;
         }
     };
@@ -290,11 +304,15 @@ Show = new (function(){
                     
                     //Actual element for text
                     elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
+                    
+                    elemDOM.data('elem',elem);
+                    elemDOM.appendTo(slide);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
                     elemText.bind('keyup keydown keypress', function(ev){
-                        $(this).closest('.elem').data('elem').text = $(this).html();
-                        Sidebar.render();
+                        elem = $(this).closest('.elem').data('elem');
+                        elem.text = $(this).html();
+                        elem.renderElemSide(elem.parent.id);
                     });
                     
                     //To move
@@ -328,8 +346,7 @@ Show = new (function(){
                     
                     elem.elemDOM = elemDOM;
                     
-                    elemDOM.data('elem',elem);
-                    elemDOM.appendTo(slide);
+                    slideObj.renderSlideSide();
                     return elemDOM;
                 }
             }
@@ -362,7 +379,6 @@ Show = new (function(){
             }
         },
         editElement: function(changes){
-            Sidebar.render();
             var i;
             for (i in changes){
                 if(i != 'style')

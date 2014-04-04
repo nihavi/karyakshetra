@@ -11,11 +11,10 @@
     width: 10%;
 }
 .side-slide{
-    margin-top:5px;
+    margin: 5px 0px 5px 0px;
     float: left;
     clear: right;
     width: 90%;
-    height: 100px;
     position: relative;
     overflow: hidden;
 }
@@ -23,7 +22,7 @@
 .slides{
     float: left;
     height: 100%;
-    overflow:auto;
+    overflow:hidden;
     background-color: red;
     position: relative;
 }
