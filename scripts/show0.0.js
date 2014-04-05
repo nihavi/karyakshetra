@@ -158,6 +158,8 @@ Show = new (function(){
              * slide: Object of type Slide
              */
             
+            if(activeElement)activeElement.blur();
+            
             var slide = this;
             
             if(!slide || !slide.id){

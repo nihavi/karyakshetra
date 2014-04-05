@@ -1,8 +1,10 @@
 .sidebar{
     float: left;
     height: 100%;
-    overflow:auto;
-    background-color: green;
+    overflow-y:scroll;
+    box-sizing:border-box;
+    background-color:#ddd;
+    border-right: 1px solid black;
 }
 
 .side-no{
@@ -17,19 +19,21 @@
     width: 90%;
     position: relative;
     overflow: hidden;
+    box-shadow:0px 0px 5px 0px #888888;
 }
 
 .slides{
     float: left;
     height: 100%;
     overflow:hidden;
-    background-color: red;
+    background-color: #ddd;
     position: relative;
 }
 
 .slide{
     margin: auto;
     position: relative;
+    box-shadow:0px 0px 5px 5px #888888;
 }
 
 .slide-title{
@@ -43,7 +47,7 @@
 }
 
 .elem{
-    border: 2px dotted #888;
+    border: 1px dotted #888;
     margin: 0;
     padding: 0;
     cursor: move;
