@@ -4,7 +4,7 @@ var newQueue = new Array();
 
 var exPointer = 0;
 
-opQueue = {
+Base = {
 
     addOp: function (states) {
         console.log(states)

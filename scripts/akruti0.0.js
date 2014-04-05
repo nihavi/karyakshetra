@@ -676,7 +676,7 @@ var akruti = new (function() {
 
     this.init = function(parent) {
         var dim = parent.getBoundingClientRect();
-        arg={h:(dim.bottom-dim.top-10), w:(dim.right-dim.left-10)}
+        arg={h:(dim.bottom-dim.top-90), w:(dim.right-dim.left-160)}
         
         var svgObject = new Svg(arg, parent, true);
         allSvg[svgObject.id] = svgObject;
@@ -685,8 +685,6 @@ var akruti = new (function() {
     this.selectOperation = function(op) {
         editor.currentMode = op;
     };
-
-
 
     this.performOp = function (data) {
         
@@ -700,12 +698,21 @@ var akruti = new (function() {
         }
         else
         if (data.op == 'cr') {
-            
+            var myObject;
             switch (data.t) {
-            case 'l':
-                var myObject = new Line(data);
-                //$(myObject.g).on('mousedown', editor.elementOn.mousedown);
+            case 'e':
+                myObject = new Ellipse(data);
                 allSvg[myObject.pid].children.push(myObject);
+                break;
+            case 'l':
+                myObject = new Line(data);
+                allSvg[myObject.pid].children.push(myObject);
+                break;
+            case 'r':
+                myObject = new Rectangle(data);
+                allSvg[myObject.pid].children.push(myObject);
+                break;
+            
                 
             }
             var pastState = {
