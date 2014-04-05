@@ -122,8 +122,6 @@ Base = new (function(){
         '083761',
         '20124d',
         '4a112e',
-        'GGGGGGG',
-        '-123'
     ];
 
     var palette;
@@ -347,7 +345,7 @@ Base = new (function(){
 
     function createColorPicker() {
 
-        var domElement = $('<div class="randombox clearfloat"></div>');
+        var domElement = $('<div class="colorpicker clearfloat"></div>');
 
         for (var i=0;i<palette.length;++i) {
             domElement.append('<div class="color" style="background-color: #' + palette[i] + '"></div>');
@@ -364,17 +362,17 @@ Base = new (function(){
         $('.toolbars').append(domElement);
 
         var onColorClick = function(e) {
-            $('.randombox .color.active').removeClass('active');
+            $('.colorpicker .color.active').removeClass('active');
             $(this).addClass('active');
             var selectedColor = $(this).css('background-color');
-            $('#' + $('.randombox').data('caller')).find('i').css('color', selectedColor);
+            $('#' + $('.colorpicker').data('caller')).find('i').css('color', selectedColor);
             //TODO callback
-            var item = submenu[$('.randombox').data('caller')];
+            var item = submenu[$('.colorpicker').data('caller')];
             item.currState = selectedColor;
             item.callback(item.id, selectedColor);
         }
 
-        $('.randombox .color').bind('click', onColorClick);
+        $('.colorpicker .color').bind('click', onColorClick);
         
     };
     
@@ -534,32 +532,32 @@ Base = new (function(){
         if( item.type == 'color' ){
                     
             var hideColorPicker = function(e) {
-                if (!$(e.target).hasClass('randombox')
-                    && ($(e.target).parents('.randombox').length == 0)
+                if (!$(e.target).hasClass('colorpicker')
+                    && ($(e.target).parents('.colorpicker').length == 0)
                     && ($(e.target).parents('#' + itemId).length == 0)
                     && ($(e.target).attr('id') !== itemId)) {
 
                     $(window).unbind('click', hideColorPicker);
-                    $('.randombox').hide();
+                    $('.colorpicker').hide();
                 }
             }
 
-            if ($('.randombox').css('display') == 'none') {
+            if ($('.colorpicker').css('display') == 'none') {
                     
                 var x = elem.offset().left;
                 var y = $('.toolbars').height() + 1;
                 
-                $('.randombox').css({
+                $('.colorpicker').css({
                     'top': y,
                     'left': x
                 });
 
-                $('.randombox').show().data('caller', itemId);
+                $('.colorpicker').show().data('caller', itemId);
                 $(window).bind('click', hideColorPicker);
             }
             
             else {
-                $('.randombox').hide().data('caller', '');
+                $('.colorpicker').hide().data('caller', '');
                 $(window).unbind('click', hideColorPicker);
             }
         }
