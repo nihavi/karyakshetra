@@ -27,7 +27,7 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: String, //Default color
+    currState: String, //Default color
     text: String, //Text to show, aside
     callback: Function(String id, String color) //Callback on change
 },
@@ -36,7 +36,7 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: String, //Default font name
+    currState: String, //Default font name
     callback: Function(String id, String fontName)  //Callback on change
 },
 {
@@ -44,7 +44,7 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: Number, //Default size
+    currState: Number, //Default size
     rangeStart: Number, //Minimum size
     rangeEnd: Number,   //Maximum size
     callback: Function(String id, Number size)  //Callback on change
@@ -54,7 +54,7 @@
     id: String, //Id selected by module
     title: String, //Name of button
     icon: String, //Font awesome icon name
-    default: String, //Default size
+    currState: String, //Default size
     list = Array, //Array of Objects. Object is defined as {id: String, value: String}
     callback: Function(String id, Number selectedItemId)    //Callback on change
 }
@@ -370,6 +370,7 @@ Base = new (function(){
             $('#' + $('.randombox').data('caller')).find('i').css('color', selectedColor);
             //TODO callback
             var item = submenu[$('.randombox').data('caller')];
+            item.currState = selectedColor;
             item.callback(item.id, selectedColor);
         }
 
@@ -477,8 +478,8 @@ Base = new (function(){
                             }
                             if( item.type == 'color' ){
                                 menuItem.find('i').css('font-size', '0.5em');
-                                if (item.default) {
-                                    menuItem.find('i').css('color', item.default);    
+                                if ('currState' in item) {
+                                    menuItem.find('i').css('color', item.currState);
                                 }
                                 if (item.text) {
                                     $('<span class="btn-intext">' + item.text + '</span>').prependTo(menuItem);
