@@ -553,13 +553,11 @@ Base = new (function(){
         if( item.type == 'color' ){
                     
             var hideColorPicker = function(e) {
-                if (!$(e.target).hasClass('colorpicker')
-                    && ($(e.target).parents('.colorpicker').length == 0)
-                    && ($(e.target).parents('#' + itemId).length == 0)
-                    && ($(e.target).attr('id') !== itemId)) {
+                if (($(e.target).closest('.colorpicker').length == 0)
+                    && ($(e.target).closest('#' + itemId).length == 0)) {
 
                     $(window).unbind('click', hideColorPicker);
-                    $('.colorpicker').hide();
+                    $('.colorpicker').hide().data('caller', '');
                 }
             }
 
@@ -576,10 +574,11 @@ Base = new (function(){
                 $('.colorpicker').show().data('caller', itemId);
                 $(window).bind('click', hideColorPicker);
             }
-            
             else {
+                //if($('.colorpicker').data('caller')==itemId){
                 $('.colorpicker').hide().data('caller', '');
                 $(window).unbind('click', hideColorPicker);
+                //}
             }
         }
         
