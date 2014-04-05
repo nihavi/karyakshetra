@@ -622,12 +622,21 @@ Show = new (function(){
     /*
      * Select and format and move elements
      */
-    var elemAlign = function(id){
+    var elemAlign = function(mode){
         if(activeElement){
             activeElement.editElement({
                 style: {
-                    textAlign: id
+                    textAlign: mode
                 }
+            });
+        }
+    }
+    var elemColor = function(mode, color){
+        if(activeElement){
+            var style = new Object();
+            style[mode] = color;
+            activeElement.editElement({
+                style: style
             });
         }
     }
@@ -662,30 +671,28 @@ Show = new (function(){
                         },
                     ]
                 },
-                /*{
+                {
                     type: 'group',
                     id: 'g2',
                     items: [
                         {
-                            type: 'button',
-                            icon: 'fa-align-left',
-                            id: 'insert-slide',
-                            callback: insertSlide
+                            type: 'color',
+                            icon: 'fa-circle',
+                            id: 'color',
+                            currState: '#000000',
+                            text: 'F',
+                            callback: elemColor
                         },
                         {
-                            type: 'button',
-                            icon: 'fa-align-center',
-                            id: 'insert-text',
-                            callback: selectOp
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-align-right',
-                            id: 'insert-slide',
-                            callback: insertSlide
+                            type: 'color',
+                            icon: 'fa-desktop',
+                            id: 'background-color',
+                            currState: '#ffffff',
+                            text: 'B',
+                            callback: elemColor
                         },
                     ]
-                }*/
+                }
             ]
         },
     ];

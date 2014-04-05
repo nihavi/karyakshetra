@@ -2,6 +2,7 @@
     float: left;
     height: 100%;
     overflow-y:scroll;
+    -moz-box-sizing:border-box;
     box-sizing:border-box;
     background-color:#ddd;
     border-right: 1px solid black;
@@ -52,6 +53,7 @@
     padding: 0;
     cursor: move;
     overflow: hidden;
+    -moz-box-sizing:border-box;
     box-sizing: border-box;
 }
 .elem.active{
@@ -65,6 +67,7 @@
     padding: 0;
     cursor: move;
     overflow: hidden;
+    -moz-box-sizing:border-box;
     box-sizing: border-box;
 }
 .elem-text{
