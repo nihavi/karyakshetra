@@ -2,6 +2,23 @@
 
 class Base extends CI_Controller
 {
+    function akruti()
+    {
+        $this->index('akruti');
+    }
+    function dash()
+    {
+        $this->index('dash');
+    }
+    function show()
+    {
+        $this->index('show');
+    }
+    function submit()
+    {
+        $this->index('submit');
+    }
+    
     function index($module = 'dash')
     {
         /*
