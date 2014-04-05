@@ -45,47 +45,13 @@ Show = new (function(){
         $('#slides').bind('mousedown',function(ev){
             if(activeElement){
                 if (activeElement != $(ev.target).closest('.elem').data('elem')){
-                    activeElement.elemDOM.find('.elem-text').blur();
+                    activeElement.blur();
                     activeElement = null;
                 }
             }
         });
         
         Sidebar.init();
-    }
-    
-    this.getMenu = function(){
-        return {
-            type: 'main',
-            id: 'insert',
-            title: 'Insert', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'adsf',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-list',
-                            id: 'insert-text',
-                            callback: selectOp
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-list-alt',
-                            id: 'insert-slide',
-                            callback: insertSlide
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-question-circle',
-                            callback: console.log
-                        }
-                    ]
-                }
-            ]
-        };
     }
     
     this.resize = function(){
@@ -391,6 +357,12 @@ Show = new (function(){
             }
             this.renderElem();
             return this;
+        },
+        blur: function(){
+            activeElement.elemDOM.removeClass('active');
+            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement = null;
+            Base.updateMenu(defaultMenus);
         }
     }
     
@@ -454,6 +426,8 @@ Show = new (function(){
             cursor: 'auto',
             overflow: 'visible'
         });
+        Base.updateMenu(defaultMenus.concat(formatMenu));
+        Base.focusMenu('format');
     };
     var textBlur = function(ev){
         //Will be called when a contentEdtable is focused
@@ -463,10 +437,8 @@ Show = new (function(){
                 overflow: 'hidden'
             });
         }
-        activeElement.elemDOM.removeClass('active');
         activeElement.elemDOM.removeClass('edit');
         activeElement.editable = false;
-        activeElement = null;
     };
     
     /*
@@ -475,7 +447,7 @@ Show = new (function(){
     var resizeRightInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -500,7 +472,7 @@ Show = new (function(){
     var resizeLeftInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -526,7 +498,7 @@ Show = new (function(){
     var resizeTopInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -555,7 +527,7 @@ Show = new (function(){
     var resizeBottomInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -580,7 +552,7 @@ Show = new (function(){
     var resizeTopRightInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -597,7 +569,7 @@ Show = new (function(){
     var resizeTopLeftInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -614,7 +586,7 @@ Show = new (function(){
     var resizeBottomLeftInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -631,7 +603,7 @@ Show = new (function(){
     var resizeBottomRightInit = function(ev){
         if (ev.which != 1)return;
         if(activeElement){
-            activeElement.elemDOM.find('.elem-text').blur();
+            activeElement.blur();
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
@@ -646,8 +618,75 @@ Show = new (function(){
     }
     
     /*
-     * Move elements
+     * Select and format and move elements
      */
+    var elemAlign = function(id){
+        if(activeElement){
+            activeElement.editElement({
+                style: {
+                    textAlign: id
+                }
+            });
+        }
+    }
+    var formatMenu = [
+        {
+            type: 'main',
+            id: 'format',
+            title: 'Format', //Name of menu
+            icon: 'fa-format', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'g1',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-align-left',
+                            id: 'left',
+                            callback: elemAlign
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-align-center',
+                            id: 'center',
+                            callback: elemAlign
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-align-right',
+                            id: 'right',
+                            callback: elemAlign
+                        },
+                    ]
+                },
+                /*{
+                    type: 'group',
+                    id: 'g2',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-align-left',
+                            id: 'insert-slide',
+                            callback: insertSlide
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-align-center',
+                            id: 'insert-text',
+                            callback: selectOp
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-align-right',
+                            id: 'insert-slide',
+                            callback: insertSlide
+                        },
+                    ]
+                }*/
+            ]
+        },
+    ];
     var moveInit = function(ev){
         if(ev.which != 1)return;
         
@@ -659,7 +698,7 @@ Show = new (function(){
                     return;
             }
             else {
-                activeElement.elemDOM.find('.elem-text').blur();
+                activeElement.blur()
             }
         }
         if ($(ev.target).closest('.elem-text').length == 0){
@@ -667,6 +706,8 @@ Show = new (function(){
             var elem = $(this);
             elem.addClass('active');
             activeElement = elem.data('elem');
+            Base.updateMenu(defaultMenus.concat(formatMenu));
+            Base.focusMenu('format');
             return;
         }
         
@@ -685,6 +726,8 @@ Show = new (function(){
         }
         //activeElement.elemDOM.css('overflow', 'visible');
         $('#slides').bind('mousemove', moveElement);
+        Base.updateMenu(defaultMenus.concat(formatMenu));
+        Base.focusMenu('format');
         
         if(secondClick){
             $(window).one('mouseup', function(ev){
@@ -751,6 +794,38 @@ Show = new (function(){
         insertOp = id;
         $('#slides').bind('mousedown',createTextBox);
     };
+    
+    var defaultMenus = [
+        {
+            type: 'main',
+            id: 'insert',
+            title: 'Insert', //Name of menu
+            icon: 'fa-edit', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'adsf',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-list',
+                            id: 'insert-text',
+                            callback: selectOp
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-list-alt',
+                            id: 'insert-slide',
+                            callback: insertSlide
+                        },
+                    ]
+                }
+            ]
+        },
+    ];
+    this.getMenu = function(){        
+        return defaultMenus;
+    }
     
 })();
 
