@@ -162,7 +162,9 @@ Base = new (function(){
                 }
             ]
         }
-        /*{
+    ];
+    /*[
+        {
             type: 'main',
             id: 'edit',
             title: 'Edit', //Name of menu
@@ -298,8 +300,8 @@ Base = new (function(){
                     ] //Items inside this menu
                 }
             ]
-        }*/
-    ]
+        }
+    ]*/
     
     var menus;//Keeps track and information of the menus
     var menuMeta;//Mapping of modules id and DOM id
@@ -333,7 +335,7 @@ Base = new (function(){
         menuMeta = new Object();
         this.updateMenu(module.getMenu());
         
-        activateMenu.bind($('#menuHead0'))();
+        this.focusMenu('file');
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
@@ -383,15 +385,24 @@ Base = new (function(){
             menu = menu.concat(menuObject);
         }
         createMenu(menu);
+        this.focusMenu('file');
     };
+    
+    this.focusMenu = function(id){
+        //Will nbe called by module with id of a menu to activate that menu
+        if (id && id in menuMeta){
+            activateMenu.bind($('#'+menuMeta[id]))();
+        }
+    }
     
     var createMenu = function(menuObject){
         var item, i, menuItem;
         var id;
         var mainMenu = $('#mainMenu');
+        menuMeta = new Array();
         mainMenu.empty();
         $('#subMenu').remove();
-        for( i in menuObject ) {
+        for(var i = 0; i<menuObject.length; ++i){
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){
                 if(('id' in item) && (item.id in menuMeta)){
