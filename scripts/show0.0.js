@@ -640,6 +640,9 @@ Show = new (function(){
             });
         }
     }
+    var log = function(a, b){
+        console.log(a, b);
+    }
     var formatMenu = [
         {
             type: 'main',
@@ -685,11 +688,28 @@ Show = new (function(){
                         },
                         {
                             type: 'color',
-                            icon: 'fa-desktop',
+                            icon: 'fa-circle',
                             id: 'background-color',
                             currState: '#ffffff',
                             text: 'B',
                             callback: elemColor
+                        },
+                        {
+                            type: 'list',
+                            //icon: 'fa-circle',
+                            id: 'list',
+                            title: 'List',
+                            list: [
+                                {
+                                    id: 'da',
+                                    value: 'Hello'
+                                },
+                                {
+                                    id: 'da1',
+                                    value: 'Hello2'
+                                }
+                            ],
+                            callback: log
                         },
                     ]
                 }

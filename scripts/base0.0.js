@@ -467,13 +467,14 @@ Base = new (function(){
                     for( i in group.items ){
                         item = group.items[i];
                         id = 'menuItem'+subMenuId;
-                        if( ('type' in item) && ('icon' in item) && ('callback' in item) ){
+                        if( ('type' in item) && ('callback' in item) ){
                             //Append menu item to DOM
                             var menuItem = $('<div class="btn" id="'+id+'"></div>').appendTo(subMenu);
-                            $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                             if (item.icon) {
+                                $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                                 menuItem.addClass('btn-icon');
                             }
+                            
                             if( item.type == 'color' ){
                                 menuItem.find('i').css('font-size', '0.5em');
                                 if ('currState' in item) {
@@ -489,6 +490,26 @@ Base = new (function(){
                             else if( item.type == 'size' ){
                             }
                             else if( item.type == 'list' ){
+                                if('list' in item){
+                                    menuItem.empty();
+                                    menuItem.addClass('btn-list');
+                                    var select = $('<select>').appendTo(menuItem);
+                                    for(var i = 0; i<item.list.length; i++){
+                                        $('<option value="'+(item.list[i].id)+'">'+(item.list[i].value)+'</option>').appendTo(select);
+                                    }
+                                    if('currState' in item){
+                                        select.val(item.currState);
+                                    }
+                                    select.change(function(){
+                                        var elem = $(this).closest('.btn');
+                                        var itemId = elem.attr('id');
+                                        var item = submenu[itemId];
+                                        var selected = this.selectedIndex;
+                                        var options = this.options;
+                                        item.callback(item.id, options[selected].value);
+                                        item.currState = options[selected].value;
+                                    });
+                                }
                             }
                             else { // if item.type == 'button' or item.type is not known
                                 if(('onoff' in item) && item.onoff == true){
@@ -567,6 +588,7 @@ Base = new (function(){
         else if( item.type == 'size' ){
         }
         else if( item.type == 'list' ){
+            //Nothing to do
         }
         else { // if item.type == 'button' or item.type is not known
             if ( ('onoff' in item) && item.onoff == true ){

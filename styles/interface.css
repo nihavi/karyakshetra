@@ -112,6 +112,34 @@ i.fa.fa-cfw {
     text-shadow: none;
 }
 
+.btn-list{
+    line-height: 1.28571em;
+    height: 1.28571em;
+    padding: 2px;
+    margin: 4px;
+    border: 1px solid transparent;
+    transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
+}
+.btn-list select{
+    background-color: #057cb8;
+}
+.btn-list option{
+    background-color: #057cb8;
+}
+.btn-list:hover {
+    text-shadow: none;
+    background-color: #0F88C4;
+    border-radius: 4px;
+    box-shadow: 0 0 1px 2px #0672A8;
+    transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
+}
+
+.btn-list.active,
+.btn-list:active {
+    color: orange;
+    text-shadow: none;
+}
+
 .sep {
     float: left;
     color: white;
