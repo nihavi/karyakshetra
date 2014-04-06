@@ -101,7 +101,8 @@ var akruti = new(function () {
     /*  Base Objects  Definitions */
 
     // Svg Object
-    var Svg = function (attributes, parent, editable) {
+    var Svg = function (parent,attributes, editable) {
+
 
         /* Creating DOM element */
         this.element = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

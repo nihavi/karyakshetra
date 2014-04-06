@@ -674,8 +674,11 @@ var akruti = new (function() {
     Rectangle.prototype.delete = deleteSelf;
 
 
-    this.init = function(arg) {
-        var svgObject = new Svg(arg.attributes, arg.parent, true);
+    this.init = function(parent) {
+        var dim = parent.getBoundingClientRect();
+        arg={h:(dim.bottom-dim.top-10), w:(dim.right-dim.left-10)}
+        
+        var svgObject = new Svg(arg, parent, true);
         allSvg[svgObject.id] = svgObject;
     };
 
@@ -818,14 +821,14 @@ var akruti = new (function() {
         ];
     };
     
-    this.setRectangle = function (){ editor.currentMode = 'rectangleMode' };
-    this.setEllipse = function (){ editor.currentMode = 'ellipseMode' };
-    this.setLine = function (){ editor.currentMode = 'lineMode' };
-    this.setFree = function (){ editor.currentMode = 'freeMode' };
-    this.setMagic = function (){ editor.currentMode = 'fourMode' };
-    this.setLight = function (){ editor.currentMode = 'fourMode2' };
-    this.setFill = function (){editor.fill = 'orange'};
-    this.setNoFill = function (){editor.fill = 'none'};
+    this.setRectangle   = function (){ editor.currentMode = 'createRectangleMode' };
+    this.setEllipse     = function (){ editor.currentMode = 'createEllipseMode' };
+    this.setLine        = function (){ editor.currentMode = 'createLineMode' };
+    this.setFree        = function (){ };//editor.currentMode = 'freeMode' };
+    this.setMagic       = function (){ };//editor.currentMode = 'fourMode' };
+    this.setLight       = function (){ };//editor.currentMode = 'fourMode2' };
+    this.setFill        = function (){ editor.fillColor = 'orange'};
+    this.setNoFill      = function (){ editor.fillColor = 'none'};
     
     this.setDark = function (){
         document.getElementById('s1').setAttribute('style', 'background-color:black;');
@@ -840,23 +843,26 @@ var akruti = new (function() {
         var superParent = window;
 
         this.currentMode = 'createLineMode';
-
+        this.strokeWidth = 2;
+        this.strokeColor = '#555';
+        this.fillColor   = 'transparent';
+        
         actives = new Object();
         actives.list = new Array();
 
         var getStrokeWidth = function(){
 
-            return document.getElementById('strokeWidth').value;
+            return this.strokeWidth;
         }
 
         var getStrokeColor = function(){
 
-            return document.getElementById('strokeColor').value;
+            return this.strokeColor;
         }
 
         var getFillColor = function(){
 
-            return document.getElementById('fillColor').value;
+            return this.fillColor;
         }
         
         var eq = function (arg1, arg2){
@@ -1237,7 +1243,7 @@ var akruti = new (function() {
                     
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    opQueue.addOp({
+                    Base.addOp({
                         pastState: {
                             'op':'d',           //op = [d]elete; when this objects come, delete the Object
                             'id':element.id,
@@ -1343,7 +1349,7 @@ var akruti = new (function() {
                     
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    opQueue.addOp({
+                    Base.addOp({
                         pastState: {
                             'op':'d',           //op = [d]elete; when this objects come, delete the Object
                             'id':element.id,
@@ -1471,7 +1477,7 @@ var akruti = new (function() {
                     
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    opQueue.addOp({
+                    Base.addOp({
                         pastState: {
                             'op':'d',           //op = [d]elete; when this objects come, delete the Object
                             'id':element.id,
@@ -1607,7 +1613,7 @@ var akruti = new (function() {
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
                 
                 if ( !( eq( actives.pastState, actives.newState )) ) {
-                    opQueue.addOp({
+                    Base.addOp({
                         'pastState':actives.pastState,
                         'newState' :actives.newState,
                     })
