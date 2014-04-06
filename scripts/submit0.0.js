@@ -13,7 +13,7 @@ Submit = new(function(){
     
     Form.prototype = {
 
-        addPages = function(pages){
+        addPagesAtEnd = function(pages){
             this.children.push(pages);
             return this;
         }
@@ -24,7 +24,38 @@ Submit = new(function(){
         }
 
         movePageToEnd = function(page){
+            if (page in this.children){
+                var index = this.children.indexOf(page);
+                if (index > -1){
+                    var moveToEnd = this.children.splice(index, 1);
+                    this.addPages(moveToEnd);
+                }
+            }
+            return this;
         }
+
+        movePageToStart = function(page){
+            if (page in this.children){
+                var index = this.children.indexOf(page);
+                if (index > -1){
+                    var moveToStart = this.children.splice(index, 1);
+                    this.addPagesAtStart(moveToStart);
+                }
+            }
+            return this;
+        }
+
+        removePages = function(pages){
+            for (var currentPage in pages){
+                if (currentPage in this.children){
+                    var index = this.children.indexOf(currentPage);
+                    if(index > -1){
+                        this.children.splice(index, 1);
+                    }
+                }
+            }
+        }
+
 
     }
 
