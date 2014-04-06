@@ -734,6 +734,107 @@ var akruti = new (function() {
     };
     
     
+    this.getMenu = function(){
+        return [
+            {
+                type: 'main',
+                id: 'create',
+                title: 'Create', //Name of menu
+                icon: 'fa-plus', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'modes',
+                        multiple: false,
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-square-o',
+                                onoff: true,
+                                callback: akruti.setRectangle
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-circle-o',
+                                onoff: true,
+                                callback: akruti.setEllipse
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-minus',
+                                onoff: true,
+                                callback: akruti.setLine
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-pencil',
+                                onoff: true,
+                                callback: akruti.setFree
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-magic',
+                                onoff: true,
+                                callback: akruti.setMagic
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-flash',
+                                onoff: true,
+                                callback: akruti.setLight
+                            },
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        id: 'colors',
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-star',
+                                callback: akruti.setFill
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-star-o',
+                                callback: akruti.setNoFill
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-square',
+                                callback: akruti.setDark
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-square-o',
+                                callback: akruti.setNoDark
+                            },
+                            
+                            
+                        ]
+                    }
+                ]   //Groups inside this menu
+            }
+        ];
+    };
+    
+    this.setRectangle = function (){ editor.currentMode = 'rectangleMode' };
+    this.setEllipse = function (){ editor.currentMode = 'ellipseMode' };
+    this.setLine = function (){ editor.currentMode = 'lineMode' };
+    this.setFree = function (){ editor.currentMode = 'freeMode' };
+    this.setMagic = function (){ editor.currentMode = 'fourMode' };
+    this.setLight = function (){ editor.currentMode = 'fourMode2' };
+    this.setFill = function (){editor.fill = 'orange'};
+    this.setNoFill = function (){editor.fill = 'none'};
+    
+    this.setDark = function (){
+        document.getElementById('s1').setAttribute('style', 'background-color:black;');
+    };
+    this.setNoDark = function (){
+        document.getElementById('s1').setAttribute('style', 'background-color:white;');
+    };
+    
+    
     var editor = new (function() {
 
         var superParent = window;

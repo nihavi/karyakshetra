@@ -145,6 +145,8 @@ var akruti = new(function () {
         this.element.myObject = this;
         parent.appendChild(this.element);
 
+        this.element.ondragstart = function(e){return false;};
+        
         /* Setting Editable properties */
         if (editable) {
             editor.init(this.element);
@@ -368,14 +370,114 @@ var akruti = new(function () {
     };
 
     this.init = function (parent) {
-        attributes={
-            'h': 500,
-            'w': 500,
+        attributes = {
+            'h': Math.min(parent.offsetHeight,parent.offsetWidth),
+            'w': Math.min(parent.offsetHeight,parent.offsetWidth),
         }
         var svgObject = new Svg(attributes,parent, true);
         allSvg[svgObject.id] = svgObject;
     };
-
+    
+    this.getMenu = function(){
+        return [
+            {
+                type: 'main',
+                id: 'create',
+                title: 'Create', //Name of menu
+                icon: 'fa-plus', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'modes',
+                        multiple: false,
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-square-o',
+                                onoff: true,
+                                callback: akruti.setRectangle
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-circle-o',
+                                onoff: true,
+                                callback: akruti.setEllipse
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-minus',
+                                onoff: true,
+                                callback: akruti.setLine
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-pencil',
+                                onoff: true,
+                                callback: akruti.setFree
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-magic',
+                                onoff: true,
+                                callback: akruti.setMagic
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-flash',
+                                onoff: true,
+                                callback: akruti.setLight
+                            },
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        id: 'colors',
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-star',
+                                callback: akruti.setFill
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-star-o',
+                                callback: akruti.setNoFill
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-square',
+                                callback: akruti.setDark
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-square-o',
+                                callback: akruti.setNoDark
+                            },
+                            
+                            
+                        ]
+                    }
+                ]   //Groups inside this menu
+            }
+        ];
+    };
+    
+    this.setRectangle = function (){ editor.currentMode = 'rectangleMode' };
+    this.setEllipse = function (){ editor.currentMode = 'ellipseMode' };
+    this.setLine = function (){ editor.currentMode = 'lineMode' };
+    this.setFree = function (){ editor.currentMode = 'freeMode' };
+    this.setMagic = function (){ editor.currentMode = 'fourMode' };
+    this.setLight = function (){ editor.currentMode = 'fourMode2' };
+    this.setFill = function (){editor.fill = 'orange'};
+    this.setNoFill = function (){editor.fill = 'none'};
+    
+    this.setDark = function (){
+        document.getElementById('s1').setAttribute('style', 'background-color:black;');
+    };
+    this.setNoDark = function (){
+        document.getElementById('s1').setAttribute('style', 'background-color:white;');
+    };
+    
     this.selectOperation = function (op) {
         editor.currentMode = op;
     }
@@ -384,6 +486,8 @@ var akruti = new(function () {
 
         var superParent = window;
 
+        this.fill = 'none';
+        
         this.currentMode = 'fourMode';
 
         var activeElement;
@@ -397,15 +501,15 @@ var akruti = new(function () {
         };
 
         var getStrokeWidth = function (magic) {
-            return (magic) ? (Math.round(4 * Math.random()) - 2) : +document.getElementById('strokeWidth').value;
+            return 2;
         }
 
         var getStrokeColor = function () {
-            return '#' + document.getElementById('strokeColor').value;
+            return '#777';
         }
 
         var getFillColor = function () {
-            return '#' + document.getElementById('fillColor').value;
+            return this.fill;
         }
 
         var svgOnMouseUpFunction = function (ev) {
