@@ -664,7 +664,10 @@ Base = new (function(){
     var newQueue = new Array();
     var exPointer = 0;
     
-    this.addOp = function(pastState, newState){
+    this.addOp = function(states){
+        var pastState = states.pastState;
+        var newState = states.newState;
+        
         /*
          * pastState - previous state to be restored on undo
          * newState - next state to be rendered on viewer

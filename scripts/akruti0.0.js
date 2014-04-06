@@ -6,6 +6,8 @@ var akruti = new (function() {
     
     svgId = 1,
     
+    zoomState = 'auto',
+    
     allAA = {
         s:{
         },
@@ -204,12 +206,8 @@ var akruti = new (function() {
 
     this.resize = function () {
         var i;
-        var flag = false;
-        if (document.getElementById('zoomValue').innerHTML == 'fit') {
-            flag = true;
-        }
         for(var i in allSvg) {
-            if (flag) {
+            if (zoomState == 'fit') {
                 var off = allSvg['s1'].element.parentNode.getBoundingClientRect();
                 var rx = (off.right - off.left)/allSvg['s1'].reqW;
                 var ry = (off.bottom - off.top)/allSvg['s1'].reqH;
@@ -220,6 +218,7 @@ var akruti = new (function() {
     };
 
     var svgZoom = function(ratio) {
+        
         var parentDimension = this.element.parentNode.getBoundingClientRect();
         var h = parentDimension.height;
         var w = parentDimension.width;
@@ -237,22 +236,28 @@ var akruti = new (function() {
         this.element.setAttribute('width', this.svgW);
         this.resize(true);
         this.g.setAttribute('transform','translate('+(this.svgW-this.zoomFactor*this.pageW)/2+','+(this.svgH-this.zoomFactor*this.pageH)/2+')');
-    }
+    };
 
     Svg.prototype.zoom = svgZoom;
 
     this.zoom = function(value) {
+        
         if (value == 'fit') {
-            var off = allSvg['s1'].element.parentNode.getBoundingClientRect();
-            var rx = (off.right - off.left)/allSvg['s1'].reqW;
-            var ry = (off.bottom - off.top)/allSvg['s1'].reqH;
-            allSvg['s1'].zoom(Math.min(rx,ry));
+            zoomState = 'fit';
+            for (var i in allSvg) {
+                var off = allSvg[i].element.parentNode.getBoundingClientRect();
+                var rx = (off.right - off.left)/allSvg[i].reqW;
+                var ry = (off.bottom - off.top)/allSvg[i].reqH;
+                allSvg[i].zoom(Math.min(rx,ry));
+            }
         }
         else {
-            allSvg['s1'].zoom(value);
+            zoomState = 'auto'
+            for (var i in allSvg) {
+                allSvg[i].zoom(parseInt(value));
+            }
         }
-        document.getElementById('zoomValue').innerHTML = value;
-    }
+    };
 
     var changeAttributes = function(arg) {
         
@@ -514,8 +519,8 @@ var akruti = new (function() {
     
     var getLinePivots = function(){
         return {
-            x:[this.x1,this.x2,this.x1,this.x2],
-            y:[this.y1,this.y2,this.y2,this.y1]
+            x:[this.x1,this.x2],
+            y:[this.y1,this.y2]
         }
     };
     
@@ -523,8 +528,8 @@ var akruti = new (function() {
     
     var getEllipsePivots = function(){
         return {
-            x:[this.cx-this.rx, this.cx+this.rx, this.cx-this.rx, this.cx+this.rx ],
-            y:[this.cy-this.ry, this.cy-this.ry, this.cy+this.ry, this.cy+this.ry ]
+            x:[this.cx-this.rx, this.cx+this.rx ],
+            y:[this.cy-this.ry, this.cy+this.ry ]
         }
     };
     
@@ -532,8 +537,8 @@ var akruti = new (function() {
     
     var getRectanglePivots = function() {
         return {
-            x:[this.x, this.x+this.w,   this.x,         this.x+this.w],
-            y:[this.y, this.y,          this.y+this.h,  this.y+this.h]
+            x:[this.x, this.x+this.w],
+            y:[this.y, this.y+this.h]
         }
     };
     
@@ -544,7 +549,6 @@ var akruti = new (function() {
     
     var resizeCursorRef = ['nw-resize', 'n-resize' , 'ne-resize', 'w-resize',
                            'e-resize', 'sw-resize', 's-resize','se-resize'];
-    
     
     var SelectArea = function(x,y,w,h, mySvgObject) { //arg has x,y,h,w
         
@@ -613,35 +617,7 @@ var akruti = new (function() {
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
     };
-   
-    /*
-    var activate = function() {
-        this.deactivate();
-        var pivots = this.getPivots();
-        var x1 = Math.min.apply(undefined, pivots.x);
-        var y1 = Math.min.apply(undefined, pivots.y);
-        var x2 = Math.max.apply(undefined, pivots.x);
-        var y2 = Math.max.apply(undefined, pivots.y);
-        this.active = new SelectArea(x1,y1,x2-x1, y2-y1,allSvg[this.pid]);
-    }
-    
 
-    var deactivate = function(){
-
-        if(this.active)  {
-            this.active.g.remove();
-            delete this.active;
-        }
-    };
-
-
-    Line.prototype.activate = activate;
-    //Ellipse.prototype.activate = activate;
-
-    Line.prototype.deactivate = deactivate;
-    //Ellipse.prototype.deactivate = deactivate;
-*/
-    
     var fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
     };
@@ -668,7 +644,6 @@ var akruti = new (function() {
             'pid':this.pid,
             't'  :this.t
         }
-        console.log('new', newState)
         return {'pastState':pastState, 'newState':newState}
     };
 
@@ -679,10 +654,14 @@ var akruti = new (function() {
 
     this.init = function(parent) {
         var dim = parent.getBoundingClientRect();
-        arg={h:(dim.bottom-dim.top-90), w:(dim.right-dim.left-160)}
+        var arg = {
+            h:(dim.bottom-dim.top-90),
+            w:(dim.right-dim.left-160)
+        };
         
         var svgObject = new Svg(arg, parent, true);
         allSvg[svgObject.id] = svgObject;
+        this.resize();
     };
 
     this.selectOperation = function(op) {
@@ -690,7 +669,8 @@ var akruti = new (function() {
     };
 
     this.performOp = function (data) {
-        
+        console.log(data);
+        d=data;
         var returnValue;
         
         if (data instanceof Array) {
@@ -737,7 +717,6 @@ var akruti = new (function() {
         }
         else
         if (data.op == 'd') {
-            console.log('data', data)
             var myObject = $('#' + data.id +'g').data('myObject');
             returnValue = myObject.delete();
         }
@@ -746,72 +725,85 @@ var akruti = new (function() {
             var myObject = $('#' + data.id + 'g').data('myObject');
             returnValue = myObject.changeAttributes(data);
         }
-        
+        r = returnValue;
         return returnValue;
     };
-    
     
     this.getMenu = function (){
         return [
             {
                 type: 'main',
-                id: 'create',
-                title: 'Create', //Name of menu
+                id: 'tools',
+                title: 'Tools', //Name of menu
                 icon: 'fa-star-half-empty', //Font awesome icon name
                 groups: [
                     {
                         type: 'group',
-                        id: 'g3',
+                        id: 'modeSelectorGroup',
                         multiple: false,
                         items: [
                             {
                                 type:'button',
-                                icon: 'fa-arrows',
-                                id: 'selectOperation',
+                                icon: 'fa-hand-o-up',
+                                id: 'selectMode',
+                                title:'Select',
                                 onoff: true,
-                                callback: this.selectOperation
+                                currState:false,
+                                callback: setMode
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-minus',
-                                id:'line',
+                                id:'createLineMode',
+                                title:'Line',
                                 onoff: true,
-                                callback: this.setLine
+                                currState:true,
+                                callback: setMode
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-pencil',
-                                id: 'free',
+                                id: 'createFreeMode',
+                                title:'Free Hand Drawing',
                                 onoff: true,
-                                callback: this.setFree
+                                currState:false,
+                                callback: console.log
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-square-o',
-                                id: 'rectangle',
+                                id: 'createRectangleMode',
+                                title:'Rectangle',
                                 onoff: true,
-                                callback: this.setRectangle
+                                currState:false,
+                                callback: setMode
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-circle-o',
-                                id: 'ellipse',
+                                id: 'createEllipseMode',
+                                title:'Ellipse',
                                 onoff: true,
-                                callback: this.setEllipse
+                                currState:false,
+                                callback: setMode
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-magic',
-                                id: 'magic',
+                                id: 'magicMode',
+                                title:'Magic',
                                 onoff: true,
-                                callback: this.setMagic
+                                currState:false,
+                                callback: console.log
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-bolt',
-                                id: 'light',
+                                id: 'lightningMode',
+                                title:'Lightning',
                                 onoff: true,
-                                callback: this.setLight
+                                currState:false,
+                                callback: console.log
                             }
                         ]
                     }
@@ -829,21 +821,21 @@ var akruti = new (function() {
                         items: [
                             {
                                 type: 'color',
-                                id: 'fillWhole',
-                                text: 'Fill',
+                                id: 'fillColor',
+                                title:'Fill',
+                                text: 'Fill Color',
                                 icon: 'fa-tint',
-                                onoff: true,
-                                callback: this.setFill,
+                                callback: setFillColor,
                             },
                             {
                                 type: 'color',
-                                id: 'fillColor', 
+                                id: 'strokeColor',
+                                title:'Stroke Color',
                                 icon: 'fa-tint', 
                                 text: 'Stroke',
-                                onoff: true, 
-                                callback: this.setStrokeColor,
+                                callback: setStrokeColor,
                             },
-                            {
+                            /*{
                                 type: 'size',
                                 id: 'strokeWidth', 
                                 title: 'Stroke Width', //Name of button
@@ -851,8 +843,8 @@ var akruti = new (function() {
                                 currState: 2, //Default size
                                 rangeStart: 2, //Minimum size
                                 rangeEnd: 20,   //Maximum size
-                                callback: this.setStrokeWidth,  //Callback on change
-                            },
+                                callback: setStrokeWidth,  //Callback on change
+                            },*/
                         ],
                     },
                     {
@@ -863,33 +855,44 @@ var akruti = new (function() {
                             {
                                 type: 'button',
                                 icon: 'fa-reply',
-                                onoff: true,
-                                callback: this.setUndo,
+                                onoff: false,
+                                callback: Base.undo,
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-share',
-                                onoff: true,
-                                callback: this.setRedo,
+                                onoff: false,
+                                callback: Base.redo,
                             },
                             {
                                 type: 'button',
-                                icon: 'fa-cut',
-                                onoff: true,
-                                callback: this.setDelete
-                            },
-                            {
-                                type: 'button',
-                                id: 'eraser',
                                 icon: 'fa-eraser',
-                                onoff: true,
-                                callback: this.setDelete
-                            },  
+                                onoff: false,
+                                callback: deleteElement
+                            },
                         ]
                     }
                 ]  
             },
         ]
+    };
+    
+    var setMode = function(mode,onOff){
+        if (onOff == true) {
+            editor.currentMode = mode;
+        }
+    };
+    
+    var setFillColor = function(id, color){
+        editor.fillColor = color;
+    };
+    
+    var setStrokeColor = function(id, color){
+        editor.strokeColor = color;
+    };
+    
+    var deleteElement = function(a,b){
+        console.log(a,b)
     };
     
     this.getFileData = function(svg) {
@@ -914,24 +917,21 @@ var akruti = new (function() {
         this.currentMode = 'createLineMode';
         this.strokeWidth = 2;
         this.strokeColor = '#555';
-        this.fillColor   = 'transparent';
+        this.fillColor   = 'none';
         
         actives = new Object();
         actives.list = new Array();
-
+        
         var getStrokeWidth = function(){
-
-            return this.strokeWidth;
+            return editor.strokeWidth;
         }
-
+        
         var getStrokeColor = function(){
-
-            return this.strokeColor;
+            return editor.strokeColor;
         }
-
+        
         var getFillColor = function(){
-
-            return this.fillColor;
+            return editor.fillColor;
         }
         
         var eq = function (arg1, arg2){
@@ -1083,19 +1083,19 @@ var akruti = new (function() {
                     break;
 
                 case 37:            //Left Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         currentKey = 37;
                         clearTimeout(keyTimeout);
                         clearInterval(keyInterval);
 
-                        actives.forEach(function(element){
+                        actives.list.forEach(function(element){
                             element.move('left', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
-                                actives.forEach(function(element){
+                                actives.list.forEach(function(element){
                                     element.move('left', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
@@ -1106,19 +1106,19 @@ var akruti = new (function() {
                     break;
 
                 case 38:            //Up Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         currentKey = 38;
                         clearTimeout(keyTimeout);
                         clearInterval(keyInterval);
 
-                        actives.forEach(function(element){
+                        actives.list.forEach(function(element){
                             element.move('up',e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
-                                actives.forEach(function(element){
+                                actives.list.forEach(function(element){
                                     element.move('up',e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
@@ -1129,19 +1129,19 @@ var akruti = new (function() {
                     break;
 
                 case 39:            //Right Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         currentKey = 39;
                         clearTimeout(keyTimeout);
                         clearInterval(keyInterval);
 
-                        actives.forEach(function(element){
+                        actives.list.forEach(function(element){
                             element.move('right', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
-                                actives.forEach(function(element){
+                                actives.list.forEach(function(element){
                                     element.move('right', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
@@ -1152,19 +1152,19 @@ var akruti = new (function() {
                     break;
 
                 case 40:            //Down Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         currentKey = 40;
                         clearTimeout(keyTimeout);
                         clearInterval(keyInterval);
 
-                        actives.forEach(function(element){
+                        actives.list.forEach(function(element){
                             element.move('down', e.ctrlKey, e.shiftKey);
                             element.activate();
                         });
 
                         keyTimeout = setTimeout(function(){
                             keyInterval = setInterval(function(){
-                                actives.forEach(function(element){
+                                actives.list.forEach(function(element){
                                     element.move('down', e.ctrlKey, e.shiftKey);
                                     element.activate();
                                 });
@@ -1173,9 +1173,6 @@ var akruti = new (function() {
 
                     }
                     break;
-
-                default:
-             //       console.log(e.which);
             }
         });
 
@@ -1184,7 +1181,7 @@ var akruti = new (function() {
             switch (e.which) {
 
                 case 37:            //Left Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         if (currentKey == 37) {
                             currentKey = null;
                         }
@@ -1194,7 +1191,7 @@ var akruti = new (function() {
                     break;
 
                 case 38:            //Up Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         if (currentKey == 38) {
                             currentKey = null;
                         }
@@ -1205,7 +1202,7 @@ var akruti = new (function() {
                     break;
 
                 case 39:            //Right Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         if (currentKey == 39) {
                             currentKey = null;
                         }
@@ -1216,7 +1213,7 @@ var akruti = new (function() {
                     break;
 
                 case 40:            //Down Arrow Key
-                    if (actives.length != 0) {
+                    if (actives.list.length != 0) {
                         if (currentKey == 40) {
                             currentKey = null;
                         }
@@ -1638,7 +1635,6 @@ var akruti = new (function() {
                     
                     e.stopImmediatePropagation();
                     var myObject = $(this).data('myObject');
-                    console.log('down', actives.list.indexOf(myObject), e.ctrlKey)
                     if (actives.list.indexOf(myObject) == -1) {
                         if (e.ctrlKey) {
                             activateElement.apply(myObject);
@@ -1864,8 +1860,7 @@ var akruti = new (function() {
                 }
             }
         }
-  
-  
+
     })();
     
 })();
