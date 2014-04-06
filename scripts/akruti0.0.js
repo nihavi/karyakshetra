@@ -16,7 +16,8 @@ var akruti = new (function() {
             'y2':'y2',
             'sc':'stroke',
             'sw':'stroke-width',
-            'so':'stroke-opacity',
+            //'sd': 'stroke-dasharray',
+            //'so':'stroke-opacity',
         },
         sA:{
             'x':'x',
@@ -32,9 +33,9 @@ var akruti = new (function() {
             'sc':'stroke',
             'sw':'stroke-width',
             'f' :'fill',
-            'sd': 'stroke-dasharray',
-            'so':'stroke-opacity',
-            'fo':'fill-opacity',
+            //'sd': 'stroke-dasharray',
+            //'so':'stroke-opacity',
+            //'fo':'fill-opacity',
         },
         r:{
             'x': 'x',
@@ -46,9 +47,9 @@ var akruti = new (function() {
             'f': 'fill',
             'sc': 'stroke',
             'sw': 'stroke-width',
-            'sd' : 'stroke-dasharray',
-            'so':'stroke-opacity',
-            'fo':'fill-opacity',
+            //'sd' : 'stroke-dasharray',
+            //'so':'stroke-opacity',
+            //'fo':'fill-opacity',
         }
     };
 
@@ -472,6 +473,8 @@ var akruti = new (function() {
         /* Default Attributes */
         this.element.setAttribute('rx', 0);
         this.element.setAttribute('ry', 0);
+        this.rx = 0;
+        this.ry = 0;
 
         /* Provided Attributes */
         var j;
@@ -692,9 +695,13 @@ var akruti = new (function() {
         
         if (data instanceof Array) {
             var i;
+            returnValue = {};
+            returnValue.pastState = new Array();
+            returnValue.newState = data;
             for(i=0;i<data.length;i++) {
-                this.performOp(data[i]);
+                returnValue.pastState[i] = this.performOp(data[i]);
             }
+            
         }
         else
         if (data.op == 'cr') {
@@ -744,106 +751,161 @@ var akruti = new (function() {
     };
     
     
-    this.getMenu = function(){
+    this.getMenu = function (){
         return [
             {
                 type: 'main',
                 id: 'create',
                 title: 'Create', //Name of menu
-                icon: 'fa-plus', //Font awesome icon name
+                icon: 'fa-star-half-empty', //Font awesome icon name
                 groups: [
                     {
                         type: 'group',
-                        id: 'modes',
+                        id: 'g3',
                         multiple: false,
                         items: [
                             {
-                                type: 'button',
-                                icon: 'fa-square-o',
+                                type:'button',
+                                icon: 'fa-arrows',
+                                id: 'selectOperation',
                                 onoff: true,
-                                callback: akruti.setRectangle
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-circle-o',
-                                onoff: true,
-                                callback: akruti.setEllipse
+                                callback: this.selectOperation
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-minus',
+                                id:'line',
                                 onoff: true,
-                                callback: akruti.setLine
+                                callback: this.setLine
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-pencil',
+                                id: 'free',
                                 onoff: true,
-                                callback: akruti.setFree
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-magic',
-                                onoff: true,
-                                callback: akruti.setMagic
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-flash',
-                                onoff: true,
-                                callback: akruti.setLight
-                            },
-                        ]
-                    },
-                    {
-                        type: 'group',
-                        id: 'colors',
-                        items: [
-                            {
-                                type: 'button',
-                                icon: 'fa-star',
-                                callback: akruti.setFill
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-star-o',
-                                callback: akruti.setNoFill
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-square',
-                                callback: akruti.setDark
+                                callback: this.setFree
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-square-o',
-                                callback: akruti.setNoDark
+                                id: 'rectangle',
+                                onoff: true,
+                                callback: this.setRectangle
                             },
-                            
-                            
+                            {
+                                type: 'button',
+                                icon: 'fa-circle-o',
+                                id: 'ellipse',
+                                onoff: true,
+                                callback: this.setEllipse
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-magic',
+                                id: 'magic',
+                                onoff: true,
+                                callback: this.setMagic
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-bolt',
+                                id: 'light',
+                                onoff: true,
+                                callback: this.setLight
+                            }
                         ]
                     }
                 ]   //Groups inside this menu
+            },
+            {
+                type: 'main',
+                id: 'edit',
+                title: 'Edit', //Name of menu
+                icon: 'fa-edit', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'g1',
+                        items: [
+                            {
+                                type: 'color',
+                                id: 'fillWhole',
+                                text: 'Fill',
+                                icon: 'fa-tint',
+                                onoff: true,
+                                callback: this.setFill,
+                            },
+                            {
+                                type: 'color',
+                                id: 'fillColor', 
+                                icon: 'fa-tint', 
+                                text: 'Stroke',
+                                onoff: true, 
+                                callback: this.setStrokeColor,
+                            },
+                            {
+                                type: 'size',
+                                id: 'strokeWidth', 
+                                title: 'Stroke Width', //Name of button
+                                icon: 'fa-barcode', //Font awesome icon name
+                                currState: 2, //Default size
+                                rangeStart: 2, //Minimum size
+                                rangeEnd: 20,   //Maximum size
+                                callback: this.setStrokeWidth,  //Callback on change
+                            },
+                        ],
+                    },
+                    {
+                        type: 'group',
+                        id: 'g2',
+                        multiple: false,
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-reply',
+                                onoff: true,
+                                callback: this.setUndo,
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-share',
+                                onoff: true,
+                                callback: this.setRedo,
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-cut',
+                                onoff: true,
+                                callback: this.setDelete
+                            },
+                            {
+                                type: 'button',
+                                id: 'eraser',
+                                icon: 'fa-eraser',
+                                onoff: true,
+                                callback: this.setDelete
+                            },  
+                        ]
+                    }
+                ]  
+            },
+        ]
+    };
+    
+    this.getFileData = function(svg) {
+        var data = new Array();
+        var element = $('#'+svg.id).data('myObject');
+        for (var i=0; i<element.children.length; i++) {
+            data[i] = new Object();
+            data[i]['id'] = element.children[i]['id'];
+            data[i]['pid'] = element.children[i]['pid'];
+            data[i]['t'] = element.children[i]['t'];
+            for (var j in allAA[element.children[i]['t']]) {
+                data[i][j] = element.children[i][j];
             }
-        ];
+        }
+        return data;
     };
-    
-    this.setRectangle   = function (){ editor.currentMode = 'createRectangleMode' };
-    this.setEllipse     = function (){ editor.currentMode = 'createEllipseMode' };
-    this.setLine        = function (){ editor.currentMode = 'createLineMode' };
-    this.setFree        = function (){ };//editor.currentMode = 'freeMode' };
-    this.setMagic       = function (){ };//editor.currentMode = 'fourMode' };
-    this.setLight       = function (){ };//editor.currentMode = 'fourMode2' };
-    this.setFill        = function (){ editor.fillColor = 'orange'};
-    this.setNoFill      = function (){ editor.fillColor = 'none'};
-    
-    this.setDark = function (){
-        document.getElementById('s1').setAttribute('style', 'background-color:black;');
-    };
-    this.setNoDark = function (){
-        document.getElementById('s1').setAttribute('style', 'background-color:white;');
-    };
-    
     
     var editor = new (function() {
 
