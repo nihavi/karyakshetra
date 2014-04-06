@@ -664,9 +664,7 @@ Base = new (function(){
     var newQueue = new Array();
     var exPointer = 0;
     
-    this.addOp = function(states){
-        var pastState = states.pastState;
-        var newState = states.newState;
+    this.addOp = function(pastState, newState){
         
         /*
          * pastState - previous state to be restored on undo
@@ -686,7 +684,7 @@ Base = new (function(){
          * This function will call module's 'performOp' function with pastState
          * Assuming module is an object with performOp function defined
          * 
-         * module.performOp should return currState and newState in a object 
+         * module.performOp should return pastState and newState in a object 
          * with properties of same names
          * 
          * Will not return anything
@@ -695,7 +693,7 @@ Base = new (function(){
             var op = module.performOp(exQueue[exPointer-1]);
             if(exQueue.length == exPointer+1)
                 exQueue[exPointer+1] = null;
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
             exPointer--;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);
@@ -707,14 +705,14 @@ Base = new (function(){
          * This function will call module's 'performOp' function with newState
          * Assuming module is an object with performOp function defined
          * 
-         * module.performOp should return currState and newState in a object 
+         * module.performOp should return pastState and newState in a object 
          * with properties of same names
          * 
          * Will not return anything
          */
         if(exQueue[exPointer+1] != null){
             var op = module.performOp(exQueue[exPointer+1]);
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
             exPointer++;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);

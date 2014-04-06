@@ -669,8 +669,6 @@ var akruti = new (function() {
     };
 
     this.performOp = function (data) {
-        console.log(data);
-        d=data;
         var returnValue;
         
         if (data instanceof Array) {
@@ -681,7 +679,6 @@ var akruti = new (function() {
             for(i=0;i<data.length;i++) {
                 returnValue.pastState[i] = this.performOp(data[i]);
             }
-            
         }
         else
         if (data.op == 'cr') {
@@ -725,7 +722,6 @@ var akruti = new (function() {
             var myObject = $('#' + data.id + 'g').data('myObject');
             returnValue = myObject.changeAttributes(data);
         }
-        r = returnValue;
         return returnValue;
     };
     
@@ -850,24 +846,20 @@ var akruti = new (function() {
                     {
                         type: 'group',
                         id: 'g2',
-                        multiple: false,
                         items: [
                             {
                                 type: 'button',
                                 icon: 'fa-reply',
-                                onoff: false,
                                 callback: Base.undo,
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-share',
-                                onoff: false,
                                 callback: Base.redo,
                             },
                             {
                                 type: 'button',
                                 icon: 'fa-eraser',
-                                onoff: false,
                                 callback: deleteElement
                             },
                         ]
@@ -1310,24 +1302,21 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     Base.addOp({
-                        pastState: {
-                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                            'id':element.id,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        },
-                        newState: {
-                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                            'cx':element.cx,
-                            'cy':element.cy,
-                            'rx':element.rx,
-                            'ry':element.ry,
-                            'sc':element.sc,
-                            'sw':element.sw,
-                            'f' :element.f,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        }
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                        'id':element.id,
+                        'pid':element.pid,
+                        't'  :element.t,
+                    },{
+                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                        'cx':element.cx,
+                        'cy':element.cy,
+                        'rx':element.rx,
+                        'ry':element.ry,
+                        'sc':element.sc,
+                        'sw':element.sw,
+                        'f' :element.f,
+                        'pid':element.pid,
+                        't'  :element.t,
                     });
                 },
                 
@@ -1416,23 +1405,20 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     Base.addOp({
-                        pastState: {
-                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                            'id':element.id,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        },
-                        newState: {
-                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                            'x1':element.x1,
-                            'y1':element.y1,
-                            'x2':element.x2,
-                            'y2':element.y2,
-                            'sc':element.sc,
-                            'sw':element.sw,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        }
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                        'id':element.id,
+                        'pid':element.pid,
+                        't'  :element.t,
+                    },{
+                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                        'x1':element.x1,
+                        'y1':element.y1,
+                        'x2':element.x2,
+                        'y2':element.y2,
+                        'sc':element.sc,
+                        'sw':element.sw,
+                        'pid':element.pid,
+                        't'  :element.t,
                     });
                 },
                 
@@ -1544,24 +1530,21 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     Base.addOp({
-                        pastState: {
-                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                            'id':element.id,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        },
-                        newState: {
-                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                            'x':element.x,
-                            'y':element.y,
-                            'h':element.h,
-                            'w':element.w,
-                            'sc':element.sc,
-                            'sw':element.sw,
-                            'f' :element.f,
-                            'pid':element.pid,
-                            't'  :element.t,
-                        }
+                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                        'id':element.id,
+                        'pid':element.pid,
+                        't'  :element.t,
+                    },{
+                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                        'x':element.x,
+                        'y':element.y,
+                        'h':element.h,
+                        'w':element.w,
+                        'sc':element.sc,
+                        'sw':element.sw,
+                        'f' :element.f,
+                        'pid':element.pid,
+                        't'  :element.t,
                     });
                     
                 },
@@ -1678,10 +1661,7 @@ var akruti = new (function() {
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
                 
                 if ( !( eq( actives.pastState, actives.newState )) ) {
-                    Base.addOp({
-                        'pastState':actives.pastState,
-                        'newState' :actives.newState,
-                    })
+                    Base.addOp(actives.pastState,actives.newState);
                 }
             },
             
@@ -1712,7 +1692,6 @@ var akruti = new (function() {
                         'y2' : element.y2,
                     }
                 },
-
                 mousemove:function(e){
                     
                     var element = e.data;
@@ -1729,7 +1708,6 @@ var akruti = new (function() {
                     element.changeAttributes(changes);
                     
                 },
-
                 mouseup:function(e){
                     
                     var element = e.data;
@@ -1767,7 +1745,6 @@ var akruti = new (function() {
                         'cy' : element.cy,
                     }
                 },
-                
                 mousemove:function(e){
                     
                     var element = e.data;
@@ -1843,6 +1820,18 @@ var akruti = new (function() {
                     return state.newState;
                     
                 },
+            },
+            
+            sA:{
+                mousedown:function(e) {
+                    
+                },
+                mousemove:function(e) {
+                    
+                },
+                mouseup:function(e) {
+                    
+                }
             }
         }
   
@@ -1864,23 +1853,5 @@ var akruti = new (function() {
     })();
     
 })();
-/*
-window.onresize = function(){
-    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
-    akruti.resize();
-};
-
-window.onload = function(){
-    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
-    akruti.init({
-        parent:document.getElementById('svgParent'),
-        attributes:{
-            'h':450,
-            'w':800,
-        }
-    });
-    window.onresize();
-    module = akruti;
-}*/
 
 module = akruti;
