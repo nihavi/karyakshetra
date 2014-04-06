@@ -143,10 +143,11 @@ i.fa.fa-cfw {
 .sep {
     float: left;
     color: white;
-    line-height: 1em;
-    height: 1em;
-    padding: 10px 4px;
-    color: white;
+    line-height: 1.28571em;
+    height: 1.28571em;
+    width: auto;
+    padding: 2px;
+    margin: 4px;
     opacity: 0.5;
 }
 
