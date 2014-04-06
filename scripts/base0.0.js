@@ -62,6 +62,16 @@
 
 Base = new (function(){
     var defaultPalette = [
+        '000000',
+        '434343',
+        '666666',
+        '999999',
+        'b7b7b7',
+        'cccccc',
+        'd9d9d9',
+        'efefef',
+        'f3f3f3',
+        'ffffff',
         'e6b9b1',
         'f2cbcb',
         'fae3cd',
@@ -344,7 +354,8 @@ Base = new (function(){
     }
 
     function createColorPicker() {
-
+        
+        $('.colorpicker').remove();
         var domElement = $('<div class="colorpicker clearfloat"></div>');
 
         for (var i=0;i<palette.length;++i) {
@@ -476,6 +487,7 @@ Base = new (function(){
                             }
                             
                             if( item.type == 'color' ){
+                                menuItem.addClass('btn-color');
                                 menuItem.find('i').css('font-size', '0.5em');
                                 if ('currState' in item) {
                                     menuItem.find('i').css('color', item.currState);
@@ -554,15 +566,15 @@ Base = new (function(){
                     
             var hideColorPicker = function(e) {
                 if (($(e.target).closest('.colorpicker').length == 0)
-                    && ($(e.target).closest('#' + itemId).length == 0)) {
+                    && ($(e.target).closest('.btn-color').length == 0)) {
 
                     $(window).unbind('click', hideColorPicker);
                     $('.colorpicker').hide().data('caller', '');
                 }
             }
-
-            if ($('.colorpicker').css('display') == 'none') {
-                    
+            
+            if (($('.colorpicker').css('display') == 'none') || ($('.colorpicker').data('caller') != itemId)) {
+                
                 var x = elem.offset().left;
                 var y = $('.toolbars').height() + 1;
                 
@@ -570,7 +582,15 @@ Base = new (function(){
                     'top': y,
                     'left': x
                 });
-
+                
+                var dummy = $('<div>').css('backgroundColor',item.currState);
+                var color = dummy.css('backgroundColor');
+                dummy.remove()
+                $('.colorpicker .color').removeClass('active');
+                $('.colorpicker .color').filter(function(i){
+                    return $(this).css('backgroundColor') == item.currState || $(this).css('backgroundColor') == color;
+                }).first().addClass('active');
+                
                 $('.colorpicker').show().data('caller', itemId);
                 $(window).bind('click', hideColorPicker);
             }
