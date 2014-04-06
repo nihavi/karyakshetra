@@ -254,14 +254,16 @@ var akruti = new (function() {
     }
 
     var changeAttributes = function(arg) {
-        var initial = {};
+        
+        var pastState = {'op':'ch', 'id':this.id, 'pid':this.pid };
+        var newState = {'op':'ch', 'id':this.id, 'pid':this.pid };
         var j;
         var ele = (this.element)?this.element:document.getElementById(this.id);
         for(j in arg) {
             if (j in allAA[this.t]) {
-                initial[j] = this[j];
+                pastState[j] = this[j];
                 ele.setAttribute(allAA[this.t][j],arg[j]);
-                this[j] = arg[j];
+                newState[j] = this[j] = arg[j];
             }
         }
         
@@ -334,7 +336,7 @@ var akruti = new (function() {
                 }
             }
         }
-        return initial;
+        return {'pastState':pastState, 'newState':newState}
     };
 
     var Ellipse = function(arg, parent) {
@@ -388,6 +390,7 @@ var akruti = new (function() {
         parent.g.appendChild(this.g);
 
         $(this.g).data('myObject',this);
+        $(this.element).data('myObject',this);
 
         return this;
     };
@@ -441,6 +444,7 @@ var akruti = new (function() {
         parent.g.appendChild(this.g);
         
         $(this.g).data('myObject',this);
+        $(this.element).data('myObject',this);
         
         return this;
     };
@@ -496,6 +500,7 @@ var akruti = new (function() {
         parent.g.appendChild(this.g);
         
         $(this.g).data('myObject',this);
+        $(this.element).data('myObject',this);
         
         return this;
     }
@@ -531,9 +536,11 @@ var akruti = new (function() {
     
     Rectangle.prototype.getPivots = getRectanglePivots;
     
-    var SelectRef =  ['topLeft', 'top', 'topRight', 'left', 'right', 'bottomLeft', 'bottom', 'bottomRight', 'rotate']
+    var SelectRef =  ['topLeft', 'top', 'topRight', 'left', 'right',
+                      'bottomLeft', 'bottom', 'bottomRight', 'rotate'];
+    
     var resizeCursorRef = ['nw-resize', 'n-resize' , 'ne-resize', 'w-resize',
-                           'e-resize', 'sw-resize', 's-resize','se-resize']
+                           'e-resize', 'sw-resize', 's-resize','se-resize'];
     
     
     var SelectArea = function(x,y,w,h, mySvgObject) { //arg has x,y,h,w
@@ -603,6 +610,7 @@ var akruti = new (function() {
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
     };
+   
     /*
     var activate = function() {
         this.deactivate();
@@ -638,15 +646,32 @@ var akruti = new (function() {
     Svg.prototype.fill = fillSvg;
 
     var deleteSelf = function(){
-        this.deactivate();
+        
+        var pastState = {
+            'op' : 'cr',
+            'pid': this.pid,
+            't'  : this.t,
+        }
+        for (var i in allAA[this.t]) {
+            pastState[i] = this[i];
+        }
+        
         this.g.remove();
         var arr = allSvg[this.pid].children;
         arr.splice(arr.indexOf(this),1);
+        var newState = {
+            'op' :'d',
+            'id' :this.id,
+            'pid':this.pid,
+            't'  :this.t
+        }
+        console.log('new', newState)
+        return {'pastState':pastState, 'newState':newState}
     };
 
     Line.prototype.delete = deleteSelf;
     Ellipse.prototype.delete = deleteSelf;
-
+    Rectangle.prototype.delete = deleteSelf;
 
 
     this.init = function(arg) {
@@ -660,51 +685,55 @@ var akruti = new (function() {
 
 
 
-    this.performOp = function(data) {
+    this.performOp = function (data) {
+        
         var returnValue;
-        switch (data.ex) {
-
-            case 'cr':
-                switch (data.t) {
-                    case 'l':
-                        var myObject = new Line(data);
-                        //$(myObject.g).on('mousedown', editor.elementOn.mousedown);
-                        allSvg[myObject.pid].children.push(myObject);
-                }
-                var forEx = {
-                    'op':'d',
-                    't' :myObject.t,
-                    'id':myObject.id,
-                    'pid':myObject.pid,
-                };
-                returnValue = {currState:forEx, newState:data};
-                break;
-
-            case 'd':
-                var myObject = $('#'+data.id).data('myObject');
-                var forEx = {
-                    'op':'cr',
-                    't' :myObject.t,
-                    'id':myObject.id,
-                    'pid':myObject.pid,
-                };
-                for ( var i in allAA[myObject.t] ) {
-                    if( i in this ) {
-                        forEx[i] = this[i];
-                    }
-                };
-                myObject.delete();
-                returnValue = {currState:forEx, newState:data};
-                break;
-
-            case 'ch':
-                var myObject = $('#'+data.id).data('myObject');
-                returnValue = myObject.changeAttributes(data);
-                break;
+        
+        if (data instanceof Array) {
+            var i;
+            for(i=0;i<data.length;i++) {
+                this.performOp(data[i]);
+            }
         }
+        else
+        if (data.op == 'cr') {
+            
+            switch (data.t) {
+            case 'l':
+                var myObject = new Line(data);
+                //$(myObject.g).on('mousedown', editor.elementOn.mousedown);
+                allSvg[myObject.pid].children.push(myObject);
+                
+            }
+            var pastState = {
+                'op' : 'd',
+                't'  : myObject.t,
+                'id' : myObject.id,
+                'pid': myObject.pid,
+                
+            }
+            var newState = data;
+            returnValue = {
+                'pastState': pastState,
+                'newState': newState
+            };
+        }
+        else
+        if (data.op == 'd') {
+            console.log('data', data)
+            var myObject = $('#' + data.id +'g').data('myObject');
+            returnValue = myObject.delete();
+        }
+        else
+        if (data.op == 'ch') {
+            var myObject = $('#' + data.id + 'g').data('myObject');
+            returnValue = myObject.changeAttributes(data);
+        }
+        
         return returnValue;
     };
-
+    
+    
     var editor = new (function() {
 
         var superParent = window;
@@ -728,6 +757,22 @@ var akruti = new (function() {
 
             return document.getElementById('fillColor').value;
         }
+        
+        var eq = function (arg1, arg2){
+            
+            if (arg1.length != arg2.length) {
+                return false;
+            }
+            for (var i=0;i<arg1.length;i++) {
+                for (var j in arg1) {
+                    if (arg1[j] != arg2[j]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+            
+        };
 
         var select = function(obj) {
             var pivotsX = new Array();
@@ -768,8 +813,6 @@ var akruti = new (function() {
         };
         
         var deactivateAll = function(e){
-            console.log(e);
-            x=e;
             if (actives.select)
             {
                 actives.select.g.remove();
@@ -854,11 +897,12 @@ var akruti = new (function() {
             switch (e.which) {
 
                 case 46:            //DeleteKey
-                    if (actives.length != 0) {
-                        for(var i=0;i<actives.length;i++) {
-                            actives[i].delete();
+                    if (actives.list.length != 0) {
+                        for(var i=0;i<actives.list.length;i++) {
+                            actives.list[i].delete();
                         }
-                        actives.length = 0;
+                        deactivateAll();
+                        actives.list.length = 0;
                     }
                     break;
 
@@ -1009,6 +1053,7 @@ var akruti = new (function() {
         });
 
         var svgOn = {
+            
             createEllipseMode: {
 
                 mousedown: function(e) {
@@ -1092,19 +1137,24 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     opQueue.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'cx':element.cx,
-                        'cy':element.cy,
-                        'rx':element.rx,
-                        'ry':element.ry,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'f' :element.f,
-                        'pid':element.pid
+                        pastState: {
+                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                            'id':element.id,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        },
+                        newState: {
+                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                            'cx':element.cx,
+                            'cy':element.cy,
+                            'rx':element.rx,
+                            'ry':element.ry,
+                            'sc':element.sc,
+                            'sw':element.sw,
+                            'f' :element.f,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        }
                     });
                 },
                 
@@ -1193,18 +1243,23 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     opQueue.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x1':element.x1,
-                        'y1':element.y1,
-                        'x2':element.x2,
-                        'y2':element.y2,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'pid':element.pid
+                        pastState: {
+                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                            'id':element.id,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        },
+                        newState: {
+                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                            'x1':element.x1,
+                            'y1':element.y1,
+                            'x2':element.x2,
+                            'y2':element.y2,
+                            'sc':element.sc,
+                            'sw':element.sw,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        }
                     });
                 },
                 
@@ -1316,19 +1371,24 @@ var akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     opQueue.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x':element.x,
-                        'y':element.y,
-                        'h':element.h,
-                        'w':element.w,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'f' :element.f,
-                        'pid':element.pid
+                        pastState: {
+                            'op':'d',           //op = [d]elete; when this objects come, delete the Object
+                            'id':element.id,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        },
+                        newState: {
+                            'op':'cr',          //op = [cr]eate; when this objects come, create the Object
+                            'x':element.x,
+                            'y':element.y,
+                            'h':element.h,
+                            'w':element.w,
+                            'sc':element.sc,
+                            'sw':element.sw,
+                            'f' :element.f,
+                            'pid':element.pid,
+                            't'  :element.t,
+                        }
                     });
                     
                 },
@@ -1417,11 +1477,10 @@ var akruti = new (function() {
                             deactivateElement.apply(myObject);
                         }
                     }
-                    
+                    actives.pastState = new Array();
                     for(var i=0;i<actives.list.length;i++) {
                         e.data = actives.list[i];
-                        elementMove[actives.list[i].t].mousedown(e);
-                        
+                        actives.pastState[i] = elementMove[actives.list[i].t].mousedown(e);
                     }
                     $(superParent).on('mousemove',elementOn.mousemove).on('mouseup',elementOn.mouseup);
                 }
@@ -1436,7 +1495,22 @@ var akruti = new (function() {
             },
             
             mouseup : function(e){
+                
+                actives.newState = new Array();
+                
+                for(var i=0;i<actives.list.length;i++) {
+                    e.data = actives.list[i];
+                    actives.newState[i] = elementMove[actives.list[i].t].mouseup(e);
+                }
+                if (actives.list[0]) select(actives.list[0]);
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
+                
+                if ( !( eq( actives.pastState, actives.newState )) ) {
+                    opQueue.addOp({
+                        'pastState':actives.pastState,
+                        'newState' :actives.newState,
+                    })
+                }
             },
             
         };
@@ -1456,6 +1530,15 @@ var akruti = new (function() {
                     element.dy1 = element.y1 - y;
                     element.dx2 = element.x2 - x;
                     element.dy2 = element.y2 - y;
+                    return {
+                        'op' :'ch',
+                        'id' : element.id,
+                        'pid': element.pid,
+                        'x1' : element.x1,
+                        'y1' : element.y1,
+                        'x2' : element.x2,
+                        'y2' : element.y2,
+                    }
                 },
 
                 mousemove:function(e){
@@ -1472,10 +1555,24 @@ var akruti = new (function() {
                         'y2':element.dy2+y,
                     }
                     element.changeAttributes(changes);
-
+                    
                 },
 
                 mouseup:function(e){
+                    
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var changes = {
+                        'x1':element.dx1+x,
+                        'y1':element.dy1+y,
+                        'x2':element.dx2+x,
+                        'y2':element.dy2+y,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
                 },
 
             },
@@ -1490,9 +1587,17 @@ var akruti = new (function() {
                     element.diff = {};
                     element.diff.cx = element.cx - x;
                     element.diff.cy = element.cy - y;
+                    return {
+                        'op' :'ch',
+                        'id' : element.id,
+                        'pid': element.pid,
+                        'cx' : element.cx,
+                        'cy' : element.cy,
+                    }
                 },
                 
                 mousemove:function(e){
+                    
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
@@ -1506,17 +1611,64 @@ var akruti = new (function() {
                 },
                 mouseup:function(e){
                     
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var changes = {
+                        'cx':element.diff.cx+x,
+                        'cy':element.diff.cy+y,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
                 }
             },
             
             r:{
                 mousedown:function(e){
                     
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    element.diff = {};
+                    element.diff.x = element.x - x;
+                    element.diff.y = element.y - y;
+                    return {
+                        'op' :'ch',
+                        'id' : element.id,
+                        'pid': element.pid,
+                        'x' : element.x,
+                        'y' : element.y,
+                    }
                 },
                 mousemove:function(e){
                     
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var changes = {
+                        'x':element.diff.x+x,
+                        'y':element.diff.y+y,
+                    }
+                    element.changeAttributes(changes);
                 },
                 mouseup:function(e){
+                    var element = e.data;
+                    var mySvgObject = allSvg[element.pid];
+                    var offset = mySvgObject.page.getBoundingClientRect();
+                    var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                    var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    var changes = {
+                        'x':element.diff.x+x,
+                        'y':element.diff.y+y,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
                     
                 },
             }

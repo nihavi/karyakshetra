@@ -6,7 +6,11 @@ var exPointer = 0;
 
 opQueue = {
 
-    addOp: function (pastState, newState) {
+    addOp: function (states) {
+        console.log(states)
+        var pastState = states.pastState;
+        var newState = states.newState;
+        
 
     /*
     
@@ -42,7 +46,7 @@ opQueue = {
     
     *
     
-    * module.performOp should return currState and newState in an object
+    * module.performOp should return pastState and newState in an object
     
     * with properties of same names
     
@@ -60,7 +64,7 @@ opQueue = {
 
                 exQueue[exPointer + 1] = null;
 
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
 
             exPointer--;
 
@@ -84,7 +88,7 @@ opQueue = {
     
     *
     
-    * module.performOp should return currState and newState in a object
+    * module.performOp should return pastState and newState in a object
     
     * with properties of same names
     
@@ -98,7 +102,7 @@ opQueue = {
 
             var op = module.performOp(exQueue[exPointer + 1]);
 
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
 
             exPointer++;
 
