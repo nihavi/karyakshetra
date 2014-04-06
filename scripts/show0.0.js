@@ -360,6 +360,10 @@ Show = new (function(){
             this.renderElem();
             return this;
         },
+        focus: function(){
+            Base.updateMenu(defaultMenus.concat(formatMenu(this)));
+            Base.focusMenu('format');
+        },
         blur: function(){
             activeElement.elemDOM.removeClass('active');
             activeElement.elemDOM.find('.elem-text').blur();
@@ -428,8 +432,7 @@ Show = new (function(){
             cursor: 'auto',
             overflow: 'visible'
         });
-        Base.updateMenu(defaultMenus.concat(formatMenu));
-        Base.focusMenu('format');
+        activeElement.focus();
     };
     var textBlur = function(ev){
         //Will be called when a contentEdtable is focused
@@ -622,7 +625,8 @@ Show = new (function(){
     /*
      * Select and format and move elements
      */
-    var elemAlign = function(mode){
+    var elemAlign = function(mode, onoff){
+        if(onoff == false)return;
         if(activeElement){
             activeElement.editElement({
                 style: {
@@ -643,79 +647,184 @@ Show = new (function(){
     var log = function(a, b){
         console.log(a, b);
     }
-    var formatMenu = [
-        {
+    var formatMenu = function(elem){
+        /*
+         * elem is Object of type Elem
+         * Returns menus corresponding to element
+         */
+        
+        var format = {
             type: 'main',
             id: 'format',
             title: 'Format', //Name of menu
             icon: 'fa-format', //Font awesome icon name
-            groups: [
+            groups: []
+        };
+        
+        var group;
+        
+        //Text align group
+        group = {
+            type: 'group',
+            id: 'align',
+            multiple: false,
+            items: [
                 {
-                    type: 'group',
-                    id: 'g1',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-align-left',
-                            id: 'left',
-                            callback: elemAlign
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-align-center',
-                            id: 'center',
-                            callback: elemAlign
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-align-right',
-                            id: 'right',
-                            callback: elemAlign
-                        },
-                    ]
+                    type: 'button',
+                    icon: 'fa-align-left',
+                    id: 'left',
+                    onoff: true,
+                    callback: elemAlign
                 },
                 {
-                    type: 'group',
-                    id: 'g2',
-                    items: [
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            id: 'color',
-                            currState: '#000000',
-                            text: 'F',
-                            callback: elemColor
-                        },
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            id: 'background-color',
-                            currState: '#ffffff',
-                            text: 'B',
-                            callback: elemColor
-                        },
-                        {
-                            type: 'list',
-                            //icon: 'fa-circle',
-                            id: 'list',
-                            title: 'List',
-                            list: [
-                                {
-                                    id: 'da',
-                                    value: 'Hello'
-                                },
-                                {
-                                    id: 'da1',
-                                    value: 'Hello2'
-                                }
-                            ],
-                            callback: log
-                        },
-                    ]
+                    type: 'button',
+                    icon: 'fa-align-center',
+                    id: 'center',
+                    onoff: true,
+                    callback: elemAlign
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-align-right',
+                    id: 'right',
+                    onoff: true,
+                    callback: elemAlign
+                },
+            ]
+        };
+        if(('style' in elem) && ('textAlign' in elem.style)){
+            if(elem.style.textAlign == 'left')
+                group.items[0].currState = true;
+            else if(elem.style.textAlign == 'center')
+                group.items[1].currState = true;
+            else if(elem.style.textAlign == 'right')
+                group.items[2].currState = true;
+        }
+        else {
+            group.items[0].currState = true;
+        }
+        
+        format.groups.push(group);
+        
+        //Colors group
+        group = {
+            type: 'group',
+            id: 'colors',
+            items: [
+                {
+                    type: 'color',
+                    icon: 'fa-circle',
+                    id: 'color',
+                    currState: '#000000',
+                    text: 'F',
+                    callback: elemColor
+                },
+                {
+                    type: 'color',
+                    icon: 'fa-circle',
+                    id: 'backgroundColor',
+                    currState: '#ffffff',
+                    text: 'B',
+                    callback: elemColor
                 }
             ]
-        },
-    ];
+        }
+        if(('style' in elem) && ('color' in elem.style)){
+            group.items[0].currState = elem.style.color;
+        }
+        else {
+            group.items[0].currState = '#000';
+        }
+        
+        if(('style' in elem) && ('backgroundColor' in elem.style)){
+            group.items[1].currState = elem.style.backgroundColor;
+        }
+        else {
+            group.items[1].currState = '#fff';
+        }
+        
+        format.groups.push(group);
+        
+        return [format];
+        /*
+        return [
+            {
+                type: 'main',
+                id: 'format',
+                title: 'Format', //Name of menu
+                icon: 'fa-format', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'align',
+                        multiple: false,
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-align-left',
+                                id: 'left',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-align-center',
+                                id: 'center',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-align-right',
+                                id: 'right',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        id: 'colors',
+                        items: [
+                            {
+                                type: 'color',
+                                icon: 'fa-circle',
+                                id: 'color',
+                                currState: '#000000',
+                                text: 'F',
+                                callback: elemColor
+                            },
+                            {
+                                type: 'color',
+                                icon: 'fa-circle',
+                                id: 'background-color',
+                                currState: '#ffffff',
+                                text: 'B',
+                                callback: elemColor
+                            },
+                            {
+                                type: 'list',
+                                //icon: 'fa-circle',
+                                id: 'list',
+                                title: 'List',
+                                list: [
+                                    {
+                                        id: 'da',
+                                        value: 'Hello'
+                                    },
+                                    {
+                                        id: 'da1',
+                                        value: 'Hello2'
+                                    }
+                                ],
+                                callback: log
+                            },
+                        ]
+                    }
+                ]
+            },
+        ];*/
+    }
     var moveInit = function(ev){
         if(ev.which != 1)return;
         
@@ -735,8 +844,7 @@ Show = new (function(){
             var elem = $(this);
             elem.addClass('active');
             activeElement = elem.data('elem');
-            Base.updateMenu(defaultMenus.concat(formatMenu));
-            Base.focusMenu('format');
+            activeElement.focus();
             return;
         }
         
@@ -755,8 +863,7 @@ Show = new (function(){
         }
         //activeElement.elemDOM.css('overflow', 'visible');
         $('#slides').bind('mousemove', moveElement);
-        Base.updateMenu(defaultMenus.concat(formatMenu));
-        Base.focusMenu('format');
+        activeElement.focus();
         
         if(secondClick){
             $(window).one('mouseup', function(ev){
