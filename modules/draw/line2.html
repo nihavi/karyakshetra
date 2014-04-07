@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start something!</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="ThisIsPurelyTestingBase">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='line2.css' rel='stylesheet' type='text/css'>
+        
+        <style>
+        *
+        {
+            box-sizing:border-box;
+            -moz-box-sizing:border-box;
+            margin:0;
+            padding:0;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body, html
+        {
+            background-color:#eee;
+            color:white;
+            font-family: 'Monaco', sans-serif;            
+        }
+        
+        #upper
+        {
+            background-color:#1D9D74;#33ff77;#03e4fd;#03d0f0;
+            height:35px;
+            line-height:35px;
+            padding-left:10px;
+        }
+        input
+        {
+            width:60px;
+        }
+        #svgParent
+        {
+            background-color:#eee;
+        }
+        </style>
+        <script src="jquery.min.js"></script>
+        <script src="opq.js"></script>
+        <script src="line2.js"></script>
+        <script src="jscolor/jscolor.js"></script>
+    </head>
+    <body>
+        <div id="upper">
+                <button onclick="akruti.selectOperation('createLineMode')" id="lineBtn">Line</button>
+                <button onclick="akruti.selectOperation('createEllipseMode')" id="ellipseBtn">Ellipse</button>
+                <button onclick="akruti.selectOperation('createRectangleMode')" id="rectBtn">Rect</button>
+                <button onclick="akruti.selectOperation('selectMode')" id="selectBtn">Select</button>
+                <button onclick="Base.undo()" id="TBtn">Undo</button>
+                <button onclick="Base.redo()" id="T2Btn">Redo</button>
+                <label>| Stroke Color </label><input class="color" value="#5D2CE6" id="strokeColor" placeholder="StokeColor">
+                <label>| Fill Color </label><input class="color" value="none" id="fillColor" placeholder="FillColor">
+                <label>| Stroke Width </label><input type="text" value="2" id="strokeWidth" placeholder="StrokeWidth">
+                <label>| Zoom </label>
+                <input type="text" name="points" id="zoom" onchange="akruti.zoom(this.value)" style="width:100px" value="fit">
+                <span id="zoomValue" >fit</span>
+        </div>
+        <div id="svgParent"></div>
+    </body>
+</html>

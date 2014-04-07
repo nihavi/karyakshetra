@@ -150,7 +150,7 @@ Base = new (function(){
     var log = function(id,t){
         console.log(id,t);
     }
-    var defaultMenus = [
+    var defaultMenus = [];a=[
         {
             type: 'main',
             id: 'file',
