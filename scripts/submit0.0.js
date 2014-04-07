@@ -66,11 +66,12 @@ Submit = new(function(){
                     this.children.splice(index, 1);
                 }
             }
+            return this;
         }
     }
     var Page = function(){
         this.containers = [];
-        this.containers.push(new Control());
+        this.containers.push(new Container());
     };
     
     Page.prototype = {
@@ -104,18 +105,61 @@ Submit = new(function(){
 		},
 		
 		removeContainers : function(containerList){
-			for (singleContainer in containerList){
+			for (var singleContainer in containerList){
 				if (singleContainer in this.containers){
-					var index = this.containers.indexOf(singleControl);
+					var index = this.containers.indexOf(singleContainer);
 					this.children.splice(index, 1);
 				}
 			}
+			return this;
 		}
 	}
 
-    var Control = function(){
+    var Container = function(){
+		this.controls = [];
+		this.controls.push(new Control());
     };
-
+    
+    Container.prototype = {
+		
+		addControlsAtEnd : function(controlList){
+			this.controls.push(controlList);
+			return this;
+		},
+		
+		addControlsAtStart : function(controlList){
+			this.controls.unshift(controlList);
+			return this;
+		},
+		
+		moveControlToEnd : function(singleControl){
+			if (singleControl in this.controls){
+				var index = this.controls.indexOf(singleControl);
+				var moveToEnd = this.controls.splice(index, 1);
+				this.addControlsAtEnd(moveToEnd);
+			}
+			return this;
+		},
+		
+		moveControlToStart : function(singleControl){
+			if (singleControl in this.controls){
+				var index = this.controls.indexOf(singleControl);
+				var moveToStart = this.controls.splice(index, 1);
+				this.addControlsAtStart(moveToStart);
+			}
+			return this;
+		},
+		
+		removeControls: function (controlList){
+			for (var singleControl in controlList){
+				if (singleControl in this.controls){
+					var index = this.controls.indexOf(singleControl);
+					this.controls.splice(index, 1);
+				}
+			}
+			return this;
+		}
+	}
 
     /*
      * DOM Manipulation
