@@ -1,11 +1,7 @@
-.select-mode {
-    cursor:auto;
-}
-
-.create-mode {
-    cursor:crosshair !important;
+.drawing-elements {
+    pointer-events:all;
 }
 
 .active {
-    cursor:move;
+    cursor:move !important;
 }

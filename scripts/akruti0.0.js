@@ -1,5 +1,5 @@
-var akruti = new (function() {
-    
+i=0;
+Akruti = new (function() {
     /* Globals */
     
     var allSvg = new Object(),
@@ -183,7 +183,7 @@ var akruti = new (function() {
         this.children = new Array();
         return this;
     };
-
+    
     var svgResize = function(zoom){
         var parentDimension = this.element.parentNode.getBoundingClientRect();
         var h = parentDimension.height;
@@ -508,7 +508,7 @@ var akruti = new (function() {
         
         return this;
     }
-
+    
     Line.prototype.changeAttributes = changeAttributes;
     Ellipse.prototype.changeAttributes = changeAttributes;
     Rectangle.prototype.changeAttributes = changeAttributes;
@@ -540,8 +540,8 @@ var akruti = new (function() {
     
     Rectangle.prototype.getPivots = getRectanglePivots;
     
-    var SelectRef =  ['topLeft', 'top', 'topRight', 'left', 'right',
-                      'bottomLeft', 'bottom', 'bottomRight', 'rotate'];
+    var SelectRef =  ['top-left', 'top', 'top-right', 'left', 'right',
+                      'bottom-left', 'bottom', 'bottom-right', 'rotate'];
     
     var resizeCursorRef = ['nw-resize', 'n-resize' , 'ne-resize', 'w-resize',
                            'e-resize', 'sw-resize', 's-resize','se-resize'];
@@ -611,7 +611,7 @@ var akruti = new (function() {
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
     };
-
+    
     var fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
     };
@@ -644,7 +644,8 @@ var akruti = new (function() {
     Line.prototype.delete = deleteSelf;
     Ellipse.prototype.delete = deleteSelf;
     Rectangle.prototype.delete = deleteSelf;
-
+    
+    
 
     this.init = function(parent) {
         var dim = parent.getBoundingClientRect();
@@ -656,6 +657,7 @@ var akruti = new (function() {
         var svgObject = new Svg(arg, parent, true);
         allSvg[svgObject.id] = svgObject;
         this.resize();
+        setMode('createLineMode', true);
     };
 
     this.selectOperation = function(op) {
@@ -734,6 +736,7 @@ var akruti = new (function() {
         return data;
     };
     
+    /*******************************   Editor Module   *******************************/
     var editor = new (function() {
 
         var superParent = window;
@@ -755,20 +758,25 @@ var akruti = new (function() {
                     editor.currentMode = mode;
                     if (mode == 'selectMode') {
                         for (var i in allSvg) {
-                            allSvg[i].element.classList.remove('create-mode');
-                            allSvg[i].element.classList.add('select-mode');
+                            allSvg[i].element.style.cursor = 'alias';
+                            for (var j=0;j<allSvg[i].children.length; j++) {
+                                allSvg[i].children[j].g.style.cursor = 'pointer';
+                            }
                         }
                     }
                     else {
                         for (var i in allSvg) {
-                            allSvg[i].element.classList.remove('select-mode');
-                            allSvg[i].element.classList.add('create-mode');
+                            allSvg[i].element.style.cursor = 'crosshair';
+                            for (var j=0;j<allSvg[i].children.length; j++) {
+                                allSvg[i].children[j].g.style.cursor = 'auto';
+                            }
                         }
                     }
                 }
             }
         };
         
+        /****************** Useless ******************/
         this.setFillColor = function(id, color){
             editor.fillColor = color;
         };
@@ -776,6 +784,7 @@ var akruti = new (function() {
         this.setStrokeColor = function(id, color){
             editor.strokeColor = color;
         };
+        /****************** Useless ends ******************/
         
         this.deleteElement = function(a,b){
             console.log(a,b)
@@ -809,7 +818,7 @@ var akruti = new (function() {
             
         };
 
-        var select = function(obj) {            //Caution:The use of parameter obj is only to get svg ID
+        var select = function(obj) {            //Note:The use of parameter obj is only to get svg ID
             var pivotsX = new Array();
             var pivotsY = new Array();
             for (var i=0;i<actives.list.length;i++) {
@@ -839,13 +848,13 @@ var akruti = new (function() {
                 $(superParent).one('mousedown',deactivateAll);
             }
             actives.list.push(this);
-            $(this.g).addClass('active');
+            this.g.classList.add('active');
             select(this);
         };
         
         var deactivateElement = function(){
             actives.list.splice(actives.list.indexOf(this),1);
-            $(this.g).removeClass('active');
+            this.g.classList.remove('active');
             select(this);
         };
         
@@ -855,7 +864,7 @@ var akruti = new (function() {
                 actives.select.g.remove();
                 delete actives.select;
                 while (actives.list.length != 0) {
-                    $(actives.list.pop().g).removeClass('active');
+                    actives.list.pop().g.classList.remove('active');
                 }
             }
         }
@@ -937,11 +946,7 @@ var akruti = new (function() {
 
                 case 46:            //DeleteKey
                     if (actives.list.length != 0) {
-                        for(var i=0;i<actives.list.length;i++) {
-                            actives.list[i].delete();
-                        }
-                        deactivateAll();
-                        actives.list.length = 0;
+                        deleteSelected();
                     }
                     break;
 
@@ -1715,8 +1720,29 @@ var akruti = new (function() {
             }
         }
 
+        var deleteSelected = function(){
+            for(var i=0;i<actives.list.length;i++) {
+                actives.list[i].delete();
+            }
+            deactivateAll();
+            actives.list.length = 0;
+        }
+        
     })();
+    /******************************* Editor Module End *******************************/
     
+    var setMode = function(mode, onOff){
+        editor.setMode(mode, onOff);
+    };
+    
+    var setFillColor = function(id, color){
+        editor.fillColor = color;
+    };
+    
+    var setStrokeColor = function(id, color){
+        editor.strokeColor = color;
+    };
+        
     var defaultMenu = [
         {
             type: 'main',
@@ -1736,7 +1762,7 @@ var akruti = new (function() {
                             title:'Select',
                             onoff: true,
                             currState:false,
-                            callback: editor.setMode
+                            callback: setMode
                         },
                         {
                             type: 'button',
@@ -1745,7 +1771,7 @@ var akruti = new (function() {
                             title:'Line',
                             onoff: true,
                             currState:true,
-                            callback: editor.setMode
+                            callback: setMode
                         },
                         {
                             type: 'button',
@@ -1763,7 +1789,7 @@ var akruti = new (function() {
                             title:'Rectangle',
                             onoff: true,
                             currState:false,
-                            callback: editor.setMode
+                            callback: setMode
                         },
                         {
                             type: 'button',
@@ -1772,7 +1798,7 @@ var akruti = new (function() {
                             title:'Ellipse',
                             onoff: true,
                             currState:false,
-                            callback: editor.setMode
+                            callback: setMode
                         },
                         {
                             type: 'button',
@@ -1812,7 +1838,7 @@ var akruti = new (function() {
                             title:'Fill',
                             text: 'Fill Color',
                             icon: 'fa-tint',
-                            callback: editor.setFillColor,
+                            callback: setFillColor,
                         },
                         {
                             type: 'color',
@@ -1820,7 +1846,7 @@ var akruti = new (function() {
                             title:'Stroke Color',
                             icon: 'fa-tint', 
                             text: 'Stroke',
-                            callback: editor.setStrokeColor,
+                            callback: setStrokeColor,
                         },
                         /*{
                             type: 'size',
@@ -1865,4 +1891,4 @@ var akruti = new (function() {
     
 })();
 
-module = akruti;
+module = Akruti;
