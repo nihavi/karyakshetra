@@ -663,14 +663,20 @@ Base = new (function(){
     this.setEditable = function(){
         var edit = $('#editable');
         var menu = $('#menubar');
-        edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
+        if($('#menubar').css('display')=='none'){
+            edit.css('height', $(window).innerHeight());
+        }
+        else {
+            edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
+        }
     }
     
-    $(window).resize(function(){
+    var handleResize = function(){
         Base.setEditable();
         //Call module's resize function
         module.resize();
-    });
+    }
+    $(window).resize(handleResize);
     
     
     /*
@@ -903,5 +909,44 @@ Base = new (function(){
             callback: this.redo
         }
     ]);
+    
+    /*
+     * Full screen request
+     */
+     
+    this.fullscreen = function() {
+        element=document.body;
+        // Supports most browsers and their versions.
+        var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+        
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(element);
+        }
+        else if( typeof window.ActiveXObject !== "undefined" ){ // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+        handleResize();
+    }
+    
+    this.hideMenu = function(complete){
+        //Hide base completely if complete is true
+        $('#menubar').hide();
+        if(!complete){
+            var showBtn = $('<div id="showMenu"><i class="fa fa-angle-down"></i></div>').appendTo('#interface');
+            showBtn.click(function(){
+                Base.showMenu();
+            });
+        }
+        handleResize();
+    }
+    
+    this.showMenu = function(){
+        $('#menubar').show();
+        $('#showMenu').remove();
+        handleResize();
+    }
     
 })();
