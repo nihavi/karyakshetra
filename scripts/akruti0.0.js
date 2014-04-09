@@ -1,4 +1,3 @@
-i=0;
 Akruti = new (function() {
     /* Globals */
     
@@ -580,7 +579,7 @@ Akruti = new (function() {
             this.p[i].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
             this.p[i].setAttribute('height',2*radius);
             this.p[i].setAttribute('width',2*radius);
-            this.p[i].id = mySvgObject.id+'sap'+i;
+            this.p[i].id = SelectRef[i];
             this.g.appendChild(this.p[i]);
         }
         this.p[0].setAttribute('x',x-radius);
@@ -756,7 +755,6 @@ Akruti = new (function() {
         actives.list = new Array();
         
         this.setMode = function(mode,onOff){
-            console.log('e.setm', mode, onOff, 'test1', allModes.indexOf(mode) != -1);
             if (onOff == true) {
                 if (allModes.indexOf(mode) != -1) {
                     editor.currentMode = mode;
@@ -841,7 +839,7 @@ Akruti = new (function() {
             actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[obj.pid]);
             var pivots = actives.select.p;
             for (var i=0;i<pivots.length;i++) {
-                $(pivots[i]).on('mousedown', resizeElement.mousedown).css('cursor',resizeCursorRef[i]);
+                $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
             
         };
@@ -1298,7 +1296,6 @@ Akruti = new (function() {
                     
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    console.log(mySvgObject.children, mySvgObject.id);
                     Base.addOp({
                         'op':'d',           //op = [d]elete; when this objects come, delete the Object
                         'id':element.id,
@@ -1354,8 +1351,8 @@ Akruti = new (function() {
                     var attributes = {
                         'x' :x,
                         'y' :y,
-                        'h' :0,
-                        'w' :0,
+                        'h' :100,
+                        'w' :100,
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
                         'f' : getFillColor()
@@ -1457,7 +1454,7 @@ Akruti = new (function() {
 
                             'y': (y > sy) ?
                                 sy : sy - sideLength,
-
+                        
                             'sideLength': sideLength,
                         };
                 },
@@ -1560,7 +1557,6 @@ Akruti = new (function() {
                     }
                 },
             },
-            
         };
 
         var elementOn = {
@@ -1775,21 +1771,40 @@ Akruti = new (function() {
             },
         }
   
-        var resizeElement = {
+        var pivotsOn = {
             mousedown: function(e) {
-                //console.log(e);
-                //console.log(elementResize[e.t].left);
-                elementResize[actives.list[0].t].left.mousedown(actives.list[0], actives.select);
-                x=actives;
-                $(superParent).on('mousemove',resizeElement.mousemove).on('mouseup',resizeElement.mouseup);
                 e.stopPropagation();
+                var tmp = this.id.split('-');
+                
+                /* Resizing select Rect */
+                var mySvgObject = allSvg[actives.select.pid];
+                var offset = mySvgObject.page.getBoundingClientRect();
+                var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                elementResize['sA'][tmp[0]].mousedown(x,y);
+                if (tmp.length == 2) {
+                    elementResize['sA'][tmp[1]].mousedown(x,y);
+                }
+                $(superParent).on('mousemove', pivotsOn.mousemove).on('mouseup',pivotsOn.mouseup);
+                actives.tmp = tmp;
             },
             mousemove: function(e, selectRect) {
-                elementResize[actives.list[0].t].left.mousemove(actives.list[0], actives.select);
+                e.stopPropagation();
+                var tmp = actives.tmp;
+                /* Resizing select Rect */
+                var mySvgObject = allSvg[actives.select.pid];
+                var offset = mySvgObject.page.getBoundingClientRect();
+                var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
+                var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                elementResize['sA'][tmp[0]].mousemove(x,y);
+                if (tmp.length == 2) {
+                    elementResize['sA'][tmp[1]].mousemove(x,y);
+                }
+                
             },
             mouseup: function(e, selectRect) {
-                //elementResize[e.t].left.mouseup(e, selectRect);
-                $(superParent).off('mousemove',resizeElement.mousemove).off('mouseup',resizeElement.mouseup);
+                $(superParent).off('mousemove', pivotsOn.mousemove).off('mouseup',pivotsOn.mouseup);
+                delete actives.tmp;
             }
         };
         
@@ -1824,7 +1839,6 @@ Akruti = new (function() {
                             'x2':element.initialX+element.ratioX2*rect.w,
                         }
                         element.changeAttributes(changes);
-                        console.log(e.x1, e.x2);
                         select(e);
                     },
                     mouseup:function(e, rect){
@@ -1858,6 +1872,23 @@ Akruti = new (function() {
                         
                     },
                 }
+            },
+            sA:{
+                left:{
+                    mousedown:function(x,y) {
+                        actives.select.X = x;
+                        actives.select.W = actives.select.w;
+                    },
+                    mousemove:function(x,y) {
+                        actives.select.w = actives.select.W - x + actives.select.X;
+                        actives.select.rect.setAttribute('width', actives.select.w);
+                        actives.select.rect.setAttribute('x',x);
+                    },
+                    mouseup:function(x,y) {
+                        
+                    },
+                },
+                
             }
         }
 
