@@ -279,7 +279,7 @@ Show = new (function(){
                     elemDOM.appendTo(slide);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
-                    elemText.bind('keyup keydown keypress', function(ev){
+                    elemText.bind('keypress keyup', function(ev){
                         elem = $(this).closest('.elem').data('elem');
                         elem.text = $(this).html();
                         elem.renderElemSide(elem.parent.id);
@@ -398,7 +398,7 @@ Show = new (function(){
                             fontSize: 5,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
-        $('#slides').one('mouseup',finishNewTextBox);
+        $(window).one('mouseup',finishNewTextBox);
         removeInsertOp();
         ev.preventDefault();
     }
@@ -433,11 +433,11 @@ Show = new (function(){
     
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
-        if(!activeElement)
-            activeElement = $(this).closest('.elem').data('elem');
+        activeElement = $(this).closest('.elem').data('elem');
         $('.elem.active').removeClass('active');
         activeElement.elemDOM.addClass('active');
         activeElement.elemDOM.addClass('edit');
+        activeElement.editable = true;
         activeElement.elemDOM.css({
             cursor: 'auto',
             overflow: 'visible'
@@ -682,6 +682,7 @@ Show = new (function(){
             type: 'group',
             id: 'align',
             multiple: false,
+            required: true,
             items: [
                 {
                     type: 'button',
