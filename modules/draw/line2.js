@@ -1868,14 +1868,14 @@ var akruti = new (function() {
 })();
 
 window.onresize = function(){
-    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
+    //document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
     akruti.resize();
 };
 
 window.onload = function(){
-    document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
+    //document.getElementById('svgParent').style.height = (window.innerHeight-35) + 'px';
     akruti.init(document.getElementById('svgParent'));
-    //window.onresize();
+    window.onresize();
 }
 
 module = akruti;

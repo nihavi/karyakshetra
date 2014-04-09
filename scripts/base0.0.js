@@ -150,7 +150,7 @@ Base = new (function(){
     var log = function(id,t){
         console.log(id,t);
     }
-    var defaultMenus = [];a=[
+    var defaultMenus = [
         {
             type: 'main',
             id: 'file',
@@ -351,6 +351,7 @@ Base = new (function(){
         
         //Call module's init
         module.init(edit.get(0));
+        module.resize();
     }
 
     function createColorPicker() {

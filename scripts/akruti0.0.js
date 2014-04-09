@@ -308,7 +308,6 @@ var akruti = new (function() {
                         this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
                         this.pseudo.setAttribute('stroke','transparent');
                         this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('class','l');
                         this.pseudo.setAttribute('x1',this.x1);
                         this.pseudo.setAttribute('y1',this.y1);
                         this.pseudo.setAttribute('x2',this.x2);
@@ -320,7 +319,6 @@ var akruti = new (function() {
                         this.pseudo.setAttribute('stroke','transparent');
                         this.pseudo.setAttribute('fill','none');
                         this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('class','e');
                         this.pseudo.setAttribute('cx',this.cx);
                         this.pseudo.setAttribute('cy',this.cy);
                         this.pseudo.setAttribute('rx',this.rx);
@@ -332,7 +330,6 @@ var akruti = new (function() {
                         this.pseudo.setAttribute('stroke','transparent');
                         this.pseudo.setAttribute('fill','none');
                         this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('class','r');
                         this.pseudo.setAttribute('x',this.x-3);
                         this.pseudo.setAttribute('y',this.y-3);
                         this.pseudo.setAttribute('h',this.h);
@@ -383,7 +380,6 @@ var akruti = new (function() {
             this.pseudo.setAttribute('stroke','transparent');
             this.pseudo.setAttribute('fill','none');
             this.pseudo.setAttribute('stroke-width',7);
-            this.pseudo.setAttribute('class','e');
             this.pseudo.setAttribute('cx',this.cx);
             this.pseudo.setAttribute('cy',this.cy);
             this.pseudo.setAttribute('rx',this.rx);
@@ -437,7 +433,6 @@ var akruti = new (function() {
             this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
             this.pseudo.setAttribute('stroke','transparent');
             this.pseudo.setAttribute('stroke-width',7);
-            this.pseudo.setAttribute('class','l');
             this.pseudo.setAttribute('x1',this.x1);
             this.pseudo.setAttribute('y1',this.y1);
             this.pseudo.setAttribute('x2',this.x2);
@@ -495,7 +490,6 @@ var akruti = new (function() {
             this.pseudo.setAttribute('stroke','transparent');
             this.pseudo.setAttribute('fill','none');
             this.pseudo.setAttribute('stroke-width',7);
-            this.pseudo.setAttribute('class','r');
             this.pseudo.setAttribute('x',this.x-3);
             this.pseudo.setAttribute('y',this.y-3);
             this.pseudo.setAttribute('h',this.h);
@@ -559,9 +553,8 @@ var akruti = new (function() {
         
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
-        this.rect.setAttribute('stroke-width',2/mySvgObject.zoomFactor);
-        this.rect.style.pointerEvents = 'none';
-        //this.rect.setAttribute('stroke-dasharray','6 2');
+        this.rect.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
+        this.rect.style.pointerEvents = 'none';/////////////////////////////////////////////Check
         
         this.rect.setAttribute('x', x);
         this.rect.setAttribute('y', y);
@@ -578,10 +571,10 @@ var akruti = new (function() {
             this.p[i] = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             this.p[i].setAttribute('fill','#0096fd');
             this.p[i].setAttribute('stroke','#fff');
-            this.p[i].setAttribute('stroke-width',0.5);
+            this.p[i].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
             this.p[i].setAttribute('height',2*radius);
             this.p[i].setAttribute('width',2*radius);
-            this.p[i].id = 'sap'+i;
+            this.p[i].id = mySvgObject.id+'sap'+i;
             this.g.appendChild(this.p[i]);
         }
         this.p[0].setAttribute('x',x-radius);
@@ -605,15 +598,14 @@ var akruti = new (function() {
         this.p[8].setAttribute('r',radius);
         this.p[8].setAttribute('fill','#0096fd');
         this.p[8].setAttribute('stroke','#fff');
-        this.p[8].setAttribute('stroke-width',0.5);
+        this.p[8].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
         this.p[8].setAttribute('cx',x+w/2);
         this.p[8].setAttribute('cy',y-20);
         this.g.appendChild(this.p[8]);
-        //<path d="M150 0 L75 200 L225 200 Z" />
         var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('fill','none');
         path.setAttribute('stroke','#0096fd');
-        path.setAttribute('stroke-width',1);
+        path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
     };
@@ -673,7 +665,7 @@ var akruti = new (function() {
         
         if (data instanceof Array) {
             var i;
-            returnValue = {};
+            returnValue = new Object();
             returnValue.pastState = new Array();
             returnValue.newState = data;
             for(i=0;i<data.length;i++) {
@@ -724,156 +716,156 @@ var akruti = new (function() {
         }
         return returnValue;
     };
+    
+    var defaultMenu = [
+        {
+            type: 'main',
+            id: 'tools',
+            title: 'Tools', //Name of menu
+            icon: 'fa-star-half-empty', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'modeSelectorGroup',
+                    multiple: false,
+                    items: [
+                        {
+                            type:'button',
+                            icon: 'fa-hand-o-up',
+                            id: 'selectMode',
+                            title:'Select',
+                            onoff: true,
+                            currState:false,
+                            callback: setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-minus',
+                            id:'createLineMode',
+                            title:'Line',
+                            onoff: true,
+                            currState:true,
+                            callback: setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-pencil',
+                            id: 'createFreeMode',
+                            title:'Free Hand Drawing',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            id: 'createRectangleMode',
+                            title:'Rectangle',
+                            onoff: true,
+                            currState:false,
+                            callback: setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-circle-o',
+                            id: 'createEllipseMode',
+                            title:'Ellipse',
+                            onoff: true,
+                            currState:false,
+                            callback: setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-magic',
+                            id: 'magicMode',
+                            title:'Magic',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-bolt',
+                            id: 'lightningMode',
+                            title:'Lightning',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        }
+                    ]
+                }
+            ]   //Groups inside this menu
+        },
+        {
+            type: 'main',
+            id: 'edit',
+            title: 'Edit', //Name of menu
+            icon: 'fa-edit', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'g1',
+                    items: [
+                        {
+                            type: 'color',
+                            id: 'fillColor',
+                            title:'Fill',
+                            text: 'Fill Color',
+                            icon: 'fa-tint',
+                            callback: setFillColor,
+                        },
+                        {
+                            type: 'color',
+                            id: 'strokeColor',
+                            title:'Stroke Color',
+                            icon: 'fa-tint', 
+                            text: 'Stroke',
+                            callback: setStrokeColor,
+                        },
+                        /*{
+                            type: 'size',
+                            id: 'strokeWidth', 
+                            title: 'Stroke Width', //Name of button
+                            icon: 'fa-barcode', //Font awesome icon name
+                            currState: 2, //Default size
+                            rangeStart: 2, //Minimum size
+                            rangeEnd: 20,   //Maximum size
+                            callback: setStrokeWidth,  //Callback on change
+                        },*/
+                    ],
+                },
+                {
+                    type: 'group',
+                    id: 'g2',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-reply',
+                            callback: Base.undo,
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-share',
+                            callback: Base.redo,
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-eraser',
+                            callback: deleteElement
+                        },
+                    ]
+                }
+            ]  
+        },
+    ];
 
     this.getMenu = function (){
-        return [
-            {
-                type: 'main',
-                id: 'tools',
-                title: 'Tools', //Name of menu
-                icon: 'fa-star-half-empty', //Font awesome icon name
-                groups: [
-                    {
-                        type: 'group',
-                        id: 'modeSelectorGroup',
-                        multiple: false,
-                        items: [
-                            {
-                                type:'button',
-                                icon: 'fa-hand-o-up',
-                                id: 'selectMode',
-                                title:'Select',
-                                onoff: true,
-                                currState:false,
-                                callback: setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-minus',
-                                id:'createLineMode',
-                                title:'Line',
-                                onoff: true,
-                                currState:true,
-                                callback: setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-pencil',
-                                id: 'createFreeMode',
-                                title:'Free Hand Drawing',
-                                onoff: true,
-                                currState:false,
-                                callback: console.log
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-square-o',
-                                id: 'createRectangleMode',
-                                title:'Rectangle',
-                                onoff: true,
-                                currState:false,
-                                callback: setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-circle-o',
-                                id: 'createEllipseMode',
-                                title:'Ellipse',
-                                onoff: true,
-                                currState:false,
-                                callback: setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-magic',
-                                id: 'magicMode',
-                                title:'Magic',
-                                onoff: true,
-                                currState:false,
-                                callback: console.log
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-bolt',
-                                id: 'lightningMode',
-                                title:'Lightning',
-                                onoff: true,
-                                currState:false,
-                                callback: console.log
-                            }
-                        ]
-                    }
-                ]   //Groups inside this menu
-            },
-            {
-                type: 'main',
-                id: 'edit',
-                title: 'Edit', //Name of menu
-                icon: 'fa-edit', //Font awesome icon name
-                groups: [
-                    {
-                        type: 'group',
-                        id: 'g1',
-                        items: [
-                            {
-                                type: 'color',
-                                id: 'fillColor',
-                                title:'Fill',
-                                text: 'Fill Color',
-                                icon: 'fa-tint',
-                                callback: setFillColor,
-                            },
-                            {
-                                type: 'color',
-                                id: 'strokeColor',
-                                title:'Stroke Color',
-                                icon: 'fa-tint', 
-                                text: 'Stroke',
-                                callback: setStrokeColor,
-                            },
-                            /*{
-                                type: 'size',
-                                id: 'strokeWidth', 
-                                title: 'Stroke Width', //Name of button
-                                icon: 'fa-barcode', //Font awesome icon name
-                                currState: 2, //Default size
-                                rangeStart: 2, //Minimum size
-                                rangeEnd: 20,   //Maximum size
-                                callback: setStrokeWidth,  //Callback on change
-                            },*/
-                        ],
-                    },
-                    {
-                        type: 'group',
-                        id: 'g2',
-                        items: [
-                            {
-                                type: 'button',
-                                icon: 'fa-reply',
-                                callback: Base.undo,
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-share',
-                                callback: Base.redo,
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-eraser',
-                                callback: deleteElement
-                            },
-                        ]
-                    }
-                ]  
-            },
-        ]
+        return defaultMenu;
     };
     
-    var setMode = function(mode,onOff){
-        if (onOff == true) {
-            editor.currentMode = mode;
-        }
-    };
+    var setMode = function(mode,onOff) {
+        editor.setMode(mode,onOff);
+    }
     
     var setFillColor = function(id, color){
         editor.fillColor = color;
@@ -905,6 +897,8 @@ var akruti = new (function() {
     var editor = new (function() {
 
         var superParent = window;
+        
+        var allModes = ['createLineMode', 'createEllipseMode', 'createRectangleMode', 'createFreeMode', 'magicMode', 'LightningMode', 'SelectMode', ]
 
         this.currentMode = 'createLineMode';
         this.strokeWidth = 2;
@@ -913,6 +907,20 @@ var akruti = new (function() {
         
         actives = new Object();
         actives.list = new Array();
+        
+        this.setMode = function(mode,onOff){
+            if (onOff == true) {
+                if (allModes.indexOf(mode) != -1) {
+                    editor.currentMode = mode;
+                    if (mode == 'selectMode') {
+                        $('svg').removeClass('createMode').addClass('selectMode');
+                    }
+                    else {
+                        $('svg').removeClass('selectMode').addClass('createMode');
+                    }
+                }
+            }
+        };
         
         var getStrokeWidth = function(){
             return editor.strokeWidth;
@@ -942,7 +950,7 @@ var akruti = new (function() {
             
         };
 
-        var select = function(obj) {
+        var select = function(obj) {            //Caution:The use of parameter obj is only to get svg ID
             var pivotsX = new Array();
             var pivotsY = new Array();
             for (var i=0;i<actives.list.length;i++) {
@@ -972,11 +980,13 @@ var akruti = new (function() {
                 $(superParent).one('mousedown',deactivateAll);
             }
             actives.list.push(this);
+            $(this.g).addClass('active');
             select(this);
         };
         
         var deactivateElement = function(){
             actives.list.splice(actives.list.indexOf(this),1);
+            $(this.g).removeClass('active');
             select(this);
         };
         
@@ -985,7 +995,9 @@ var akruti = new (function() {
             {
                 actives.select.g.remove();
                 delete actives.select;
-                actives.list.length = 0;
+                while (actives.list.length != 0) {
+                    $(actives.list.pop().g).removeClass('active');
+                }
             }
         }
 
@@ -1734,7 +1746,7 @@ var akruti = new (function() {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
-                    element.diff = {};
+                    element.diff = new Object();
                     element.diff.cx = element.cx - x;
                     element.diff.cy = element.cy - y;
                     return {
@@ -1782,7 +1794,7 @@ var akruti = new (function() {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
-                    element.diff = {};
+                    element.diff = new Object();
                     element.diff.x = element.x - x;
                     element.diff.y = element.y - y;
                     return {

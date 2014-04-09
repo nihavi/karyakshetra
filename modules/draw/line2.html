@@ -25,7 +25,7 @@
         
         body, html
         {
-            background-color:#eee;
+            background-color:green;
             color:white;
             font-family: 'Monaco', sans-serif;            
         }
@@ -33,7 +33,7 @@
         #upper
         {
             background-color:#1D9D74;#33ff77;#03e4fd;#03d0f0;
-            height:35px;
+            height:40px;
             line-height:35px;
             padding-left:10px;
         }
@@ -43,7 +43,13 @@
         }
         #svgParent
         {
-            background-color:#eee;
+            background-color:#300a24;
+            position:relative;
+            margin:auto;
+            top:10px;
+            height:550px;
+            width:1200px;
+            overflow:auto;
         }
         </style>
         <script src="jquery.min.js"></script>
@@ -63,8 +69,8 @@
                 <label>| Fill Color </label><input class="color" value="none" id="fillColor" placeholder="FillColor">
                 <label>| Stroke Width </label><input type="text" value="2" id="strokeWidth" placeholder="StrokeWidth">
                 <label>| Zoom </label>
-                <input type="text" name="points" id="zoom" onchange="akruti.zoom(this.value)" style="width:100px" value="fit">
-                <span id="zoomValue" >fit</span>
+                <input type="text" name="points" id="zoom" onchange="akruti.zoom(this.value)" value="1">
+                <span id="zoomValue" >1</span>
         </div>
         <div id="svgParent"></div>
     </body>
