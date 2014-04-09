@@ -1,0 +1,15 @@
+.l, .r, .e {
+    cursor:pointer;
+}
+
+.select-mode {
+    cursor:auto;
+}
+
+.create-mode {
+    cursor:crosshair !important;
+}
+
+.active {
+    cursor:move;
+}
