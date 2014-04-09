@@ -66,10 +66,9 @@ var akruti = new (function() {
         this.element.setAttribute( 'id', this.id );
 
         /* Setting class  and type*/
-        this.element.setAttribute( 'class', (editable)?'eS':'vS' ); //eS -> Editable Svg | vS -> Viewer Svg
         this.t = (editable)?'eS':'vS'; //eS -> Editable Svg | vS -> Viewer Svg
-
-
+        this.element.classList.add( this.t ); //eS -> Editable Svg | vS -> Viewer Svg
+        
         /* Provided Attributes | They will be applied only if they are in svgAA */
         var j;
         for (j in allAA['s']) {
@@ -353,9 +352,10 @@ var akruti = new (function() {
         this.element = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
 
         /* Setting Class and type */
-        this.g.setAttribute( 'class', 'e');
         this.t = 'e';
-
+        this.g.classList.add(this.t);
+        this.g.classList.add('drawing-elements');
+        
         /* Setting Id */
         this.pid = parent.id;
         this.id = this.pid+this.t+ parent.childrenId++;
@@ -408,8 +408,9 @@ var akruti = new (function() {
         this.element = document.createElementNS('http://www.w3.org/2000/svg','line');
 
         /* Setting Class and type */
-        this.g.setAttribute( 'class', 'l');
         this.t = 'l';
+        this.g.classList.add(this.t);
+        this.g.classList.add('drawing-elements');
 
         /* Setting Id */
         this.pid = parent.id;
@@ -461,8 +462,9 @@ var akruti = new (function() {
         this.element = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
         /* Setting Class and type */
-        this.g.setAttribute( 'class', 'r');
         this.t = 'r';
+        this.g.classList.add(this.t);
+        this.g.classList.add('drawing-elements');
 
         /* Setting Id */
         this.pid = parent.id;
@@ -717,168 +719,6 @@ var akruti = new (function() {
         return returnValue;
     };
     
-    var defaultMenu = [
-        {
-            type: 'main',
-            id: 'tools',
-            title: 'Tools', //Name of menu
-            icon: 'fa-star-half-empty', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'modeSelectorGroup',
-                    multiple: false,
-                    items: [
-                        {
-                            type:'button',
-                            icon: 'fa-hand-o-up',
-                            id: 'selectMode',
-                            title:'Select',
-                            onoff: true,
-                            currState:false,
-                            callback: setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-minus',
-                            id:'createLineMode',
-                            title:'Line',
-                            onoff: true,
-                            currState:true,
-                            callback: setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            id: 'createFreeMode',
-                            title:'Free Hand Drawing',
-                            onoff: true,
-                            currState:false,
-                            callback: console.log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-square-o',
-                            id: 'createRectangleMode',
-                            title:'Rectangle',
-                            onoff: true,
-                            currState:false,
-                            callback: setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-circle-o',
-                            id: 'createEllipseMode',
-                            title:'Ellipse',
-                            onoff: true,
-                            currState:false,
-                            callback: setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-magic',
-                            id: 'magicMode',
-                            title:'Magic',
-                            onoff: true,
-                            currState:false,
-                            callback: console.log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-bolt',
-                            id: 'lightningMode',
-                            title:'Lightning',
-                            onoff: true,
-                            currState:false,
-                            callback: console.log
-                        }
-                    ]
-                }
-            ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'g1',
-                    items: [
-                        {
-                            type: 'color',
-                            id: 'fillColor',
-                            title:'Fill',
-                            text: 'Fill Color',
-                            icon: 'fa-tint',
-                            callback: setFillColor,
-                        },
-                        {
-                            type: 'color',
-                            id: 'strokeColor',
-                            title:'Stroke Color',
-                            icon: 'fa-tint', 
-                            text: 'Stroke',
-                            callback: setStrokeColor,
-                        },
-                        /*{
-                            type: 'size',
-                            id: 'strokeWidth', 
-                            title: 'Stroke Width', //Name of button
-                            icon: 'fa-barcode', //Font awesome icon name
-                            currState: 2, //Default size
-                            rangeStart: 2, //Minimum size
-                            rangeEnd: 20,   //Maximum size
-                            callback: setStrokeWidth,  //Callback on change
-                        },*/
-                    ],
-                },
-                {
-                    type: 'group',
-                    id: 'g2',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-reply',
-                            callback: Base.undo,
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-share',
-                            callback: Base.redo,
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-eraser',
-                            callback: deleteElement
-                        },
-                    ]
-                }
-            ]  
-        },
-    ];
-
-    this.getMenu = function (){
-        return defaultMenu;
-    };
-    
-    var setMode = function(mode,onOff) {
-        editor.setMode(mode,onOff);
-    }
-    
-    var setFillColor = function(id, color){
-        editor.fillColor = color;
-    };
-    
-    var setStrokeColor = function(id, color){
-        editor.strokeColor = color;
-    };
-    
-    var deleteElement = function(a,b){
-        console.log(a,b)
-    };
-
     this.getFileData = function(svg) {
         var data = new Array();
         var element = $('#'+svg.id).data('myObject');
@@ -898,7 +738,7 @@ var akruti = new (function() {
 
         var superParent = window;
         
-        var allModes = ['createLineMode', 'createEllipseMode', 'createRectangleMode', 'createFreeMode', 'magicMode', 'LightningMode', 'SelectMode', ]
+        var allModes = ['createLineMode', 'createEllipseMode', 'createRectangleMode', 'createFreeMode', 'magicMode', 'LightningMode', 'selectMode', ]
 
         this.currentMode = 'createLineMode';
         this.strokeWidth = 2;
@@ -909,17 +749,36 @@ var akruti = new (function() {
         actives.list = new Array();
         
         this.setMode = function(mode,onOff){
+            console.log('e.setm', mode, onOff, 'test1', allModes.indexOf(mode) != -1);
             if (onOff == true) {
                 if (allModes.indexOf(mode) != -1) {
                     editor.currentMode = mode;
                     if (mode == 'selectMode') {
-                        $('svg').removeClass('createMode').addClass('selectMode');
+                        for (var i in allSvg) {
+                            allSvg[i].element.classList.remove('create-mode');
+                            allSvg[i].element.classList.add('select-mode');
+                        }
                     }
                     else {
-                        $('svg').removeClass('selectMode').addClass('createMode');
+                        for (var i in allSvg) {
+                            allSvg[i].element.classList.remove('select-mode');
+                            allSvg[i].element.classList.add('create-mode');
+                        }
                     }
                 }
             }
+        };
+        
+        this.setFillColor = function(id, color){
+            editor.fillColor = color;
+        };
+        
+        this.setStrokeColor = function(id, color){
+            editor.strokeColor = color;
+        };
+        
+        this.deleteElement = function(a,b){
+            console.log(a,b)
         };
         
         var getStrokeWidth = function(){
@@ -1857,6 +1716,152 @@ var akruti = new (function() {
         }
 
     })();
+    
+    var defaultMenu = [
+        {
+            type: 'main',
+            id: 'tools',
+            title: 'Tools', //Name of menu
+            icon: 'fa-star-half-empty', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'modeSelectorGroup',
+                    multiple: false,
+                    items: [
+                        {
+                            type:'button',
+                            icon: 'fa-hand-o-up',
+                            id: 'selectMode',
+                            title:'Select',
+                            onoff: true,
+                            currState:false,
+                            callback: editor.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-minus',
+                            id:'createLineMode',
+                            title:'Line',
+                            onoff: true,
+                            currState:true,
+                            callback: editor.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-pencil',
+                            id: 'createFreeMode',
+                            title:'Free Hand Drawing',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            id: 'createRectangleMode',
+                            title:'Rectangle',
+                            onoff: true,
+                            currState:false,
+                            callback: editor.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-circle-o',
+                            id: 'createEllipseMode',
+                            title:'Ellipse',
+                            onoff: true,
+                            currState:false,
+                            callback: editor.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-magic',
+                            id: 'magicMode',
+                            title:'Magic',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-bolt',
+                            id: 'lightningMode',
+                            title:'Lightning',
+                            onoff: true,
+                            currState:false,
+                            callback: console.log
+                        }
+                    ]
+                }
+            ]   //Groups inside this menu
+        },
+        {
+            type: 'main',
+            id: 'edit',
+            title: 'Edit', //Name of menu
+            icon: 'fa-edit', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'g1',
+                    items: [
+                        {
+                            type: 'color',
+                            id: 'fillColor',
+                            title:'Fill',
+                            text: 'Fill Color',
+                            icon: 'fa-tint',
+                            callback: editor.setFillColor,
+                        },
+                        {
+                            type: 'color',
+                            id: 'strokeColor',
+                            title:'Stroke Color',
+                            icon: 'fa-tint', 
+                            text: 'Stroke',
+                            callback: editor.setStrokeColor,
+                        },
+                        /*{
+                            type: 'size',
+                            id: 'strokeWidth', 
+                            title: 'Stroke Width', //Name of button
+                            icon: 'fa-barcode', //Font awesome icon name
+                            currState: 2, //Default size
+                            rangeStart: 2, //Minimum size
+                            rangeEnd: 20,   //Maximum size
+                            callback: setStrokeWidth,  //Callback on change
+                        },*/
+                    ],
+                },
+                {
+                    type: 'group',
+                    id: 'g2',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-reply',
+                            callback: Base.undo,
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-share',
+                            callback: Base.redo,
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-eraser',
+                            callback: editor.deleteElement
+                        },
+                    ]
+                }
+            ]  
+        },
+    ];
+    
+    this.getMenu = function (){
+        return defaultMenu;
+    };
     
 })();
 
