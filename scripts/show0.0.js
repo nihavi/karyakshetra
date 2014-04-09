@@ -212,7 +212,7 @@ Show = new (function(){
             this.elems[elem.id] = elem;
             elem.parent = this;
             return elem;
-        }
+        },
     };
     
     var Elem = function(elem){
@@ -267,8 +267,10 @@ Show = new (function(){
                         width: (slide.width()*elem.width)/100,
                         fontSize: (slide.height()*elem.fontSize)/100
                     });
-                    if(activeElement && activeElement == elem)
+                    if(activeElement && activeElement == elem){
+                        $('.elem.active').removeClass('active');
                         elemDOM.addClass('active');
+                    }
                     
                     //Actual element for text
                     elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
@@ -277,7 +279,7 @@ Show = new (function(){
                     elemDOM.appendTo(slide);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
-                    elemText.bind('keyup keydown keypress', function(ev){
+                    elemText.bind('keypress keyup', function(ev){
                         elem = $(this).closest('.elem').data('elem');
                         elem.text = $(this).html();
                         elem.renderElemSide(elem.parent.id);
@@ -360,6 +362,13 @@ Show = new (function(){
             this.renderElem();
             return this;
         },
+        remove: function(){
+            $('#'+this.id).remove();
+            $('#'+activeSlide.id+this.id).remove();
+            delete activeSlide.elems[activeElement.id];
+            activeElement.blur();
+            activeElement = null;
+        },
         focus: function(){
             Base.updateMenu(defaultMenus.concat(formatMenu(this)));
             Base.focusMenu('format');
@@ -389,7 +398,7 @@ Show = new (function(){
                             fontSize: 5,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
-        $('#slides').one('mouseup',finishNewTextBox);
+        $(window).one('mouseup',finishNewTextBox);
         removeInsertOp();
         ev.preventDefault();
     }
@@ -424,10 +433,11 @@ Show = new (function(){
     
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
-        if(!activeElement)
-            activeElement = $(this).closest('.elem').data('elem');
+        activeElement = $(this).closest('.elem').data('elem');
+        $('.elem.active').removeClass('active');
         activeElement.elemDOM.addClass('active');
         activeElement.elemDOM.addClass('edit');
+        activeElement.editable = true;
         activeElement.elemDOM.css({
             cursor: 'auto',
             overflow: 'visible'
@@ -644,6 +654,10 @@ Show = new (function(){
             });
         }
     }
+    var removeElem = function(btnId){
+        if(activeElement)
+            activeElement.remove();
+    }
     var log = function(a, b){
         console.log(a, b);
     }
@@ -668,6 +682,7 @@ Show = new (function(){
             type: 'group',
             id: 'align',
             multiple: false,
+            required: true,
             items: [
                 {
                     type: 'button',
@@ -690,6 +705,13 @@ Show = new (function(){
                     onoff: true,
                     callback: elemAlign
                 },
+                {
+                    type: 'button',
+                    icon: 'fa-align-justify',
+                    id: 'justify',
+                    onoff: true,
+                    callback: elemAlign
+                },
             ]
         };
         if(('style' in elem) && ('textAlign' in elem.style)){
@@ -699,6 +721,8 @@ Show = new (function(){
                 group.items[1].currState = true;
             else if(elem.style.textAlign == 'right')
                 group.items[2].currState = true;
+            else if(elem.style.textAlign == 'justify')
+                group.items[3].currState = true;
         }
         else {
             group.items[0].currState = true;
@@ -743,6 +767,20 @@ Show = new (function(){
             group.items[1].currState = '#fff';
         }
         
+        format.groups.push(group);
+        
+        group = {
+            type: 'group',
+            id: 'remove',
+            items: [
+                {
+                    type: 'button',
+                    icon: 'fa-minus',
+                    id: 'remove',
+                    callback: removeElem
+                }
+            ]
+        };
         format.groups.push(group);
         
         return [format];
@@ -842,6 +880,7 @@ Show = new (function(){
         if ($(ev.target).closest('.elem-text').length == 0){
             ev.preventDefault();
             var elem = $(this);
+            $('.elem.active').removeClass('active');
             elem.addClass('active');
             activeElement = elem.data('elem');
             activeElement.focus();
@@ -851,6 +890,7 @@ Show = new (function(){
         ev.preventDefault();
         
         var elem = $(this);
+        $('.elem.active').removeClass('active');
         elem.addClass('active');
         activeElement = elem.data('elem');
         activeElement.origMousePos = {

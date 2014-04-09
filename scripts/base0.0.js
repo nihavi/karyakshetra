@@ -9,7 +9,8 @@
 {
     type: 'group',
     id: String, //Id selected by module
-    multiple: Boolean,   //Is multiple select allowed, Default true
+    multiple: Boolean,  //Is multiple select allowed, Default true
+    required: Boolean,  //Is required(alteast one should be selected), Default false
     items: Array //Items inside this group
 },
 {
@@ -351,6 +352,7 @@ Base = new (function(){
         
         //Call module's init
         module.init(edit.get(0));
+        module.resize();
     }
 
     function createColorPicker() {
@@ -475,6 +477,8 @@ Base = new (function(){
                     else {
                         groupMeta[group.id].multiple = true;
                     }
+                    if('required' in group)
+                        groupMeta[group.id].required = group.required;
                     for( i in group.items ){
                         item = group.items[i];
                         id = 'menuItem'+subMenuId;
@@ -631,6 +635,18 @@ Base = new (function(){
                     elem.addClass('active');
                 }
                 else {
+                    //To ensure required
+                    if (('required' in groupMeta[item.parentGroup]) && (groupMeta[item.parentGroup].required == true)){
+                        var count = 0;
+                        var subButtons = $('.bar-sub .btn.active').each(function(){
+                            if( submenu[$(this).attr('id')].parentGroup == item.parentGroup ){
+                                //Update state in object
+                                if (submenu[$(this).attr('id')].currState == true)
+                                    count++;
+                            }
+                        });
+                        if(count==1)return;
+                    }
                     //Update state in object
                     item.currState = false;
                     item.callback(item.id, false);
@@ -856,6 +872,7 @@ Base = new (function(){
                 
         if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
             registeredShortcuts[comb]();
+            ev.preventDefault();
         }
     }
     
