@@ -961,6 +961,11 @@ Show = new (function(){
         //ev.preventDefault();
     }
     
+    var slideshow = function(){
+        Base.hideMenu();
+        Base.fullscreen();
+    }
+    
     var removeInsertOp = function(){
         insertOp = null;
         $('#slides').unbind('mousedown',createTextBox);
@@ -993,6 +998,26 @@ Show = new (function(){
                             icon: 'fa-list-alt',
                             id: 'insert-slide',
                             callback: insertSlide
+                        },
+                    ]
+                }
+            ]
+        },
+        {
+            type: 'main',
+            id: 'show',
+            title: 'Slide Show', //Name of menu
+            icon: 'fa-desktop', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'adsf',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-desktop',
+                            id: 'insert-text',
+                            callback: slideshow
                         },
                     ]
                 }
