@@ -7,6 +7,10 @@
     position: relative;
     box-shadow: 0 0 2px 2px #333;
     z-index: 10;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 .clearfloat:before,
 .clearfloat:after,
@@ -99,7 +103,6 @@ i.fa.fa-cfw {
 .btn-icon:hover {
     text-shadow: none;
     background-color: #0F88C4;
-    xborder-color: #006BA0;
     border-radius: 4px;
     box-shadow: 0 0 1px 2px #0672A8;
     transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
@@ -108,7 +111,6 @@ i.fa.fa-cfw {
 .btn-icon.active,
 .btn-icon:active {
     color: orange;
-    xtext-shadow: -3px -3px 7px #A0D0D6, 3px 3px 7px #A0D0D6;
     text-shadow: none;
 }
 
@@ -166,8 +168,6 @@ i.fa.fa-cfw {
     background-color: white;
     padding: 10px;
     position: absolute;
-    top: 200px;
-    left: 200px;
     z-index: 100;
     border-radius: 0 0 2px 2px;
     box-shadow: 0 3px 10px 2px #aaa;
@@ -188,4 +188,68 @@ i.fa.fa-cfw {
 .color:hover {
     cursor: pointer;
     outline: 2px solid #111;
+}
+
+.select .option {
+    color: #000;
+}
+
+.select {
+    line-height: 1.28571em;
+    height: 1.28571em;
+    padding: 2px 2px 2px 10px;
+    margin: 4px;
+    text-align: left;
+}
+
+.select:after {
+    font-family: monospace;
+    content: '▾';
+    margin: auto 3px auto 5px;
+    visibility: hidden;
+    float: right;
+}
+.select:hover:after {
+    content: '▾';
+    visibility: visible;
+}
+
+.dropdown {
+    position: absolute;
+    display: none;
+    -moz-box-sizing: border-box;
+    max-width: 250px;
+    background-color: white;
+    z-index: 100;
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 3px 10px 2px #aaa;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.option:after {
+    font-family: monospace;
+    content: ' ';
+    margin: auto 3px auto 5px;
+    visibility: hidden;
+    float: right;
+}
+
+.btn-longtext,
+.select .option {
+    font-size: 0.9em;
+}
+
+.option {
+    padding: 7px 0 7px 10px;
+    border-radius: 3px;
+}
+
+.option:hover {
+    background-color: #0F88C4;
+    color: white;
+}
+
+.dropdown:hover {
+    
 }

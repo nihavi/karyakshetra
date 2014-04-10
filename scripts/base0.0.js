@@ -351,8 +351,6 @@ Base = new (function(){
             domElement.append('<div class="color" style="background-color: #' + palette[i] + '"></div>');
         }
 
-        //domElement.append('<div><label for="colorcode"><span style="width: 30%;">Hex #</span><input type="text" style="font-family:monospace;width:70%;text-align:center;padding: 0.2em; line-height: 1.2em;"></label></div>');
-
         domElement.css({
             'position'  :  'absolute',
             'z-index'   :  '20'
@@ -490,16 +488,58 @@ Base = new (function(){
                             else if( item.type == 'size' ){
                             }
                             else if( item.type == 'list' ){
-                                if('list' in item){
+                                
+                                if('list' in item) {
+                                
                                     menuItem.empty();
-                                    menuItem.addClass('btn-list');
-                                    var select = $('<select>').appendTo(menuItem);
-                                    for(var i = 0; i<item.list.length; i++){
-                                        $('<option value="'+(item.list[i].id)+'">'+(item.list[i].value)+'</option>').appendTo(select);
+                                    menuItem.addClass('select btn-text btn-icon');
+                                    var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
+                                    for(var i = 0; i<item.list.length; i++) {
+                                        
+                                        var op = $('<div class="option">'+(item.list[i].value)+'</div>')
+                                            .data({
+                                                'id': item.list[i].id,
+                                                'index' : i
+                                            })
+                                            .appendTo(dropdown);
+                                        
+                                        op.click(function() {
+                                            var elem = $(this).closest('.select');
+                                            var itemId = elem.attr('id');
+                                            var item = submenu[itemId];
+                                            var selected = $(this).data('id');
+                                            console.log(selected);
+                                            console.log(elem.find('.btn-longtext').html());
+                                            elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
+                                            item.callback(item.id, selected);
+                                            item.currState = selected;
+                                        });
                                     }
+                                    
+                                    menuItem.css('min-width', dropdown.width() + (menuItem.outerWidth() - menuItem.width()) * 2);
+                                    
+                                    var x = menuItem.offset().left;
+                                    var y = $('.toolbars').height() + 2;
+                                    
+                                    dropdown.css({
+                                        'top' : y,
+                                        'left': x,
+                                        'min-width': parseInt(menuItem.css('min-width')) + 14
+                                    });
+                                    
+                                    var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
+                                    
                                     if('currState' in item){
-                                        select.val(item.currState);
+                                        for (var i=0;i<item.list.length;++i) {
+                                            if (item.list[i].id == item.currState) {
+                                                text.html(item.list[i].value);
+                                            }
+                                        }
                                     }
+                                    else
+                                        text.html(item.list[0].value);
+                                
+                                /*
                                     select.change(function(){
                                         var elem = $(this).closest('.btn');
                                         var itemId = elem.attr('id');
@@ -509,7 +549,9 @@ Base = new (function(){
                                         item.callback(item.id, options[selected].value);
                                         item.currState = options[selected].value;
                                     });
+                                */
                                 }
+                                
                             }
                             else { // if item.type == 'button' or item.type is not known
                                 if(('onoff' in item) && item.onoff == true){
@@ -588,7 +630,11 @@ Base = new (function(){
         else if( item.type == 'size' ){
         }
         else if( item.type == 'list' ){
-            //Nothing to do
+            var dropdown = elem.find('.dropdown');
+            if (dropdown.css('display') == 'none')
+                dropdown.show();
+            else
+                dropdown.hide();
         }
         else { // if item.type == 'button' or item.type is not known
             if ( ('onoff' in item) && item.onoff == true ){
