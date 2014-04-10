@@ -26,7 +26,7 @@ Submit = new(function(){
     var Form = function(){
         this.id = 1;
         this.children = [];
-        this.children.push(new Page());
+        //this.children.push(new Page());
     };
     
     Form.prototype = {
@@ -160,6 +160,26 @@ Submit = new(function(){
 			return this;
 		}
 	}
+	/*
+	var Control = function(controlType){
+		
+		this.type = controlType;
+		if (this.type == "text"){
+			//either single line or mutliple lines
+		}
+		else
+		if (this.type == "radio"){
+		}
+		else
+		if (this.type == "checkboxes"){
+		}
+		else
+		if (this.type == "dropdown"){
+		}
+		else
+		if (this.type == "datetime"){
+		}
+	}*/
 
     /*
      * DOM Manipulation
