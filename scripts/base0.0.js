@@ -9,7 +9,8 @@
 {
     type: 'group',
     id: String, //Id selected by module
-    multiple: Boolean,   //Is multiple select allowed, Default true
+    multiple: Boolean,  //Is multiple select allowed, Default true
+    required: Boolean,  //Is required(alteast one should be selected), Default false
     items: Array //Items inside this group
 },
 {
@@ -351,6 +352,7 @@ Base = new (function(){
         
         //Call module's init
         module.init(edit.get(0));
+        module.resize();
     }
 
     function createColorPicker() {
@@ -475,6 +477,8 @@ Base = new (function(){
                     else {
                         groupMeta[group.id].multiple = true;
                     }
+                    if('required' in group)
+                        groupMeta[group.id].required = group.required;
                     for( i in group.items ){
                         item = group.items[i];
                         id = 'menuItem'+subMenuId;
@@ -631,6 +635,18 @@ Base = new (function(){
                     elem.addClass('active');
                 }
                 else {
+                    //To ensure required
+                    if (('required' in groupMeta[item.parentGroup]) && (groupMeta[item.parentGroup].required == true)){
+                        var count = 0;
+                        var subButtons = $('.bar-sub .btn.active').each(function(){
+                            if( submenu[$(this).attr('id')].parentGroup == item.parentGroup ){
+                                //Update state in object
+                                if (submenu[$(this).attr('id')].currState == true)
+                                    count++;
+                            }
+                        });
+                        if(count==1)return;
+                    }
                     //Update state in object
                     item.currState = false;
                     item.callback(item.id, false);
@@ -647,14 +663,20 @@ Base = new (function(){
     this.setEditable = function(){
         var edit = $('#editable');
         var menu = $('#menubar');
-        edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
+        if($('#menubar').css('display')=='none'){
+            edit.css('height', $(window).innerHeight());
+        }
+        else {
+            edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
+        }
     }
     
-    $(window).resize(function(){
+    var handleResize = function(){
         Base.setEditable();
         //Call module's resize function
         module.resize();
-    });
+    }
+    $(window).resize(handleResize);
     
     
     /*
@@ -665,6 +687,7 @@ Base = new (function(){
     var exPointer = 0;
     
     this.addOp = function(pastState, newState){
+        
         /*
          * pastState - previous state to be restored on undo
          * newState - next state to be rendered on viewer
@@ -683,7 +706,7 @@ Base = new (function(){
          * This function will call module's 'performOp' function with pastState
          * Assuming module is an object with performOp function defined
          * 
-         * module.performOp should return currState and newState in a object 
+         * module.performOp should return pastState and newState in a object 
          * with properties of same names
          * 
          * Will not return anything
@@ -692,7 +715,7 @@ Base = new (function(){
             var op = module.performOp(exQueue[exPointer-1]);
             if(exQueue.length == exPointer+1)
                 exQueue[exPointer+1] = null;
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
             exPointer--;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);
@@ -704,14 +727,14 @@ Base = new (function(){
          * This function will call module's 'performOp' function with newState
          * Assuming module is an object with performOp function defined
          * 
-         * module.performOp should return currState and newState in a object 
+         * module.performOp should return pastState and newState in a object 
          * with properties of same names
          * 
          * Will not return anything
          */
         if(exQueue[exPointer+1] != null){
             var op = module.performOp(exQueue[exPointer+1]);
-            exQueue[exPointer] = op.currState;
+            exQueue[exPointer] = op.pastState;
             exPointer++;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);
@@ -855,6 +878,7 @@ Base = new (function(){
                 
         if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
             registeredShortcuts[comb]();
+            ev.preventDefault();
         }
     }
     
@@ -885,5 +909,60 @@ Base = new (function(){
             callback: this.redo
         }
     ]);
+    
+    /*
+     * Full screen request
+     */
+     
+    this.fullscreen = function() {
+        element=document.body;
+        // Supports most browsers and their versions.
+        var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
+        
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(element);
+        }
+        else if( typeof window.ActiveXObject !== "undefined" ){ // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+        handleResize();
+    }
+    
+    this.exitFullscreen = function() {
+        // Supports most browsers and their versions.
+        var requestMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(document);
+        }
+        else if( typeof window.ActiveXObject !== "undefined" ){ // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+        handleResize();
+    }
+    
+    this.hideMenu = function(complete){
+        //Hide base completely if complete is true
+        $('#menubar').hide();
+        if(!complete){
+            var showBtn = $('<div id="showMenu"><i class="fa fa-angle-down"></i></div>').appendTo('#interface');
+            showBtn.click(function(){
+                Base.showMenu();
+            });
+        }
+        handleResize();
+    }
+    
+    this.showMenu = function(){
+        $('#menubar').show();
+        $('#showMenu').remove();
+        handleResize();
+    }
     
 })();

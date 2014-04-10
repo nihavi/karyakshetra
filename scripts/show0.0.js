@@ -54,18 +54,16 @@ Show = new (function(){
         Sidebar.init();
     }
     
-    this.resize = function(){
+    resizeEditor = function(){
         var side = $('#sidebar');
         var slide = $('#slides');
-        
-        side.css('width','20%');
-        slide.css('width','80%');
         
         if(activeSlide)
             activeSlide.renderSlide();
         
         Sidebar.init();
     }
+    this.resize = resizeEditor;
     
     /*
     Slide class
@@ -254,6 +252,7 @@ Show = new (function(){
             var slide = $('.slide');
             var slideObj = slide.data('slide');
             
+            $('#'+elem.id).unbind()
             $('#'+elem.id).remove();
             
             if('type' in elem){
@@ -279,7 +278,7 @@ Show = new (function(){
                     elemDOM.appendTo(slide);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
-                    elemText.bind('keyup keydown keypress', function(ev){
+                    elemText.bind('keypress keyup', function(ev){
                         elem = $(this).closest('.elem').data('elem');
                         elem.text = $(this).html();
                         elem.renderElemSide(elem.parent.id);
@@ -398,7 +397,7 @@ Show = new (function(){
                             fontSize: 5,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
-        $('#slides').one('mouseup',finishNewTextBox);
+        $(window).one('mouseup',finishNewTextBox);
         removeInsertOp();
         ev.preventDefault();
     }
@@ -433,11 +432,11 @@ Show = new (function(){
     
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
-        if(!activeElement)
-            activeElement = $(this).closest('.elem').data('elem');
+        activeElement = $(this).closest('.elem').data('elem');
         $('.elem.active').removeClass('active');
         activeElement.elemDOM.addClass('active');
         activeElement.elemDOM.addClass('edit');
+        activeElement.editable = true;
         activeElement.elemDOM.css({
             cursor: 'auto',
             overflow: 'visible'
@@ -682,6 +681,7 @@ Show = new (function(){
             type: 'group',
             id: 'align',
             multiple: false,
+            required: true,
             items: [
                 {
                     type: 'button',
@@ -960,6 +960,124 @@ Show = new (function(){
         //ev.preventDefault();
     }
     
+    /*
+     * for slideshow
+     */
+    Slide.prototype.renderSlideShow = function(){
+        var slide = this;
+        
+        if(!slide || !slide.id){
+            //Error: Invalid slide
+            return;
+        }
+        
+        $('.slide').unbind();
+        $('.slide').remove();
+        var slideDOM = $('<div class="slide" id="'+slide.id+'">').appendTo('#slides');
+        slideDOM.data('slide', slide);
+        
+        var contain = $('#slides');
+        var slideH = contain.height();
+        var slideW = slideH*slide.ratio;
+        
+        if(slideW > contain.width()){
+            slideW = contain.width();
+            slideH = slideW/slide.ratio;
+        }
+        
+        slideDOM.css({
+            'height': slideH,
+            'width': slideW,
+            'top': (contain.height()-slideH)/2, 
+            'backgroundColor': slide.bgColor
+        });
+        
+        if('elems' in slide){
+            var i;
+            for(i in slide.elems){
+                slide.elems[i].renderElemShow();
+            }
+        }
+        
+        activeSlide = slide;
+    }
+    Elem.prototype.renderElemShow = function(){
+        /* 
+         * Renders and adds elem to current slide
+         */
+        var elem = this;
+        console.log('ds');
+        var slide = $('.slide');
+        var slideObj = slide.data('slide');
+        
+        $('#'+elem.id).unbind();
+        $('#'+elem.id).remove();
+                
+        if('type' in elem){
+            if(elem.type == 'title' || elem.type == 'text'){
+                //Parent element for text
+                var elemDOM = $('<div class="elem-pres slide-'+elem.type+'" id="'+elem.id+'">');
+                elemDOM.css({
+                    top: (slide.height()*elem.top)/100,
+                    left: (slide.width()*elem.left)/100,
+                    height: (slide.height()*elem.height)/100,
+                    width: (slide.width()*elem.width)/100,
+                    fontSize: (slide.height()*elem.fontSize)/100
+                });
+                
+                //Actual element for text
+                elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                
+                elemDOM.data('elem',elem);
+                elemDOM.appendTo(slide);
+                
+                elem.elemDOM = elemDOM;
+                
+                return elemDOM;
+            }
+        }
+        else {
+            //Error: Elem type is not defined
+        }
+    }
+    
+    var SlideShow = {
+        init: function(){
+            //if($('#sidebar').length)
+            $('#sidebar').hide();
+            $('#slides').css('width','100%')
+            activeSlide.renderSlideShow();
+            var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
+            endBtn.click(SlideShow.end);
+        },
+        nextSlide: function(ev){
+            //TODO
+        },
+        resize: function(){
+            if(activeSlide)
+                activeSlide.renderSlideShow();
+        },
+        end: function(){
+            Show.resize = resizeEditor;
+            Base.showMenu();
+            Base.exitFullscreen();
+            $('#slides').css('width','80%');
+            $('#sidebar').show();
+            activeSlide.renderSlide();
+            Sidebar.init();
+        }
+    }
+    
+    var slideshow = function(){
+        Show.resize = SlideShow.resize;
+        Base.hideMenu(true);
+        Base.fullscreen();
+        SlideShow.init();
+    }
+    /*
+     * for slideshow ends here
+     */
+     
     var removeInsertOp = function(){
         insertOp = null;
         $('#slides').unbind('mousedown',createTextBox);
@@ -992,6 +1110,26 @@ Show = new (function(){
                             icon: 'fa-list-alt',
                             id: 'insert-slide',
                             callback: insertSlide
+                        },
+                    ]
+                }
+            ]
+        },
+        {
+            type: 'main',
+            id: 'show',
+            title: 'Slide Show', //Name of menu
+            icon: 'fa-desktop', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'adsf',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-desktop',
+                            id: 'insert-text',
+                            callback: slideshow
                         },
                     ]
                 }
