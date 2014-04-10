@@ -1,0 +1,21 @@
+.mydoc { 
+	font-size:185%;
+	z-index: 3;
+	word-wrap: break-word;
+    position:relative;
+    background-color:white;
+    margin-left:auto;
+    margin-right:auto;
+    //box-shadow: 4px 10px 1px #e6e6e6;
+    overflow: visible;
+}
+#bd {
+	position: absolute;
+	top: 0;
+	z-index: 2; 
+	background-color: blue;
+	height: 100%;
+	width: 100%;
+	overflow: auto;
+}
+[contenteditable]:focus { outline: 0px solid transparent; }

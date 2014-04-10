@@ -54,18 +54,16 @@ Show = new (function(){
         Sidebar.init();
     }
     
-    this.resize = function(){
+    resizeEditor = function(){
         var side = $('#sidebar');
         var slide = $('#slides');
-        
-        side.css('width','20%');
-        slide.css('width','80%');
         
         if(activeSlide)
             activeSlide.renderSlide();
         
         Sidebar.init();
     }
+    this.resize = resizeEditor;
     
     /*
     Slide class
@@ -212,7 +210,7 @@ Show = new (function(){
             this.elems[elem.id] = elem;
             elem.parent = this;
             return elem;
-        }
+        },
     };
     
     var Elem = function(elem){
@@ -254,6 +252,7 @@ Show = new (function(){
             var slide = $('.slide');
             var slideObj = slide.data('slide');
             
+            $('#'+elem.id).unbind()
             $('#'+elem.id).remove();
             
             if('type' in elem){
@@ -267,8 +266,10 @@ Show = new (function(){
                         width: (slide.width()*elem.width)/100,
                         fontSize: (slide.height()*elem.fontSize)/100
                     });
-                    if(activeElement && activeElement == elem)
+                    if(activeElement && activeElement == elem){
+                        $('.elem.active').removeClass('active');
                         elemDOM.addClass('active');
+                    }
                     
                     //Actual element for text
                     elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
@@ -277,7 +278,7 @@ Show = new (function(){
                     elemDOM.appendTo(slide);
                     elemText.focus(textFocus);
                     elemText.blur(textBlur);
-                    elemText.bind('keyup keydown keypress', function(ev){
+                    elemText.bind('keypress keyup', function(ev){
                         elem = $(this).closest('.elem').data('elem');
                         elem.text = $(this).html();
                         elem.renderElemSide(elem.parent.id);
@@ -360,6 +361,17 @@ Show = new (function(){
             this.renderElem();
             return this;
         },
+        remove: function(){
+            $('#'+this.id).remove();
+            $('#'+activeSlide.id+this.id).remove();
+            delete activeSlide.elems[activeElement.id];
+            activeElement.blur();
+            activeElement = null;
+        },
+        focus: function(){
+            Base.updateMenu(defaultMenus.concat(formatMenu(this)));
+            Base.focusMenu('format');
+        },
         blur: function(){
             activeElement.elemDOM.removeClass('active');
             activeElement.elemDOM.find('.elem-text').blur();
@@ -385,7 +397,7 @@ Show = new (function(){
                             fontSize: 5,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
-        $('#slides').one('mouseup',finishNewTextBox);
+        $(window).one('mouseup',finishNewTextBox);
         removeInsertOp();
         ev.preventDefault();
     }
@@ -420,16 +432,16 @@ Show = new (function(){
     
     var textFocus = function(ev){
         //Will be called when a contentEdtable is focused
-        if(!activeElement)
-            activeElement = $(this).closest('.elem').data('elem');
+        activeElement = $(this).closest('.elem').data('elem');
+        $('.elem.active').removeClass('active');
         activeElement.elemDOM.addClass('active');
         activeElement.elemDOM.addClass('edit');
+        activeElement.editable = true;
         activeElement.elemDOM.css({
             cursor: 'auto',
             overflow: 'visible'
         });
-        Base.updateMenu(defaultMenus.concat(formatMenu));
-        Base.focusMenu('format');
+        activeElement.focus();
     };
     var textBlur = function(ev){
         //Will be called when a contentEdtable is focused
@@ -622,7 +634,8 @@ Show = new (function(){
     /*
      * Select and format and move elements
      */
-    var elemAlign = function(mode){
+    var elemAlign = function(mode, onoff){
+        if(onoff == false)return;
         if(activeElement){
             activeElement.editElement({
                 style: {
@@ -640,82 +653,215 @@ Show = new (function(){
             });
         }
     }
+    var removeElem = function(btnId){
+        if(activeElement)
+            activeElement.remove();
+    }
     var log = function(a, b){
         console.log(a, b);
     }
-    var formatMenu = [
-        {
+    var formatMenu = function(elem){
+        /*
+         * elem is Object of type Elem
+         * Returns menus corresponding to element
+         */
+        
+        var format = {
             type: 'main',
             id: 'format',
             title: 'Format', //Name of menu
             icon: 'fa-format', //Font awesome icon name
-            groups: [
+            groups: []
+        };
+        
+        var group;
+        
+        //Text align group
+        group = {
+            type: 'group',
+            id: 'align',
+            multiple: false,
+            required: true,
+            items: [
                 {
-                    type: 'group',
-                    id: 'g1',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-align-left',
-                            id: 'left',
-                            callback: elemAlign
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-align-center',
-                            id: 'center',
-                            callback: elemAlign
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-align-right',
-                            id: 'right',
-                            callback: elemAlign
-                        },
-                    ]
+                    type: 'button',
+                    icon: 'fa-align-left',
+                    id: 'left',
+                    onoff: true,
+                    callback: elemAlign
                 },
                 {
-                    type: 'group',
-                    id: 'g2',
-                    items: [
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            id: 'color',
-                            currState: '#000000',
-                            text: 'F',
-                            callback: elemColor
-                        },
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            id: 'background-color',
-                            currState: '#ffffff',
-                            text: 'B',
-                            callback: elemColor
-                        },
-                        {
-                            type: 'list',
-                            //icon: 'fa-circle',
-                            id: 'list',
-                            title: 'List',
-                            list: [
-                                {
-                                    id: 'da',
-                                    value: 'Hello'
-                                },
-                                {
-                                    id: 'da1',
-                                    value: 'Hello2'
-                                }
-                            ],
-                            callback: log
-                        },
-                    ]
+                    type: 'button',
+                    icon: 'fa-align-center',
+                    id: 'center',
+                    onoff: true,
+                    callback: elemAlign
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-align-right',
+                    id: 'right',
+                    onoff: true,
+                    callback: elemAlign
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-align-justify',
+                    id: 'justify',
+                    onoff: true,
+                    callback: elemAlign
+                },
+            ]
+        };
+        if(('style' in elem) && ('textAlign' in elem.style)){
+            if(elem.style.textAlign == 'left')
+                group.items[0].currState = true;
+            else if(elem.style.textAlign == 'center')
+                group.items[1].currState = true;
+            else if(elem.style.textAlign == 'right')
+                group.items[2].currState = true;
+            else if(elem.style.textAlign == 'justify')
+                group.items[3].currState = true;
+        }
+        else {
+            group.items[0].currState = true;
+        }
+        
+        format.groups.push(group);
+        
+        //Colors group
+        group = {
+            type: 'group',
+            id: 'colors',
+            items: [
+                {
+                    type: 'color',
+                    icon: 'fa-circle',
+                    id: 'color',
+                    currState: '#000000',
+                    text: 'F',
+                    callback: elemColor
+                },
+                {
+                    type: 'color',
+                    icon: 'fa-circle',
+                    id: 'backgroundColor',
+                    currState: '#ffffff',
+                    text: 'B',
+                    callback: elemColor
                 }
             ]
-        },
-    ];
+        }
+        if(('style' in elem) && ('color' in elem.style)){
+            group.items[0].currState = elem.style.color;
+        }
+        else {
+            group.items[0].currState = '#000';
+        }
+        
+        if(('style' in elem) && ('backgroundColor' in elem.style)){
+            group.items[1].currState = elem.style.backgroundColor;
+        }
+        else {
+            group.items[1].currState = '#fff';
+        }
+        
+        format.groups.push(group);
+        
+        group = {
+            type: 'group',
+            id: 'remove',
+            items: [
+                {
+                    type: 'button',
+                    icon: 'fa-minus',
+                    id: 'remove',
+                    callback: removeElem
+                }
+            ]
+        };
+        format.groups.push(group);
+        
+        return [format];
+        /*
+        return [
+            {
+                type: 'main',
+                id: 'format',
+                title: 'Format', //Name of menu
+                icon: 'fa-format', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'align',
+                        multiple: false,
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-align-left',
+                                id: 'left',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-align-center',
+                                id: 'center',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-align-right',
+                                id: 'right',
+                                onoff: true,
+                                callback: elemAlign
+                            },
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        id: 'colors',
+                        items: [
+                            {
+                                type: 'color',
+                                icon: 'fa-circle',
+                                id: 'color',
+                                currState: '#000000',
+                                text: 'F',
+                                callback: elemColor
+                            },
+                            {
+                                type: 'color',
+                                icon: 'fa-circle',
+                                id: 'background-color',
+                                currState: '#ffffff',
+                                text: 'B',
+                                callback: elemColor
+                            },
+                            {
+                                type: 'list',
+                                //icon: 'fa-circle',
+                                id: 'list',
+                                title: 'List',
+                                list: [
+                                    {
+                                        id: 'da',
+                                        value: 'Hello'
+                                    },
+                                    {
+                                        id: 'da1',
+                                        value: 'Hello2'
+                                    }
+                                ],
+                                callback: log
+                            },
+                        ]
+                    }
+                ]
+            },
+        ];*/
+    }
     var moveInit = function(ev){
         if(ev.which != 1)return;
         
@@ -733,16 +879,17 @@ Show = new (function(){
         if ($(ev.target).closest('.elem-text').length == 0){
             ev.preventDefault();
             var elem = $(this);
+            $('.elem.active').removeClass('active');
             elem.addClass('active');
             activeElement = elem.data('elem');
-            Base.updateMenu(defaultMenus.concat(formatMenu));
-            Base.focusMenu('format');
+            activeElement.focus();
             return;
         }
         
         ev.preventDefault();
         
         var elem = $(this);
+        $('.elem.active').removeClass('active');
         elem.addClass('active');
         activeElement = elem.data('elem');
         activeElement.origMousePos = {
@@ -755,8 +902,7 @@ Show = new (function(){
         }
         //activeElement.elemDOM.css('overflow', 'visible');
         $('#slides').bind('mousemove', moveElement);
-        Base.updateMenu(defaultMenus.concat(formatMenu));
-        Base.focusMenu('format');
+        activeElement.focus();
         
         if(secondClick){
             $(window).one('mouseup', function(ev){
@@ -814,6 +960,124 @@ Show = new (function(){
         //ev.preventDefault();
     }
     
+    /*
+     * for slideshow
+     */
+    Slide.prototype.renderSlideShow = function(){
+        var slide = this;
+        
+        if(!slide || !slide.id){
+            //Error: Invalid slide
+            return;
+        }
+        
+        $('.slide').unbind();
+        $('.slide').remove();
+        var slideDOM = $('<div class="slide" id="'+slide.id+'">').appendTo('#slides');
+        slideDOM.data('slide', slide);
+        
+        var contain = $('#slides');
+        var slideH = contain.height();
+        var slideW = slideH*slide.ratio;
+        
+        if(slideW > contain.width()){
+            slideW = contain.width();
+            slideH = slideW/slide.ratio;
+        }
+        
+        slideDOM.css({
+            'height': slideH,
+            'width': slideW,
+            'top': (contain.height()-slideH)/2, 
+            'backgroundColor': slide.bgColor
+        });
+        
+        if('elems' in slide){
+            var i;
+            for(i in slide.elems){
+                slide.elems[i].renderElemShow();
+            }
+        }
+        
+        activeSlide = slide;
+    }
+    Elem.prototype.renderElemShow = function(){
+        /* 
+         * Renders and adds elem to current slide
+         */
+        var elem = this;
+        console.log('ds');
+        var slide = $('.slide');
+        var slideObj = slide.data('slide');
+        
+        $('#'+elem.id).unbind();
+        $('#'+elem.id).remove();
+                
+        if('type' in elem){
+            if(elem.type == 'title' || elem.type == 'text'){
+                //Parent element for text
+                var elemDOM = $('<div class="elem-pres slide-'+elem.type+'" id="'+elem.id+'">');
+                elemDOM.css({
+                    top: (slide.height()*elem.top)/100,
+                    left: (slide.width()*elem.left)/100,
+                    height: (slide.height()*elem.height)/100,
+                    width: (slide.width()*elem.width)/100,
+                    fontSize: (slide.height()*elem.fontSize)/100
+                });
+                
+                //Actual element for text
+                elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                
+                elemDOM.data('elem',elem);
+                elemDOM.appendTo(slide);
+                
+                elem.elemDOM = elemDOM;
+                
+                return elemDOM;
+            }
+        }
+        else {
+            //Error: Elem type is not defined
+        }
+    }
+    
+    var SlideShow = {
+        init: function(){
+            //if($('#sidebar').length)
+            $('#sidebar').hide();
+            $('#slides').css('width','100%')
+            activeSlide.renderSlideShow();
+            var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
+            endBtn.click(SlideShow.end);
+        },
+        nextSlide: function(ev){
+            //TODO
+        },
+        resize: function(){
+            if(activeSlide)
+                activeSlide.renderSlideShow();
+        },
+        end: function(){
+            Show.resize = resizeEditor;
+            Base.showMenu();
+            Base.exitFullscreen();
+            $('#slides').css('width','80%');
+            $('#sidebar').show();
+            activeSlide.renderSlide();
+            Sidebar.init();
+        }
+    }
+    
+    var slideshow = function(){
+        Show.resize = SlideShow.resize;
+        Base.hideMenu(true);
+        Base.fullscreen();
+        SlideShow.init();
+    }
+    /*
+     * for slideshow ends here
+     */
+     
     var removeInsertOp = function(){
         insertOp = null;
         $('#slides').unbind('mousedown',createTextBox);
@@ -846,6 +1110,26 @@ Show = new (function(){
                             icon: 'fa-list-alt',
                             id: 'insert-slide',
                             callback: insertSlide
+                        },
+                    ]
+                }
+            ]
+        },
+        {
+            type: 'main',
+            id: 'show',
+            title: 'Slide Show', //Name of menu
+            icon: 'fa-desktop', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'adsf',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-desktop',
+                            id: 'insert-text',
+                            callback: slideshow
                         },
                     ]
                 }

@@ -10,8 +10,10 @@ class Setupdonotuse extends CI_Controller {
     function index()
     {
         $this->load->model('setupdb');
+        echo "<pre>";
         $this->setupdb->setupTables();
-        echo "Done";
+        echo "</pre>";
+        echo "Database is ready if you cannot see any error in log!";
     }
 }
 ?>

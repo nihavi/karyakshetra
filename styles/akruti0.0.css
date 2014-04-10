@@ -1,0 +1,7 @@
+.drawing-elements {
+    pointer-events:all;
+}
+
+.active {
+    cursor:move !important;
+}

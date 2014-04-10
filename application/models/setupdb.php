@@ -14,8 +14,11 @@ class Setupdb extends CI_Model {
         $this->load->dbforge();
 
         //Files Table
-
-       $fields=array(
+        if ($this->db->table_exists('files')){
+            $this->dbforge->drop_table('files');
+            echo "Table 'files' dropped\n";
+        }
+        $fields=array(
             'fid' => array(
                 'type' => 'INT',
                 'constraint' => 9,
@@ -45,9 +48,14 @@ class Setupdb extends CI_Model {
         $this->dbforge->add_key('fid', TRUE);
         $this->dbforge->create_table('files');
         
+        echo "Table 'files' created\n";
+        
 
         //Groups Table
-
+        if ($this->db->table_exists('groups')){
+            $this->dbforge->drop_table('groups');
+            echo "Table 'groups' dropped\n";
+        }
         $fields=array(
             'gid' => array(
                 'type' => 'INT',
@@ -67,14 +75,17 @@ class Setupdb extends CI_Model {
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('gid',TRUE);
         $this->dbforge->create_table('groups');
+        echo "Table 'groups' created\n";
         
         //Users Login Table
-
+        if ($this->db->table_exists('users')){
+            $this->dbforge->drop_table('users');
+            echo "Table 'users' dropped\n";
+        }
         $fields=array(
             'uid' => array(
                 'type' => 'INT',
                 'constraint' => 9,
-                'auto_increment' => TRUE
             ),
             'username'=>array(
                 'type'=>'VARCHAR',
@@ -90,11 +101,15 @@ class Setupdb extends CI_Model {
             )
         );
         $this->dbforge->add_field($fields);
-        $this->dbforge->add_key('uid');
+        $this->dbforge->add_key('uid', TRUE);
         $this->dbforge->create_table('users');
+        echo "Table 'users' created\n";
 
         //Ownership Table
-
+        if ($this->db->table_exists('filePermissions')){
+            $this->dbforge->drop_table('filePermissions');
+            echo "Table 'filePermissions' dropped\n";
+        }
         $fields=array(
             'gid'=>array(
                 'type'=>'INT'
@@ -111,11 +126,15 @@ class Setupdb extends CI_Model {
         $this->dbforge->add_key('gid', TRUE);
         $this->dbforge->add_key('fid', TRUE);
         $this->dbforge->create_table('filePermissions');
+        echo "Table 'filePermissions' created\n";
 
 
         //Group Mapping(parent files to child files)
 
-
+        if ($this->db->table_exists('groupMapping')){
+            $this->dbforge->drop_table('groupMapping');
+            echo "Table 'groupMapping' dropped\n";
+        }
         $fields=array(
             'gid'=>array(
                 'type'=>'INT'
@@ -128,8 +147,29 @@ class Setupdb extends CI_Model {
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('gid', TRUE);
         $this->dbforge->add_key('uid', TRUE);
-        $this->dbforge->create_table('GroupMapping');
+        $this->dbforge->create_table('groupMapping');
+        echo "Table 'groupMapping' created\n";
         
+        echo "Inserting 'public' user";
+        $this->db->trans_start();
+        $this->db->insert('groups', array(
+                'gname' => 'Public',
+                'isUser' => TRUE
+            ));
+        $gid = $this->db->insert_id();
+        $this->db->insert('users', array(
+                'uid' => $gid,
+                'username' => 'public'
+            ));
+        $this->db->trans_complete();
+        if ($this->db->trans_status() === FALSE)
+        {
+            echo "\t\t[Failed]\n";
+        }
+        else 
+        {
+            echo "\t\t[Done]\n";
+        }
     }
     
 }
