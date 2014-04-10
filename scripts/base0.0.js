@@ -931,6 +931,22 @@ Base = new (function(){
         handleResize();
     }
     
+    this.exitFullscreen = function() {
+        // Supports most browsers and their versions.
+        var requestMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(document);
+        }
+        else if( typeof window.ActiveXObject !== "undefined" ){ // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+        handleResize();
+    }
+    
     this.hideMenu = function(complete){
         //Hide base completely if complete is true
         $('#menubar').hide();
