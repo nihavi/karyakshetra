@@ -687,6 +687,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-left',
                     id: 'left',
+                    title: 'Left align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -694,6 +695,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-center',
                     id: 'center',
+                    title: 'Center align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -701,6 +703,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-right',
                     id: 'right',
+                    title: 'Right align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -708,6 +711,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-justify',
                     id: 'justify',
+                    title: 'Justify',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -738,6 +742,7 @@ Show = new (function(){
                     type: 'color',
                     icon: 'fa-circle',
                     id: 'color',
+                    title: 'Font color',
                     currState: '#000000',
                     text: 'F',
                     callback: elemColor
@@ -746,6 +751,7 @@ Show = new (function(){
                     type: 'color',
                     icon: 'fa-circle',
                     id: 'backgroundColor',
+                    title: 'Background color',
                     currState: '#ffffff',
                     text: 'B',
                     callback: elemColor
@@ -774,8 +780,9 @@ Show = new (function(){
             items: [
                 {
                     type: 'button',
-                    icon: 'fa-minus',
+                    icon: 'fa-times',
                     id: 'remove',
+                    title: 'Remove textbox',
                     callback: removeElem
                 }
             ]
@@ -989,7 +996,8 @@ Show = new (function(){
             'height': slideH,
             'width': slideW,
             'top': (contain.height()-slideH)/2, 
-            'backgroundColor': slide.bgColor
+            'backgroundColor': slide.bgColor,
+            'boxShadow': 'none'
         });
         
         if('elems' in slide){
@@ -1006,7 +1014,6 @@ Show = new (function(){
          * Renders and adds elem to current slide
          */
         var elem = this;
-        console.log('ds');
         var slide = $('.slide');
         var slideObj = slide.data('slide');
         
@@ -1041,17 +1048,38 @@ Show = new (function(){
         }
     }
     
+    var currSlideShowIndex;
     var SlideShow = {
         init: function(){
             //if($('#sidebar').length)
             $('#sidebar').hide();
-            $('#slides').css('width','100%')
+            $('#slides').css({
+                'width': '100%',
+                'backgroundColor': 'black'
+            })
+            
+            for( var i = 0; i<allSlides.length; i++ ) {
+                if( allSlides[i] == activeSlide ){
+                    currSlideShowIndex = i;
+                    break;
+                }
+            }
+            
             activeSlide.renderSlideShow();
             var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
             endBtn.click(SlideShow.end);
+            $('#slides').bind('click', SlideShow.nextSlide);
+            $(window).bind('keydown', SlideShow.nextSlide);
         },
         nextSlide: function(ev){
-            //TODO
+            currSlideShowIndex++;
+            if( currSlideShowIndex < allSlides.length ){
+                allSlides[currSlideShowIndex].renderSlideShow();
+                activeSlide = allSlides[currSlideShowIndex];
+            }
+            else {
+                SlideShow.end();
+            }
         },
         resize: function(){
             if(activeSlide)
@@ -1061,7 +1089,12 @@ Show = new (function(){
             Show.resize = resizeEditor;
             Base.showMenu();
             Base.exitFullscreen();
-            $('#slides').css('width','80%');
+            $('#slides').unbind('click', SlideShow.nextSlide);
+            $(window).unbind('keydown', SlideShow.nextSlide);
+            $('#slides').css({
+                'width': '80%',
+                'backgroundColor': ''
+            });
             $('#sidebar').show();
             activeSlide.renderSlide();
             Sidebar.init();
@@ -1103,12 +1136,14 @@ Show = new (function(){
                             type: 'button',
                             icon: 'fa-list',
                             id: 'insert-text',
+                            title: 'Textbox',
                             callback: selectOp
                         },
                         {
                             type: 'button',
                             icon: 'fa-list-alt',
                             id: 'insert-slide',
+                            title: 'Slide',
                             callback: insertSlide
                         },
                     ]
@@ -1129,6 +1164,7 @@ Show = new (function(){
                             type: 'button',
                             icon: 'fa-desktop',
                             id: 'insert-text',
+                            title: 'Start Slideshow',
                             callback: slideshow
                         },
                     ]

@@ -67,7 +67,7 @@
 .elem-side{
     margin: 0;
     padding: 0;
-    cursor: move;
+    cursor: default;
     overflow: hidden;
     -moz-box-sizing:border-box;
     box-sizing: border-box;
