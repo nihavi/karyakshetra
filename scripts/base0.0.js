@@ -524,11 +524,10 @@ Base = new (function(){
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
-                                            console.log(selected);
-                                            console.log(elem.find('.btn-longtext').html());
                                             elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
                                             item.currState = selected;
+                                            console.log(item);
                                         });
                                     }
                                     
@@ -545,6 +544,7 @@ Base = new (function(){
                                     
                                     var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
                                     
+                                    console.log(item);
                                     if('currState' in item){
                                         for (var i=0;i<item.list.length;++i) {
                                             if (item.list[i].id == item.currState) {
@@ -552,8 +552,10 @@ Base = new (function(){
                                             }
                                         }
                                     }
-                                    else
+                                    else {
+                                        item.currState = item.list[0].id;
                                         text.html(item.list[0].value);
+                                    }
                                 
                                 /*
                                     select.change(function(){
@@ -641,10 +643,8 @@ Base = new (function(){
                 $(window).bind('click', hideColorPicker);
             }
             else {
-                //if($('.colorpicker').data('caller')==itemId){
                 $('.colorpicker').hide().data('caller', '');
                 $(window).unbind('click', hideColorPicker);
-                //}
             }
         }
         
@@ -654,10 +654,30 @@ Base = new (function(){
         }
         else if( item.type == 'list' ){
             var dropdown = elem.find('.dropdown');
-            if (dropdown.css('display') == 'none')
+            
+            var hideDropdown = function(e) {
+                if ($(e.target).closest('.dropdown').length == 0) {
+                    if( $(e.target).closest('.select').length == 0 ){                        
+                        $(window).unbind('click', hideDropdown);
+                        $('.dropdown').hide();
+                    }
+                    /*else {
+                        var dropdown = $(e.target).closest('.select').find('.dropdown');
+                        $('.dropdown').hide();
+                        $(e.target).closest('.select').find('.dropdown').show();
+                    }*/
+                }
+            }
+            
+            if (dropdown.css('display') == 'none') {
+                $('.dropdown').hide();
                 dropdown.show();
-            else
+                $(window).bind('click', hideDropdown);
+            }
+            else {
                 dropdown.hide();
+                $(window).unbind('click', hideDropdown);
+            }
         }
         else { // if item.type == 'button' or item.type is not known
             if ( ('onoff' in item) && item.onoff == true ){
