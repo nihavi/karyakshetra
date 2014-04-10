@@ -165,6 +165,7 @@ Base = new (function(){
                         {
                             type: 'button',
                             icon: 'fa-save',
+                            title: 'Save',
                             callback: log
                         }
                     ]
@@ -483,6 +484,12 @@ Base = new (function(){
                         if( ('type' in item) && ('callback' in item) ){
                             //Append menu item to DOM
                             var menuItem = $('<div class="btn" id="'+id+'"></div>').appendTo(subMenu);
+                            if(item.title){
+                                menuItem.attr({
+                                    'rel': 'tooltip',
+                                    'title': item.title
+                                });
+                            }
                             if (item.icon) {
                                 $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                                 menuItem.addClass('btn-icon');
@@ -527,7 +534,6 @@ Base = new (function(){
                                             elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
                                             item.currState = selected;
-                                            console.log(item);
                                         });
                                     }
                                     
@@ -544,7 +550,6 @@ Base = new (function(){
                                     
                                     var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
                                     
-                                    console.log(item);
                                     if('currState' in item){
                                         for (var i=0;i<item.list.length;++i) {
                                             if (item.list[i].id == item.currState) {
@@ -556,18 +561,6 @@ Base = new (function(){
                                         item.currState = item.list[0].id;
                                         text.html(item.list[0].value);
                                     }
-                                
-                                /*
-                                    select.change(function(){
-                                        var elem = $(this).closest('.btn');
-                                        var itemId = elem.attr('id');
-                                        var item = submenu[itemId];
-                                        var selected = this.selectedIndex;
-                                        var options = this.options;
-                                        item.callback(item.id, options[selected].value);
-                                        item.currState = options[selected].value;
-                                    });
-                                */
                                 }
                                 
                             }
@@ -602,13 +595,13 @@ Base = new (function(){
         else {
             //Error: empty menu item, ignored
         }
+        setTooltip();
     }
     
     var handleMenuClick = function(ev){
         var elem = $(this);
         var itemId = $(this).attr('id');
         var item = submenu[itemId];
-        
         
         if( item.type == 'color' ){
                     
@@ -617,6 +610,7 @@ Base = new (function(){
                     && ($(e.target).closest('.btn-color').length == 0)) {
 
                     $(window).unbind('click', hideColorPicker);
+                    $('#'+$('.colorpicker').data('caller')).attr('rel','tooltip');
                     $('.colorpicker').hide().data('caller', '');
                 }
             }
@@ -641,8 +635,11 @@ Base = new (function(){
                 
                 $('.colorpicker').show().data('caller', itemId);
                 $(window).bind('click', hideColorPicker);
+                $('.btn-color').attr('rel','tooltip');
+                elem.removeAttr('rel');
             }
             else {
+                elem.attr('rel','tooltip');
                 $('.colorpicker').hide().data('caller', '');
                 $(window).unbind('click', hideColorPicker);
             }
@@ -657,15 +654,11 @@ Base = new (function(){
             
             var hideDropdown = function(e) {
                 if ($(e.target).closest('.dropdown').length == 0) {
-                    if( $(e.target).closest('.select').length == 0 ){                        
+                    if( $(e.target).closest('.select').length == 0 ){                      
                         $(window).unbind('click', hideDropdown);
                         $('.dropdown').hide();
+                        $('.btn.select').attr('rel','tooltip');
                     }
-                    /*else {
-                        var dropdown = $(e.target).closest('.select').find('.dropdown');
-                        $('.dropdown').hide();
-                        $(e.target).closest('.select').find('.dropdown').show();
-                    }*/
                 }
             }
             
@@ -673,10 +666,13 @@ Base = new (function(){
                 $('.dropdown').hide();
                 dropdown.show();
                 $(window).bind('click', hideDropdown);
+                $('.btn.select').attr('rel','tooltip');
+                elem.removeAttr('rel');
             }
             else {
                 dropdown.hide();
                 $(window).unbind('click', hideDropdown);
+                elem.attr('rel','tooltip');
             }
         }
         else { // if item.type == 'button' or item.type is not known
@@ -745,6 +741,91 @@ Base = new (function(){
     $(window).resize(handleResize);
     
     
+    /*
+     * Tooltip implementation
+     * From http://osvaldas.info/elegant-css-and-jquery-tooltip-responsive-mobile-friendly
+     * 
+     * Edited
+     */
+    var setTooltip = function()
+    {
+        var targets = $( '[rel~=tooltip]' ),
+            target  = false,
+            tooltip = false,
+            title   = false;
+     
+        targets.bind( 'mouseenter', function()
+        {
+            target  = $( this );
+            tip     = target.attr( 'title' );
+            tooltip = $( '<div id="tooltip"></div>' );
+     
+            if( !tip || tip == '' || target.attr('rel')!='tooltip')
+                return false;
+     
+            target.removeAttr( 'title' );
+            tooltip.css( 'opacity', 0 )
+                   .html( tip )
+                   .appendTo( 'body' );
+     
+            var init_tooltip = function()
+            {
+                if( $( window ).width() < tooltip.outerWidth() * 1.5 )
+                    tooltip.css( 'max-width', $( window ).width() / 2 );
+                else
+                    tooltip.css( 'max-width', 340 );
+     
+                var pos_left = target.offset().left + ( target.outerWidth() / 2 ) - ( tooltip.outerWidth() / 2 ),
+                    pos_top  = target.offset().top + target.outerHeight();
+     
+                if( pos_left < 0 )
+                {
+                    pos_left = target.offset().left + target.outerWidth() / 2 - 20;
+                    tooltip.addClass( 'left' );
+                }
+                else
+                    tooltip.removeClass( 'left' );
+     
+                if( pos_left + tooltip.outerWidth() > $( window ).width() )
+                {
+                    pos_left = target.offset().left - tooltip.outerWidth() + target.outerWidth() / 2 + 20;
+                    tooltip.addClass( 'right' );
+                }
+                else
+                    tooltip.removeClass( 'right' );
+                
+                if( pos_top + tooltip.outerHeight() + 20 > $( window ).height() ){
+                    pos_top  = target.offset().top - tooltip.outerHeight() - 20,
+                    tooltip.removeClass( 'top' );
+                }
+                else
+                {
+                    tooltip.addClass( 'top' );
+                }
+                    
+                tooltip.css( { left: pos_left, top: pos_top } )
+                       .animate( { top: '+=10', opacity: 1 }, 50 );
+            };
+     
+            init_tooltip();
+            $( window ).resize( init_tooltip );
+     
+            var remove_tooltip = function()
+            {
+                tooltip.animate( { top: '-=10', opacity: 0 }, 50, function()
+                {
+                    $( this ).remove();
+                });
+     
+                target.attr( 'title', tip );
+            };
+     
+            target.bind( 'mouseleave', remove_tooltip );
+            target.bind( 'click', remove_tooltip );
+            tooltip.bind( 'click', remove_tooltip );
+        });
+    }
+
     /*
      * opQueue implementation
      */
