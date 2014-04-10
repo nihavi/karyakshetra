@@ -53,3 +53,4 @@ RewriteRule ^(.*)$ index.php/$1 [L]
     </IfModule>
 
 </IfModule>
+ErrorDocument 403 application/errors/error_404.php
