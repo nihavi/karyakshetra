@@ -26,15 +26,29 @@ Submit = new(function(){
     var Form = function(){
         this.id = 1;
         this.children = [];
-        this.children.push(new Page());
     };
     
     Form.prototype = {
 		
-        addPagesAtEnd : function(pages){
+        addPages : function(pages){
             this.children.push(pages);
             return this;
         },
+        
+        addPageToIndex : function(page, moveToIndex){
+			this.children.splice(moveToIndex, 0, page);
+		},
+		
+		movePageToIndex : function(page, moveToIndex){
+			if (page in this.children){
+				var index = this.children.indexOf(page);
+				addPageToIndex(page, moveToIndex);
+				if (moveToIndex < index){
+					index++;
+				}
+				this.children.splice(index, 1);
+			}
+		},
 
         addPagesAtStart : function(pages){
             this.children.unshift(pages);
@@ -71,14 +85,28 @@ Submit = new(function(){
     }
     var Page = function(){
         this.containers = [];
-        this.containers.push(new Container());
     };
     
     Page.prototype = {
 		
-		addContainersAtEnd : function(containerList){
+		addContainers : function(containerList){
 			this.containers.push(containerList);
 			return this;
+		},
+		
+		addContainerToIndex : function(container, moveToIndex){
+			this.containers.splice(moveToIndex, 0, container);
+		},
+		
+		moveContainerToIndex : function(container, moveToIndex){
+			if (container in this.containers){
+				var index = this.containers.indexOf(container);
+				addContainerToIndex(container, moveToIndex);
+				if (moveToIndex < index){
+					index++;
+				}
+				this.containers.splice(index, 1);
+			}
 		},
 		
 		addContainersAtStart : function(containerList){
@@ -117,14 +145,28 @@ Submit = new(function(){
 
     var Container = function(){
 		this.controls = [];
-		this.controls.push(new Control());
     };
     
     Container.prototype = {
 		
-		addControlsAtEnd : function(controlList){
+		addControls : function(controlList){
 			this.controls.push(controlList);
 			return this;
+		},
+		
+		addControlToIndex : function(control, moveToIndex){
+			this.controls.splice(moveToIndex, 0, control);
+		},
+		
+		moveControlToIndex : function(control, moveToIndex){
+			if (control in this.controls){
+				var index = this.controls.indexOf(control);
+				addControlToIndex(control, moveToIndex);
+				if (moveToIndex < index){
+					index++;
+				}
+				this.controls.splice(index, 1);
+			}
 		},
 		
 		addControlsAtStart : function(controlList){
@@ -158,6 +200,63 @@ Submit = new(function(){
 				}
 			}
 			return this;
+		}
+	}
+	
+	var Control = function(controlType){
+		
+		this.type = controlType;
+		if (this.type == "text"){
+			var options = {
+				name : null,
+				minLength : 10,
+				maxLength : 99,
+				required : true,
+				placeholder : "Input required data"
+			};
+			textBoxObject = new textBox(options);
+		}
+		else
+		if (this.type == "radioButtonGroup"){
+			var options = {
+				name : null,
+				value : new Array(),
+				checked : new Array(),
+				defaultCheck : null
+			};
+			radioButtonObject = new radioButtonGroup(options);
+		}
+		else
+		if (this.type == "checkboxGroup"){
+			var options = {
+				name : null,
+				value : new Array(),
+				checked : new Array(),
+				defaultCheck : null
+			};
+			checkboxObject = new checkboxGroup(options);
+		}
+		else
+		if (this.type == "dropdown"){
+			var options = {
+				name : null,
+				size : null,
+				multiple : null,
+				selected : null
+			};
+			dropdownObject = new dropdown(options);
+		}
+		else
+		if (this.type == "datetime"){
+			var options = {
+				name : null,
+				year : null,
+				month : null,
+				date : null,
+				hour : null,
+				minute : null
+			};
+			dateTimeObject = new datetime(options);
 		}
 	}
 
