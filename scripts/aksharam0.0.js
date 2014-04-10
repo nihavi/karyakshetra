@@ -1,5 +1,7 @@
 var Aksharam = new(function(){
 	
+	var doc;	
+	
 	function MyDoc() {
         this.characterCount = 0;
         this.docBody = document.createElement("div");
@@ -18,27 +20,88 @@ var Aksharam = new(function(){
 		    parentDiv = document.getElementById("editable");
 		backDrop["id"] = "bd";
 		docStyle.width = this.docWidth + "vw";
-		docStyle.height = "100%";
 		docStyle.paddingTop = this.padding[0] + "%";
 		docStyle.paddingLeft = this.padding[1] + "%";
 		docStyle.paddingRight = this.padding[2] + "%";
-		docStyle.height = this.initialHeight + "vw";
-		parentDiv.appendChild(this.docBody);
+		docStyle.minHeight = "100%";
 		parentDiv.appendChild(backDrop);
+		backDrop.appendChild(this.docBody);
 	};
     
     this.init = function(){
-		this.newDoc = new MyDoc();		
+		this.newDoc = new MyDoc();
+		doc = this.newDoc;		
     };
 
     this.getMenu = function(){
         return [
-        ]
+			{
+				type: 'main',
+				id: 'lorem ipsum',
+				title: 'lorem ipsum',
+				icon: 'fa-usd',
+				groups: [
+					{
+						type: 'group',
+						id: 'group1',
+						multiple: true,
+						required: false,
+						items: [
+							{
+								type: 'button',
+								id: 'boldbutton',
+								title: 'Bold',
+								icon: 'fa-bold',
+								onoff: false,
+								currState: false,
+								callback: makeBold
+							},
+							{
+								type: 'button',
+								id: 'boldbutton',
+								title: 'Italic',
+								icon: 'fa-italic',
+								onoff: false,
+								currState: false,
+								callback: makeItalic
+							},
+							{
+								type: 'button',
+								id: 'boldbutton',
+								title: 'Underline',
+								icon: 'fa-underline',
+								onoff: false,
+								currState: false,
+								callback: makeUnderline
+							}
+						]
+					}
+				]
+			}
+        ];
     };
     
     this.resize = function(){
     
     };
+    
+    function makeBold() {
+		var sel = document.getSelection();
+		for(var i = 0; i < sel.rangeCount; ++i)
+			console.log(sel.getRangeAt(i));
+		document.execCommand("bold");
+		console.log("bold");
+	}
+	
+	function makeItalic() {
+		document.execCommand("italic");
+		console.log("italic");
+	}
+	
+	function makeUnderline() {
+		document.execCommand("underline");
+		console.log("underline");
+	}
 
 })();
 

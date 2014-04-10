@@ -1,7 +1,7 @@
 <?php
-class Setupdb extends CI_Model {
+class Setup_model extends CI_Model {
     /*
-     * Model for first time setup of databases
+     * Model for first time setup of databases (and maybe other things)
      */
     
     function __construct()
@@ -9,7 +9,7 @@ class Setupdb extends CI_Model {
         parent::__construct();
     }
     
-    function setupTables(){
+    function setup_tables() {
         $this->load->database();
         $this->load->dbforge();
 
@@ -18,7 +18,7 @@ class Setupdb extends CI_Model {
             $this->dbforge->drop_table('files');
             echo "Table 'files' dropped\n";
         }
-        $fields=array(
+        $fields = array(
             'fid' => array(
                 'type' => 'INT',
                 'constraint' => 9,
@@ -56,18 +56,18 @@ class Setupdb extends CI_Model {
             $this->dbforge->drop_table('groups');
             echo "Table 'groups' dropped\n";
         }
-        $fields=array(
+        $fields = array(
             'gid' => array(
                 'type' => 'INT',
                 'constraint' => 9,
                 'auto_increment' => TRUE
             ),
-            'gname'=>array(
+            'gname' => array(
                 'type'=>'VARCHAR',
                 'constraint'=>100
             ),
             'created TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
-            'isUser'=>array(
+            'isUser' => array(
                 'type'=>'BOOLEAN'
             ),
         );
@@ -78,10 +78,10 @@ class Setupdb extends CI_Model {
         echo "Table 'groups' created\n";
         
         //Users Login Table
-        if ($this->db->table_exists('users')){
-            $this->dbforge->drop_table('users');
-            echo "Table 'users' dropped\n";
-        }
+        
+        $this->dbforge->drop_table('users');
+        echo "Table 'users' dropped\n";
+        
         $fields=array(
             'uid' => array(
                 'type' => 'INT',
