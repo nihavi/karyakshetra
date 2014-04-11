@@ -571,11 +571,10 @@ Akruti = new (function() {
         this.rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
         this.pid = mySvgObject.id;
-        
+        this.rect.classList.add('select-area');
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
         this.rect.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
-        this.rect.style.pointerEvents = 'none';/////////////////////////////////////////////Check
         
         this.rect.setAttribute('x', x);
         this.rect.setAttribute('y', y);
@@ -879,6 +878,7 @@ Akruti = new (function() {
             for (var i=0;i<pivots.length;i++) {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
+            $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
             Base.focusMenu('edit');
         };
         
@@ -1564,20 +1564,22 @@ Akruti = new (function() {
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
                     e.stopImmediatePropagation();
-                    var myObject = $(this).data('myObject');
-                    currentSvg = allSvg[myObject.pid];
-                    if (actives.list.indexOf(myObject) == -1) {
-                        if (e.ctrlKey) {
-                            selectElement.apply(myObject);
+                    if (!e.data || !e.data.selectArea) {
+                        var myObject = $(this).data('myObject');
+                        currentSvg = allSvg[myObject.pid];
+                        if (actives.list.indexOf(myObject) == -1) {
+                            if (e.ctrlKey) {
+                                selectElement.apply(myObject);
+                            }
+                            else {
+                                deselectAll();
+                                selectElement.apply(myObject);
+                            }
                         }
                         else {
-                            deselectAll();
-                            selectElement.apply(myObject);
-                        }
-                    }
-                    else {
-                        if (e.ctrlKey) {
-                            deselectElement.apply(myObject);
+                            if (e.ctrlKey) {
+                                deselectElement.apply(myObject);
+                            }
                         }
                     }
                     actives.pastState = new Array();
@@ -1804,7 +1806,6 @@ Akruti = new (function() {
                 actives.tmp = tmp;
             },
             mousemove: function(e, selectRect) {
-                e.stopPropagation();
                 var tmp = actives.tmp;
                 
                 /* Resizing select Rect */
@@ -1851,11 +1852,21 @@ Akruti = new (function() {
             
             l : {
                 mousedown: function(element, rect) {
+                    if (rect.w != 0) {
+                        element.ratioX1 = Math.abs(element.x1-rect.x)/rect.w;
+                        element.ratioX2 = Math.abs(element.x2-rect.x)/rect.w;
+                    }
+                    else {
+                        element.ratioX1 = element.ratioX2 = 0;
+                    }
                     
-                    element.ratioX1 = Math.abs(element.x1-rect.x)/rect.w;
-                    element.ratioX2 = Math.abs(element.x2-rect.x)/rect.w;
-                    element.ratioY1 = Math.abs(element.y1-rect.y)/rect.h;
-                    element.ratioY2 = Math.abs(element.y2-rect.y)/rect.h;
+                    if (rect.h != 0) {
+                        element.ratioY1 = Math.abs(element.y1-rect.y)/rect.h;
+                        element.ratioY2 = Math.abs(element.y2-rect.y)/rect.h;
+                    }
+                    else {
+                        element.ratioY1 = element.ratioY2 = 0;
+                    }
                     
                     return {
                         'op' :'ch',
@@ -2187,7 +2198,7 @@ Akruti = new (function() {
             groups: [
                 {
                     type: 'group',
-                    id: 'g1',
+                    id: 'colorGroup',
                     items: [
                         {
                             type: 'color',
@@ -2207,6 +2218,12 @@ Akruti = new (function() {
                             text: 'Stroke',
                             callback: editor.setStrokeColor,
                         },
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'delete',
+                    items: [
                         {
                             type: 'button',
                             id: 'delete',
@@ -2215,9 +2232,23 @@ Akruti = new (function() {
                             onoff: false,  //Is a on/off button
                             callback: editor.deleteAllSelected
                         },
-                        
                     ],
                 },
+                {
+                    type: 'group',
+                    id: 'strokeProperties',
+                    items: [
+                        {
+                            type:'list',
+                            id:'stroke-width',
+                            title:'Stroke Weight',
+                            icon:'fa-th-list',
+                            currState:2,
+                            list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
+                            callback:editor.setStrokeWidth
+                        }
+                    ]
+                }
             ]  
         },
     ];
