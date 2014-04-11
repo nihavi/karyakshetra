@@ -54,18 +54,16 @@ Show = new (function(){
         Sidebar.init();
     }
     
-    this.resize = function(){
+    resizeEditor = function(){
         var side = $('#sidebar');
         var slide = $('#slides');
-        
-        side.css('width','20%');
-        slide.css('width','80%');
         
         if(activeSlide)
             activeSlide.renderSlide();
         
         Sidebar.init();
     }
+    this.resize = resizeEditor;
     
     /*
     Slide class
@@ -254,6 +252,7 @@ Show = new (function(){
             var slide = $('.slide');
             var slideObj = slide.data('slide');
             
+            $('#'+elem.id).unbind()
             $('#'+elem.id).remove();
             
             if('type' in elem){
@@ -688,6 +687,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-left',
                     id: 'left',
+                    title: 'Left align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -695,6 +695,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-center',
                     id: 'center',
+                    title: 'Center align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -702,6 +703,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-right',
                     id: 'right',
+                    title: 'Right align',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -709,6 +711,7 @@ Show = new (function(){
                     type: 'button',
                     icon: 'fa-align-justify',
                     id: 'justify',
+                    title: 'Justify',
                     onoff: true,
                     callback: elemAlign
                 },
@@ -739,6 +742,7 @@ Show = new (function(){
                     type: 'color',
                     icon: 'fa-circle',
                     id: 'color',
+                    title: 'Font color',
                     currState: '#000000',
                     text: 'F',
                     callback: elemColor
@@ -747,6 +751,7 @@ Show = new (function(){
                     type: 'color',
                     icon: 'fa-circle',
                     id: 'backgroundColor',
+                    title: 'Background color',
                     currState: '#ffffff',
                     text: 'B',
                     callback: elemColor
@@ -775,8 +780,9 @@ Show = new (function(){
             items: [
                 {
                     type: 'button',
-                    icon: 'fa-minus',
+                    icon: 'fa-times',
                     id: 'remove',
+                    title: 'Remove textbox',
                     callback: removeElem
                 }
             ]
@@ -961,11 +967,150 @@ Show = new (function(){
         //ev.preventDefault();
     }
     
-    var slideshow = function(){
-        Base.hideMenu();
-        Base.fullscreen();
+    /*
+     * for slideshow
+     */
+    Slide.prototype.renderSlideShow = function(){
+        var slide = this;
+        
+        if(!slide || !slide.id){
+            //Error: Invalid slide
+            return;
+        }
+        
+        $('.slide').unbind();
+        $('.slide').remove();
+        var slideDOM = $('<div class="slide" id="'+slide.id+'">').appendTo('#slides');
+        slideDOM.data('slide', slide);
+        
+        var contain = $('#slides');
+        var slideH = contain.height();
+        var slideW = slideH*slide.ratio;
+        
+        if(slideW > contain.width()){
+            slideW = contain.width();
+            slideH = slideW/slide.ratio;
+        }
+        
+        slideDOM.css({
+            'height': slideH,
+            'width': slideW,
+            'top': (contain.height()-slideH)/2, 
+            'backgroundColor': slide.bgColor,
+            'boxShadow': 'none'
+        });
+        
+        if('elems' in slide){
+            var i;
+            for(i in slide.elems){
+                slide.elems[i].renderElemShow();
+            }
+        }
+        
+        activeSlide = slide;
+    }
+    Elem.prototype.renderElemShow = function(){
+        /* 
+         * Renders and adds elem to current slide
+         */
+        var elem = this;
+        var slide = $('.slide');
+        var slideObj = slide.data('slide');
+        
+        $('#'+elem.id).unbind();
+        $('#'+elem.id).remove();
+                
+        if('type' in elem){
+            if(elem.type == 'title' || elem.type == 'text'){
+                //Parent element for text
+                var elemDOM = $('<div class="elem-pres slide-'+elem.type+'" id="'+elem.id+'">');
+                elemDOM.css({
+                    top: (slide.height()*elem.top)/100,
+                    left: (slide.width()*elem.left)/100,
+                    height: (slide.height()*elem.height)/100,
+                    width: (slide.width()*elem.width)/100,
+                    fontSize: (slide.height()*elem.fontSize)/100
+                });
+                
+                //Actual element for text
+                elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                
+                elemDOM.data('elem',elem);
+                elemDOM.appendTo(slide);
+                
+                elem.elemDOM = elemDOM;
+                
+                return elemDOM;
+            }
+        }
+        else {
+            //Error: Elem type is not defined
+        }
     }
     
+    var currSlideShowIndex;
+    var SlideShow = {
+        init: function(){
+            //if($('#sidebar').length)
+            $('#sidebar').hide();
+            $('#slides').css({
+                'width': '100%',
+                'backgroundColor': 'black'
+            })
+            
+            for( var i = 0; i<allSlides.length; i++ ) {
+                if( allSlides[i] == activeSlide ){
+                    currSlideShowIndex = i;
+                    break;
+                }
+            }
+            
+            activeSlide.renderSlideShow();
+            var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
+            endBtn.click(SlideShow.end);
+            $('#slides').bind('click', SlideShow.nextSlide);
+            $(window).bind('keydown', SlideShow.nextSlide);
+        },
+        nextSlide: function(ev){
+            currSlideShowIndex++;
+            if( currSlideShowIndex < allSlides.length ){
+                allSlides[currSlideShowIndex].renderSlideShow();
+                activeSlide = allSlides[currSlideShowIndex];
+            }
+            else {
+                SlideShow.end();
+            }
+        },
+        resize: function(){
+            if(activeSlide)
+                activeSlide.renderSlideShow();
+        },
+        end: function(){
+            Show.resize = resizeEditor;
+            Base.showMenu();
+            Base.exitFullscreen();
+            $('#slides').unbind('click', SlideShow.nextSlide);
+            $(window).unbind('keydown', SlideShow.nextSlide);
+            $('#slides').css({
+                'width': '80%',
+                'backgroundColor': ''
+            });
+            $('#sidebar').show();
+            activeSlide.renderSlide();
+            Sidebar.init();
+        }
+    }
+    
+    var slideshow = function(){
+        Show.resize = SlideShow.resize;
+        Base.hideMenu(true);
+        Base.fullscreen();
+        SlideShow.init();
+    }
+    /*
+     * for slideshow ends here
+     */
+     
     var removeInsertOp = function(){
         insertOp = null;
         $('#slides').unbind('mousedown',createTextBox);
@@ -991,12 +1136,14 @@ Show = new (function(){
                             type: 'button',
                             icon: 'fa-list',
                             id: 'insert-text',
+                            title: 'Textbox',
                             callback: selectOp
                         },
                         {
                             type: 'button',
                             icon: 'fa-list-alt',
                             id: 'insert-slide',
+                            title: 'Slide',
                             callback: insertSlide
                         },
                     ]
@@ -1017,6 +1164,7 @@ Show = new (function(){
                             type: 'button',
                             icon: 'fa-desktop',
                             id: 'insert-text',
+                            title: 'Start Slideshow',
                             callback: slideshow
                         },
                     ]

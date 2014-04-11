@@ -1,3 +1,0 @@
-#Aksharam
-
-'nuff said.
