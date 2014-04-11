@@ -2,6 +2,6 @@
     pointer-events:all;
 }
 
-.active {
+.drawing-elements.active {
     cursor:move !important;
 }
