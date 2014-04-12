@@ -77,14 +77,24 @@ Show = new (function(){
     Elem
     {
         type: 'title' | 'text',
+        parent: Slide Object,   //Parent Slide
+        id: String, //Id of element
+        aminations: Array,  //Array of Animations
         fontSize: Number,   //Font-size in percentage relative to slide height
         text: String,   //Text inside the box
         style: Object,  //Css key-value pairs
         top: Number,    //Distance from top edge of the slide in percentage
         left: Number,   //Distance from left edge of the slide in percentage
         width: Number,  //Width in percentage with respect to width of slide
-        height: Number,  //Height in percentage with respect to height of slide
+        height: Number, //Height in percentage with respect to height of slide
         elemDOM: DOMElement //DOM element corresponding to this object
+    }
+    Animation
+    {
+        type: 'entry' | 'highlight' | 'exit',
+        name: String,   //Name of animation
+        duration: Number,   //Duration of animation in milliseconds
+        timing: 'click' | 'wait' | 'do',    //When to trigger animation
     }
     */
     
@@ -240,6 +250,15 @@ Show = new (function(){
         this.elemDOM = null;
         if ('height' in elem)
             this.height = elem.height;
+            
+        this.animations = [
+            {
+                type: 'entry',
+                name: 'fade',
+                duration: 'normal',
+                timing: 'click'
+            }
+        ]
     }
     
     Elem.prototype = {
@@ -692,6 +711,40 @@ Show = new (function(){
             });
         }
     }
+    var elemAnimation = function(id, name){
+        if( activeElement ){
+            if( !('animations' in activeElement) ){
+                activeElement.animations = [];
+            }
+            if( name == 'none' ){
+                activeElement.animations = [];
+            }
+            else if( activeElement.animations.length ){
+                activeElement.animations[0].name = name;
+            }
+            else {
+                activeElement.animations[0] = {
+                    type: 'entry',
+                    name: name,
+                    duration: 'normal',
+                    timing: 'click'
+                }
+            }
+            Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+            Base.focusMenu('animation');
+        }
+    }
+    var elemEditAnimation = function(mode, value){
+        if( activeElement ){
+            if( ('animations' in activeElement) && activeElement.animations.length ){
+                activeElement.animations[0][mode] = value;
+            }
+        }
+    }
+    var elemAnimTiming = function(mode, onoff){
+        if(!onoff)return;
+        elemEditAnimation('timing', mode);
+    }
     var removeElem = function(btnId){
         if(activeElement)
             activeElement.remove();
@@ -877,7 +930,6 @@ Show = new (function(){
         }
         group.items[0].currState = elem.fontSize;
         
-        console.log(activeElement);
         format.groups.push(group);
         
         //Colors group
@@ -972,7 +1024,150 @@ Show = new (function(){
         };
         wordArt.groups.push(group);
         */
-        return [format];
+        
+        var animation = {
+            type: 'main',
+            id: 'animation',
+            title: 'Animation', //Name of menu
+            icon: 'fa-magic', //Font awesome icon name
+            groups: []
+        };
+        
+        group = {
+            type: 'group',
+            id: 'animationName',
+            items: [
+                {
+                    type: 'list',
+                    id: 'animName',
+                    title: 'Animation',
+                    list: [
+                        {
+                            id: 'none',
+                            value: 'None'
+                        }
+                    ],
+                    callback: elemAnimation
+                }
+            ]
+        };
+        
+        for(var i in allAnims){
+            group.items[0].list.push({
+                id: i,
+                value: allAnims[i].name
+            });
+        }
+        
+        if( ('animations' in elem) && (elem.animations.length) ){
+            group.items[0].currState = elem.animations[0].name;
+        }
+        else {
+            group.items[0].currState = 'none';
+        }
+        
+        animation.groups.push(group);
+        
+        if( group.items[0].currState != 'none' ) {
+            var anim = allAnims[group.items[0].currState];
+            if( !('duration' in anim && anim.duration == false) ){
+                group = {
+                    type: 'group',
+                    id: 'animSpeed',
+                    items: [
+                        {
+                            type: 'list',
+                            id: 'duration',
+                            title: 'Animation speed',
+                            list: [
+                                {
+                                    id: 'slow',
+                                    value: 'Slow'
+                                },
+                                {
+                                    id: 'normal',
+                                    value: 'Normal'
+                                },
+                                {
+                                    id: 'fast',
+                                    value: 'Fast'
+                                },
+                                {
+                                    id: 300,
+                                    value: '300 ms'
+                                },
+                                {
+                                    id: 600,
+                                    value: '600 ms'
+                                },
+                                {
+                                    id: 900,
+                                    value: '900 ms'
+                                },
+                                {
+                                    id: 1200,
+                                    value: '1200 ms'
+                                },
+                                {
+                                    id: 1500,
+                                    value: '1500 ms'
+                                }
+                            ],
+                            callback: elemEditAnimation,
+                            currState: elem.animations[0].duration
+                        }
+                    ]
+                };
+                animation.groups.push(group);
+            }
+            
+            group = {
+                type: 'group',
+                id: 'animTiming',
+                multiple: false,
+                required: true,
+                items: [
+                    {
+                        type: 'button',
+                        id: 'click',
+                        icon: 'fa-stop',
+                        title: 'Wait for user input',
+                        onoff: true,
+                        callback: elemAnimTiming,
+                    },
+                    {
+                        type: 'button',
+                        id: 'wait',
+                        icon: 'fa-clock-o',
+                        title: 'After previous animation',
+                        onoff: true,
+                        callback: elemAnimTiming,
+                    },
+                    {
+                        type: 'button',
+                        id: 'do',
+                        icon: 'fa-play',
+                        title: 'With previous animation',
+                        onoff: true,
+                        callback: elemAnimTiming,
+                    }
+                ]
+            };
+            switch ( elem.animations[0].timing ){
+                case 'click':
+                    group.items[0].currState = true;
+                    break;
+                case 'wait':
+                    group.items[1].currState = true;
+                    break;
+                case 'do':
+                    group.items[2].currState = true;
+                    break;
+            }
+            animation.groups.push(group);
+        }
+        
+        return [format, animation];
         
     }
     var moveInit = function(ev){
@@ -1074,6 +1269,43 @@ Show = new (function(){
     }
     
     /*
+     * Available animations
+        id: {
+            name: String,   //Human readable name for animation
+            execute: Function(object),  //Accepts object and do animation. On completion call SlideShow.finishAnim
+            duration: Boolean,  //Is duration applicable for animation, default true
+        }
+    */
+    
+    allAnims = {
+        'appear': {
+            name: 'Appear',
+            duration: false,
+            execute: function(object){
+                object.elem.elemDOM.show();
+                SlideShow.finishAnim();
+            }
+        },
+        'ease': {
+            name: 'Ease',
+            execute: function(object){
+                object.elem.elemDOM.show(object.duration, SlideShow.finishAnim);
+            }
+        },
+        'fade': {
+            name: 'Fade',
+            execute: function(object){
+                object.elem.elemDOM.fadeIn(object.duration, SlideShow.finishAnim);
+            }
+        },
+        'slidedown': {
+            name: 'Slide Down',
+            execute: function(object){
+                object.elem.elemDOM.slideDown(object.duration, SlideShow.finishAnim);
+            }
+        },
+    }
+    /*
      * for slideshow
      */
     Slide.prototype.renderSlideShow = function(){
@@ -1106,10 +1338,22 @@ Show = new (function(){
             'boxShadow': 'none'
         });
         
+        SlideShow.animQueue = [];
         if('elems' in slide){
             var i;
             for(i in slide.elems){
                 slide.elems[i].renderElemShow();
+                
+                if ( ('animations' in slide.elems[i])
+                    && (slide.elems[i].animations.length)
+                    && (slide.elems[i].animations[0].type == 'entry') ) {
+                        
+                    var anim = Object.create( slide.elems[i].animations[0] );
+                    anim.elem = slide.elems[i];
+                    SlideShow.animQueue.push(anim);
+                    
+                    slide.elems[i].elemDOM.hide();
+                }
             }
         }
         
@@ -1157,6 +1401,7 @@ Show = new (function(){
     var SlideShow = new (function(){
         var currSlideShowIndex;
         var endSlide;
+        this.animQueue;
         this.init = function(){
             endSlide = 0;
             
@@ -1175,13 +1420,38 @@ Show = new (function(){
             
             activeSlide.renderSlideShow();
             var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
-            endBtn.click(SlideShow.end);
+            endBtn.click(function(){
+                SlideShow.end(true);
+            });
             $('#slides').bind('click', SlideShow.next);
             $(window).bind('keydown', SlideShow.next);
         };
         
+        var runnigAnims;
+        this.finishAnim = function(){
+            --runnigAnims;
+            if( !runnigAnims && animQueue.length && animQueue[0].timing == 'wait' ){
+                SlideShow.next();
+            }
+        }
+        
         this.next = function(ev){
-            SlideShow.nextSlide(ev);
+            if( SlideShow.animQueue.length ){
+                runnigAnims = 0;
+                var anim;
+                do{
+                    ++runnigAnims;
+                    anim = SlideShow.animQueue.shift();
+                    switch( anim.type ){
+                        case 'entry':
+                            allAnims[anim.name].execute(anim);
+                            break;
+                    }
+                }while( SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'do' );
+            }
+            else {
+                SlideShow.nextSlide(ev);
+            }
         }
         
         this.nextSlide = function(ev){
@@ -1200,9 +1470,9 @@ Show = new (function(){
                 activeSlide.renderSlideShow();
         };
         
-        this.end = function(){
+        this.end = function(force){
             $('#slides').empty();
-            if(endSlide == 0){
+            if(endSlide == 0 && !force){
                 $('#slides').append('<div class="pres-end-mes">Click once more to exit the show</div>');
                 endSlide = 1;
                 return;
