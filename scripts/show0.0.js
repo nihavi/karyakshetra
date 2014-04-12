@@ -1430,7 +1430,7 @@ Show = new (function(){
         var runnigAnims;
         this.finishAnim = function(){
             --runnigAnims;
-            if( !runnigAnims && animQueue.length && animQueue[0].timing == 'wait' ){
+            if( !runnigAnims && SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'wait' ){
                 SlideShow.next();
             }
         }
