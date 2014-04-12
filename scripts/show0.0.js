@@ -394,7 +394,7 @@ Show = new (function(){
                             top: elemY,
                             left: elemX,
                             width: 0,
-                            fontSize: 5,
+                            fontSize: 6,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
         $(window).one('mouseup',finishNewTextBox);
@@ -644,6 +644,45 @@ Show = new (function(){
             });
         }
     }
+    var elemFormat = function(mode, value){
+        var style = {}
+        switch (mode){
+            case 'bold':
+                if(value)
+                    style.fontWeight = 'bold';
+                else 
+                    style.fontWeight = 'normal';
+                break;
+            case 'italics':
+                if(value)
+                    style.fontStyle = 'italic';
+                else 
+                    style.fontStyle = 'normal';
+                break;
+            case 'underline':
+                if(value)
+                    style.textDecoration = 'underline';
+                else 
+                    style.textDecoration = 'none';
+                break;
+        }
+        if(activeElement){
+            activeElement.editElement({
+                style: style
+            });
+        }
+    }
+    var elemEdit = function(mode, value){
+        var changes = {}
+        switch ( mode ){
+            case 'fontsize':
+                changes.fontSize = value;
+                break;
+        }
+        if(activeElement){
+            activeElement.editElement(changes);
+        }
+    }
     var elemColor = function(mode, color){
         if(activeElement){
             var style = new Object();
@@ -733,6 +772,114 @@ Show = new (function(){
         
         format.groups.push(group);
         
+        //Formating group
+        group = {
+            type: 'group',
+            id: 'textDecor',
+            multiple: true,
+            required: false,
+            items: [
+                {
+                    type: 'button',
+                    icon: 'fa-bold',
+                    id: 'bold',
+                    title: 'Bold',
+                    onoff: true,
+                    callback: elemFormat
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-italic',
+                    id: 'italics',
+                    title: 'Italics',
+                    onoff: true,
+                    callback: elemFormat
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-underline',
+                    id: 'underline',
+                    title: 'Underline',
+                    onoff: true,
+                    callback: elemFormat
+                }
+            ]
+        };
+        if(('style' in elem)){
+            if( 'fontWeight' in elem.style && elem.style.fontWeight == 'bold')
+                group.items[0].currState = true;
+            else 
+                group.items[0].currState = false;
+                
+            if( 'fontStyle' in elem.style && elem.style.fontStyle == 'italic')
+                group.items[1].currState = true;
+            else 
+                group.items[1].currState = false;
+                
+            if( 'textDecoration' in elem.style && elem.style.textDecoration == 'underline')
+                group.items[2].currState = true;
+            else 
+                group.items[2].currState = false;
+        }
+        
+        format.groups.push(group);
+        
+        //Font size
+        group = {
+            type: 'group',
+            id: 'fontsize',
+            items: [
+                {
+                    type: 'list',
+                    id: 'fontsize',
+                    title: 'Font size',
+                    list: [
+                        {
+                            id: '4',
+                            value: '4'
+                        },
+                        {
+                            id: '6',
+                            value: '6'
+                        },
+                        {
+                            id: '8',
+                            value: '8'
+                        },
+                        {
+                            id: '10',
+                            value: '10'
+                        },
+                        {
+                            id: '12',
+                            value: '12'
+                        },
+                        {
+                            id: '14',
+                            value: '14'
+                        },
+                        {
+                            id: '16',
+                            value: '16'
+                        },
+                        {
+                            id: '18',
+                            value: '18'
+                        },
+                        {
+                            id: '20',
+                            value: '20'
+                        }
+                    ],
+                    callback: elemEdit
+                },
+            ]
+        }
+        group.items[0].currState = elem.fontSize;
+        
+        console.log(activeElement);
+        format.groups.push(group);
+        
         //Colors group
         group = {
             type: 'group',
@@ -789,85 +936,44 @@ Show = new (function(){
         };
         format.groups.push(group);
         
+        /*var wordArt = {
+            type: 'main',
+            id: 'wordart',
+            title: 'Word Art', //Name of menu
+            icon: 'fa-font', //Font awesome icon name
+            groups: []
+        };
+        
+        group = {
+            type: 'group',
+            id: 'remove',
+            items: [
+                {
+                    type: 'list',
+                    id: 'textShadow',
+                    title: 'Font effect',
+                    list: [
+                        {
+                            id: 'none',
+                            value: '<span style="text-shadow: none">No Effect</span>'
+                        },
+                        {
+                            id: 'blue1',
+                            value: '<span style="text-shadow: 1px 1px blue">Blue Shadow</span>'
+                        },
+                        {
+                            id: 'blue2',
+                            value: '<span style="text-shadow: 2px 2px 2px blue">Blue Shadow</span>'
+                        }
+                    ],
+                    callback: console.log
+                }
+            ]
+        };
+        wordArt.groups.push(group);
+        */
         return [format];
-        /*
-        return [
-            {
-                type: 'main',
-                id: 'format',
-                title: 'Format', //Name of menu
-                icon: 'fa-format', //Font awesome icon name
-                groups: [
-                    {
-                        type: 'group',
-                        id: 'align',
-                        multiple: false,
-                        items: [
-                            {
-                                type: 'button',
-                                icon: 'fa-align-left',
-                                id: 'left',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-align-center',
-                                id: 'center',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-align-right',
-                                id: 'right',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                        ]
-                    },
-                    {
-                        type: 'group',
-                        id: 'colors',
-                        items: [
-                            {
-                                type: 'color',
-                                icon: 'fa-circle',
-                                id: 'color',
-                                currState: '#000000',
-                                text: 'F',
-                                callback: elemColor
-                            },
-                            {
-                                type: 'color',
-                                icon: 'fa-circle',
-                                id: 'background-color',
-                                currState: '#ffffff',
-                                text: 'B',
-                                callback: elemColor
-                            },
-                            {
-                                type: 'list',
-                                //icon: 'fa-circle',
-                                id: 'list',
-                                title: 'List',
-                                list: [
-                                    {
-                                        id: 'da',
-                                        value: 'Hello'
-                                    },
-                                    {
-                                        id: 'da1',
-                                        value: 'Hello2'
-                                    }
-                                ],
-                                callback: log
-                            },
-                        ]
-                    }
-                ]
-            },
-        ];*/
+        
     }
     var moveInit = function(ev){
         if(ev.which != 1)return;
@@ -1048,10 +1154,12 @@ Show = new (function(){
         }
     }
     
-    var currSlideShowIndex;
-    var SlideShow = {
-        init: function(){
-            //if($('#sidebar').length)
+    var SlideShow = new (function(){
+        var currSlideShowIndex;
+        var endSlide;
+        this.init = function(){
+            endSlide = 0;
+            
             $('#sidebar').hide();
             $('#slides').css({
                 'width': '100%',
@@ -1068,10 +1176,15 @@ Show = new (function(){
             activeSlide.renderSlideShow();
             var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
             endBtn.click(SlideShow.end);
-            $('#slides').bind('click', SlideShow.nextSlide);
-            $(window).bind('keydown', SlideShow.nextSlide);
-        },
-        nextSlide: function(ev){
+            $('#slides').bind('click', SlideShow.next);
+            $(window).bind('keydown', SlideShow.next);
+        };
+        
+        this.next = function(ev){
+            SlideShow.nextSlide(ev);
+        }
+        
+        this.nextSlide = function(ev){
             currSlideShowIndex++;
             if( currSlideShowIndex < allSlides.length ){
                 allSlides[currSlideShowIndex].renderSlideShow();
@@ -1080,17 +1193,25 @@ Show = new (function(){
             else {
                 SlideShow.end();
             }
-        },
-        resize: function(){
+        };
+        
+        this.resize = function(){
             if(activeSlide)
                 activeSlide.renderSlideShow();
-        },
-        end: function(){
+        };
+        
+        this.end = function(){
+            $('#slides').empty();
+            if(endSlide == 0){
+                $('#slides').append('<div class="pres-end-mes">Click once more to exit the show</div>');
+                endSlide = 1;
+                return;
+            }
             Show.resize = resizeEditor;
             Base.showMenu();
             Base.exitFullscreen();
-            $('#slides').unbind('click', SlideShow.nextSlide);
-            $(window).unbind('keydown', SlideShow.nextSlide);
+            $('#slides').unbind('click', SlideShow.next);
+            $(window).unbind('keydown', SlideShow.next);
             $('#slides').css({
                 'width': '80%',
                 'backgroundColor': ''
@@ -1099,7 +1220,7 @@ Show = new (function(){
             activeSlide.renderSlide();
             Sidebar.init();
         }
-    }
+    })();
     
     var slideshow = function(){
         Show.resize = SlideShow.resize;

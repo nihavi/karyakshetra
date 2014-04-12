@@ -81,6 +81,11 @@
 .elem-text:focus{
     outline: none;
 }
+/* A chrome contenteditable span problem fix */
+.elem-text p, span{
+    font-size: inherit  !important;
+    line-height: inherit    !important;
+}
 
 .resize{
     position: absolute;
@@ -165,4 +170,9 @@
     border-radius: 0px 0px 5px 5px;
     background-color: #057cb8;
     cursor: default;
+}
+
+.pres-end-mes{
+    margin: auto;
+    color: white;
 }
