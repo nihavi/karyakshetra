@@ -834,6 +834,7 @@ Base = new (function(){
     var exPointer = 0;
     
     this.addOp = function(pastState, newState){
+        
         /*
          * pastState - previous state to be restored on undo
          * newState - next state to be rendered on viewer

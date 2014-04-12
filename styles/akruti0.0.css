@@ -13,3 +13,7 @@
 .drawing-elements.active, .select-area {
     cursor:move !important;
 }
+
+.rotate-pivot {
+    cursor:crosshair;
+}

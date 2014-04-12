@@ -261,87 +261,94 @@ Akruti = new (function() {
         }
     };
 
-    var changeAttributes = function(arg) {
-        
-        var pastState = {'op':'ch', 'id':this.id, 'pid':this.pid };
-        var newState = {'op':'ch', 'id':this.id, 'pid':this.pid };
+    var changeAttributes = function(arg, pastAlso) {
+        var opObject = new Object();
+        opObject.newState = this.getOp('ch',[]);
+        if (pastAlso) {
+            opObject.pastState = Object.create(opObject.newState);
+        }
         var j;
         var ele = (this.element)?this.element:document.getElementById(this.id);
         for(j in arg) {
             if (j in allAA[this.t]) {
-                pastState[j] = this[j];
+                if (pastAlso) {
+                    opObject.pastState[j] = this[j];
+                }
                 ele.setAttribute(allAA[this.t][j],arg[j]);
-                newState[j] = this[j] = arg[j];
+                opObject.newState[j] = this[j] = arg[j];
             }
         }
         
-        if (this.pseudo) {
-            if (this.sw > 7) {
-                this.pseudo.remove();
-                delete this.pseudo;
+        {
+            if (this.pseudo) {
+                if (this.sw > 7) {
+                    $(this.pseudo).remove();
+                    delete this.pseudo;
+                }
+                else {
+                    switch (this.t) {
+                        case 'l':
+                            this.pseudo.setAttribute('x1',this.x1);
+                            this.pseudo.setAttribute('y1',this.y1);
+                            this.pseudo.setAttribute('x2',this.x2);
+                            this.pseudo.setAttribute('y2',this.y2);
+                            break;
+                        case 'e':
+                            this.pseudo.setAttribute('cx',this.cx);
+                            this.pseudo.setAttribute('cy',this.cy);
+                            this.pseudo.setAttribute('rx',this.rx);
+                            this.pseudo.setAttribute('ry',this.ry);
+                            break;
+                        case 'r':
+                            this.pseudo.setAttribute('x',this.x-3);
+                            this.pseudo.setAttribute('y',this.y-3);
+                            this.pseudo.setAttribute('h',this.h);
+                            this.pseudo.setAttribute('w',this.w);
+                            break;
+                    }
+                }
             }
             else {
-                switch (this.t) {
-                    case 'l':
-                        this.pseudo.setAttribute('x1',this.x1);
-                        this.pseudo.setAttribute('y1',this.y1);
-                        this.pseudo.setAttribute('x2',this.x2);
-                        this.pseudo.setAttribute('y2',this.y2);
-                        break;
-                    case 'e':
-                        this.pseudo.setAttribute('cx',this.cx);
-                        this.pseudo.setAttribute('cy',this.cy);
-                        this.pseudo.setAttribute('rx',this.rx);
-                        this.pseudo.setAttribute('ry',this.ry);
-                        break;
-                    case 'r':
-                        this.pseudo.setAttribute('x',this.x-3);
-                        this.pseudo.setAttribute('y',this.y-3);
-                        this.pseudo.setAttribute('h',this.h);
-                        this.pseudo.setAttribute('w',this.w);
-                        break;
+                if (this.sw < 7) {
+                    switch (this.t) {
+                        case 'l':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('x1',this.x1);
+                            this.pseudo.setAttribute('y1',this.y1);
+                            this.pseudo.setAttribute('x2',this.x2);
+                            this.pseudo.setAttribute('y2',this.y2);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                        case 'e':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('fill','none');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('cx',this.cx);
+                            this.pseudo.setAttribute('cy',this.cy);
+                            this.pseudo.setAttribute('rx',this.rx);
+                            this.pseudo.setAttribute('ry',this.ry);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                        case 'r':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('fill','none');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('x',this.x-3);
+                            this.pseudo.setAttribute('y',this.y-3);
+                            this.pseudo.setAttribute('h',this.h);
+                            this.pseudo.setAttribute('w',this.w);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                    }
                 }
             }
         }
-        else {
-            if (this.sw < 7) {
-                switch (this.t) {
-                    case 'l':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('x1',this.x1);
-                        this.pseudo.setAttribute('y1',this.y1);
-                        this.pseudo.setAttribute('x2',this.x2);
-                        this.pseudo.setAttribute('y2',this.y2);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                    case 'e':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('fill','none');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('cx',this.cx);
-                        this.pseudo.setAttribute('cy',this.cy);
-                        this.pseudo.setAttribute('rx',this.rx);
-                        this.pseudo.setAttribute('ry',this.ry);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                    case 'r':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('fill','none');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('x',this.x-3);
-                        this.pseudo.setAttribute('y',this.y-3);
-                        this.pseudo.setAttribute('h',this.h);
-                        this.pseudo.setAttribute('w',this.w);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                }
-            }
-        }
-        return {'pastState':pastState, 'newState':newState}
+        
+        return opObject;
     };
 
     var Ellipse = function(arg, parent) {
@@ -532,6 +539,36 @@ Akruti = new (function() {
     Ellipse.prototype.changeAttributes = changeAttributes;
     Rectangle.prototype.changeAttributes = changeAttributes;
     
+    var getOp = function(op, changeArr) {
+        var opObject = new Object();
+        opObject.op = op;
+        opObject.t = this.t;
+        opObject.id = this.id;
+        opObject.pid = this.pid;
+        
+        switch (op) {
+            case 'cr':
+                for (var i in allAA[this.t]) {
+                    opObject[i] = this[i];
+                }
+                opObject.pos = allSvg[this.pid].children.indexOf(this);
+                break;
+            case 'd':
+                
+                break;
+            case 'ch':
+                for (var i=0; i<changeArr.length; i++) {
+                    opObject[changeArr[i]] = this[changeArr[i]];
+                }
+                break;
+        }
+        return opObject;
+    }
+    
+    Line.prototype.getOp = getOp;
+    Ellipse.prototype.getOp = getOp;
+    Rectangle.prototype.getOp = getOp;
+    
     var getLinePivots = function(){
         return {
             x:[this.x1,this.x2],
@@ -590,7 +627,8 @@ Akruti = new (function() {
         mySvgObject.g.appendChild(this.g);
         
         this.p = new Array();
-        var radius = 4;
+        var radius = 4;             //Basically half of sidelength of pivots
+        this.r = radius;
         for (var i=0;i<8;i++) {
             this.p[i] = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             this.p[i].setAttribute('fill','#0096fd');
@@ -601,6 +639,28 @@ Akruti = new (function() {
             this.p[i].id = SelectRef[i];
             this.g.appendChild(this.p[i]);
         }
+        
+        this.setPivots(x,y,h,w,radius)
+        
+        this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.p[8].id = SelectRef[8];
+        this.p[8].setAttribute('r',radius);
+        this.p[8].setAttribute('fill','#0096fd');
+        this.p[8].setAttribute('stroke','#fff');
+        this.p[8].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
+        this.p[8].setAttribute('cx',x+w/2);
+        this.p[8].setAttribute('cy',y-20);
+        this.g.appendChild(this.p[8]);
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke','#0096fd');
+        path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
+        path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
+        this.g.appendChild(path);
+    };
+    
+    SelectArea.prototype.setPivots = function (x,y,h,w) {
+        var radius = this.r;
         this.p[0].setAttribute('x',x-radius);
         this.p[0].setAttribute('y',y-radius);
         this.p[1].setAttribute('x',x+w/2-radius);
@@ -617,50 +677,22 @@ Akruti = new (function() {
         this.p[6].setAttribute('y',y+h-radius);
         this.p[7].setAttribute('x',x+w-radius);
         this.p[7].setAttribute('y',y+h-radius);
-        
-        this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        this.p[8].setAttribute('r',radius);
-        this.p[8].setAttribute('fill','#0096fd');
-        this.p[8].setAttribute('stroke','#fff');
-        this.p[8].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
-        this.p[8].setAttribute('cx',x+w/2);
-        this.p[8].setAttribute('cy',y-20);
-        this.g.appendChild(this.p[8]);
-        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('fill','none');
-        path.setAttribute('stroke','#0096fd');
-        path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
-        path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
-        this.g.appendChild(path);
-    };
+    }
     
-    var fillSvg = function(color){
+    Svg.prototype.fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
     };
 
-    Svg.prototype.fill = fillSvg;
+    Svg.prototype.fillPage = function(color){
+        this.page.setAttribute( 'fill', color);
+    };
 
     var deleteSelf = function(){
         
-        var pastState = {
-            'op' : 'cr',
-            'pid': this.pid,
-            'id' : this.id,
-            't'  : this.t,
-        }
-        for (var i in allAA[this.t]) {
-            pastState[i] = this[i];
-        }
-        
-        this.g.remove();
-        var arr = allSvg[this.pid].children;
-        arr.splice(arr.indexOf(this),1);
-        var newState = {
-            'op' :'d',
-            'id' :this.id,
-            'pid':this.pid,
-            't'  :this.t
-        }
+        var pastState = this.getOp('cr');
+        $(this.g).remove();
+        allSvg[this.pid].children.splice(pastState,1);
+        var newState = this.getOp('d');
         return {'pastState':pastState, 'newState':newState}
     };
 
@@ -689,55 +721,47 @@ Akruti = new (function() {
     this.selectOperation = function(op) {
         editor.currentMode = op;
     };
+    
+    Array.prototype.insertAt = function (index, item) {
+        this.splice(index, 0, item);
+    };
 
     this.performOp = function (data) {
-        var returnValue;
-        console.log(data);
-        if (data.op != 'm' && !data.t) {
-            alert(data);
-            d = data;
-        }/////////////////////////////////////////////////////////////////////////////
+        var returnValue = new Object();
+        
+//Debugging {console.log('perOp', data.op, data.t);d=data;if (data instanceof Array || !data.op ) {alert(data);}}
         
         if (data.op == 'm') {
             var i;
-            returnValue = new Object();
-            returnValue.pastState = new Array();
-            returnValue.newState = data;
+            returnValue.pastState = new Object();
+            returnValue.newState = new Object();
+            returnValue.pastState.op = returnValue.newState.op = 'm';
+            returnValue.pastState.ar = new Array();
+            returnValue.newState.ar = data;
             for(i=0;i<data.ar.length;i++) {
-                returnValue.pastState[i] = this.performOp(data.ar[i]);
+                returnValue.pastState.ar[i] = this.performOp(data.ar[i]).pastState;
             }
         }
         else
         if (data.op == 'cr') {
             var myObject;
             switch (data.t) {
-            case 'e':
-                myObject = new Ellipse(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            case 'l':
-                myObject = new Line(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            case 'r':
-                myObject = new Rectangle(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            
-                
+                case 'e':
+                    myObject = new Ellipse(data);
+                    break;
+                case 'l':
+                    myObject = new Line(data);
+                    break;
+                case 'r':
+                    myObject = new Rectangle(data);
+                    break;
             }
-            var pastState = {
-                'op' : 'd',
-                't'  : myObject.t,
-                'id' : myObject.id,
-                'pid': myObject.pid,
-                
+            if (allSvg[data.pid].children.length != 0) {
+                $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
             }
-            var newState = data;
-            returnValue = {
-                'pastState': pastState,
-                'newState': newState
-            };
+            allSvg[data.pid].children.insertAt(data.pos, myObject);
+            returnValue.pastState = myObject.getOp('d');
+            returnValue.newState = data;
         }
         else
         if (data.op == 'd') {
@@ -747,16 +771,14 @@ Akruti = new (function() {
         else
         if (data.op == 'ch') {
             var myObject = $('#' + data.id + 'g').data('myObject');
-            obj = myObject;
-            d = data;
-            returnValue = myObject.changeAttributes(data);
+            returnValue = myObject.changeAttributes(data, true);
         }
         return returnValue;
     };
     
     this.getFileData = function(svg) {
         if (!svg) {
-            svg = currentSvg;
+            svg = (currentSvg)?(currentSvg):(allSvg['s1']);
         }
         var data = new Object();
         data.op = 'file';
@@ -838,13 +860,14 @@ Akruti = new (function() {
         }
         
         var eq = function (arg1, arg2){
-            
+            a1=arg1;
+            a2=arg2;
             if (arg1.length != arg2.length) {
                 return false;
             }
             for (var i=0;i<arg1.length;i++) {
-                for (var j in arg1) {
-                    if (arg1[j] != arg2[j]) {
+                for (var j in arg1[i]) {
+                    if (arg1[i][j] != arg2[i][j]) {
                         return false;
                     }
                 }
@@ -852,10 +875,11 @@ Akruti = new (function() {
             return true;
         };
         
+        
         var makeSelectRect = function(pid) {            //pid is the id of the svg where elements are to be selected
             
             if (actives.select) {
-                actives.select.g.remove();
+                $(actives.select.g).remove();
                 delete actives.select;
                 if (actives.list.length == 0) {
                     return;
@@ -875,9 +899,11 @@ Akruti = new (function() {
             
             actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[pid]);
             var pivots = actives.select.p;
-            for (var i=0;i<pivots.length;i++) {
+            for (var i=0;i<pivots.length-1;i++) {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
+            
+            $(pivots[pivots.length-1]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
             $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
             Base.focusMenu('edit');
         };
@@ -901,7 +927,7 @@ Akruti = new (function() {
         var deselectAll = function(e){
             if (actives.select)
             {
-                actives.select.g.remove();
+                $(actives.select.g).remove();
                 delete actives.select;
                 while (actives.list.length != 0) {
                     actives.list.pop().g.classList.remove('active');
@@ -947,7 +973,12 @@ Akruti = new (function() {
         };
         
         this.makeEditable = function(element) {
-            $(element).on('mousedown', svgOnMouseDown);
+            if ( $(element).is('svg') ) {
+                $(element).on('mousedown', svgOnMouseDown);
+            }
+            else {
+                $(element).on('mousedown', elementOn.mousedown);
+            }
         };
 
 /*       Key down key up 
@@ -1124,13 +1155,15 @@ Akruti = new (function() {
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
                         'f' :getFillColor(),
+                        //'op':getOpacity(),
+                        //'sd':getStrokeDashArray(),
                     };
                     var element = new Ellipse(attributes,mySvgObject);
                     element.X = x;
                     element.Y = y;
                     return element;
                 },
-
+                
                 mousemove: function(e) {
 
                     var element = e.data;
@@ -1158,7 +1191,7 @@ Akruti = new (function() {
                             });
                     }
                 },
-
+                
                 mouseup: function(e) {
 
                     var element = e.data;
@@ -1187,26 +1220,15 @@ Akruti = new (function() {
                     }
                     delete element.X;
                     delete element.Y;
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op' : 'd',           //op = [d]elete; when this objects come, delete the Object
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                    },{
-                        'op' : 'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'cx' : element.cx,
-                        'cy' : element.cy,
-                        'rx' : element.rx,
-                        'ry' : element.ry,
-                        'sc' : element.sc,
-                        'sw' : element.sw,
-                        'f'  : element.f,
-                        'pid': element.pid,
-                        'id' : element.id,
-                        't'  : element.t,
-                    });
+                    ele = element;
+                    if (element.rx == 0 || element.ry == 0) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap: function(sx,sy,x,y) {
@@ -1292,25 +1314,14 @@ Akruti = new (function() {
                             });
                     }
                     
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op' : 'd',           //op = [d]elete; when this objects come, delete the Object
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                    },{
-                        'op' : 'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x1' : element.x1,
-                        'y1' : element.y1,
-                        'x2' : element.x2,
-                        'y2' : element.y2,
-                        'sc' : element.sc,
-                        'sw' : element.sw,
-                        'pid': element.pid,
-                        'id' : element.id,
-                        't'  : element.t,
-                    });
+                    if (element.x1 == element.x2 && element.y2 == element.y2) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap: function(x1,y1,x2,y2) {
@@ -1420,27 +1431,14 @@ Akruti = new (function() {
                         });
                     }
                     
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op' :'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id' :element.id,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    },{
-                        'op' :'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x'  :element.x,
-                        'y'  :element.y,
-                        'h'  :element.h,
-                        'w'  :element.w,
-                        'sc' :element.sc,
-                        'sw' :element.sw,
-                        'f'  :element.f,
-                        'pid':element.pid,
-                        'id' :element.id,
-                        't'  :element.t,
-                    });
-                    
+                    if (element.h == 0 || element.w == 0) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap:function(sx, sy, x, y){
@@ -1544,7 +1542,7 @@ Akruti = new (function() {
                     var y1 = element.y;
                     var x2 = element.x + element.w;
                     var y2 = element.y + element.h;
-                    element.g.remove();
+                    $(element.g).remove();
                     for(var i=0;i<mySvgObject.children.length;i++) {
                         var pivots = mySvgObject.children[i].getPivots();
                         var flag =  (x1 <= pivots.x[0]) && (pivots.x[0] <= x2)
@@ -1608,7 +1606,6 @@ Akruti = new (function() {
                 }
                 makeSelectRect(actives.select.pid);
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
-                
                 if ( !( eq( actives.pastState, actives.newState )) ) {
                     Base.addOp({
                         'op':'m',
@@ -1639,16 +1636,7 @@ Akruti = new (function() {
                     element.dy1 = element.y1 - y;
                     element.dx2 = element.x2 - x;
                     element.dy2 = element.y2 - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'x1' : element.x1,
-                        'y1' : element.y1,
-                        'x2' : element.x2,
-                        'y2' : element.y2,
-                    }
+                    return element.getOp('ch', ['x1','y1','x2','y2']);
                 },
                 mousemove:function(e){
                     
@@ -1695,14 +1683,7 @@ Akruti = new (function() {
                     element.diff = new Object();
                     element.diff.cx = element.cx - x;
                     element.diff.cy = element.cy - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'cx' : element.cx,
-                        'cy' : element.cy,
-                    }
+                    return element.getOp('ch',['cx','cy']);
                 },
                 mousemove:function(e){
                     
@@ -1744,14 +1725,7 @@ Akruti = new (function() {
                     element.diff = new Object();
                     element.diff.x = element.x - x;
                     element.diff.y = element.y - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'x' : element.x,
-                        'y' : element.y,
-                    }
+                    return element.getOp('ch', ['x','y']);
                 },
                 mousemove:function(e){
                     
@@ -1828,7 +1802,7 @@ Akruti = new (function() {
                 actives.newState = new Array();
                 
                 for (i=0;i<actives.list.length;i++) {
-                    actives.newState[i] = elementResize[actives.list[i].t].mousemove(actives.list[i],actives.select);
+                    actives.newState[i] = elementResize[actives.list[i].t].mouseup(actives.list[i],actives.select);
                 }
                 makeSelectRect(actives.select.pid);
                 $(superParent).off('mousemove', pivotsOn.mousemove).off('mouseup',pivotsOn.mouseup);
@@ -1868,16 +1842,7 @@ Akruti = new (function() {
                         element.ratioY1 = element.ratioY2 = 0;
                     }
                     
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'x1' : element.x1,
-                        'y1' : element.y1,
-                        'x2' : element.x2,
-                        'y2' : element.y2,
-                    }
+                    return element.getOp('ch', ['x1','y1','x2','y2']);
                 },
                 mousemove:function(element, rect){
                     var changes = {
@@ -1908,16 +1873,7 @@ Akruti = new (function() {
                     element.ratioRX = element.rx/rect.w;
                     element.ratioRY = element.ry/rect.h;
                     
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'cx' : element.cx,
-                        'cy' : element.cy,
-                        'rx' : element.rx,
-                        'ry' : element.ry,
-                    }
+                    return element.getOp('ch',['cx','cy','rx','ry']);
                 },
                 mousemove:function(element, rect) {
                     var changes = {
@@ -1947,16 +1903,7 @@ Akruti = new (function() {
                     element.ratioW = element.w/rect.w;
                     element.ratioH = element.h/rect.h;
                     
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        't'  : element.t,
-                        'x' : element.x,
-                        'y' : element.y,
-                        'h' : element.h,
-                        'w' : element.w,
-                    }
+                    return element.getOp('ch',['x','y','h','w'])
                 },
                 mousemove:function(element, rect) {
                     var changes = {
@@ -2070,7 +2017,21 @@ Akruti = new (function() {
             if (e.which == 46 && actives.list.length != 0) {                //DeleteKey
                 editor.deleteAllSelected();
             }
-        })
+        });
+        
+        var elementsRotate = {
+            mousedown:function(e){
+                $(superParent).on('mousemove',elementsRotate.mousemove).on('mouseup',elementsRotate.mouseup);
+                
+            },
+            mousemove:function(e){
+                
+            },
+            mouseup:function(e){
+                $(superParent).off('mousemove',elementsRotate.mousemove).off('mouseup',elementsRotate.mouseup);
+            }
+            
+        };
         
         
         
