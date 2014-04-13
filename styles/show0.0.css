@@ -13,6 +13,7 @@
     float: left;
     clear:left;
     width: 10%;
+    padding-top: 5px;
 }
 .side-slide{
     margin: 5px 0px 5px 0px;
@@ -22,6 +23,12 @@
     position: relative;
     overflow: hidden;
     box-shadow:0px 0px 5px 0px #888888;
+    border: 2px solid rgba(255,255,255,0);
+    -moz-box-sizing:border-box;
+    box-sizing: border-box;
+}
+.side-slide.active{
+    border: 2px solid red;
 }
 
 .slides{

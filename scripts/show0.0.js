@@ -30,15 +30,28 @@ Show = new (function(){
         
         var newSlide = new Slide();
         newSlide.addElem({
-                type: 'title',
-                top: 5,
-                left: 5,
-                width: 90,
-                height: 13,
-                fontSize: 10,
-                text: 'Title here',
-                style: {textAlign: 'center'}
-            });
+            type: 'title',
+            top: 30,
+            left: 5,
+            width: 90,
+            height: 13,
+            fontSize: 10,
+            text: 'Title',
+            style: {textAlign: 'center'}
+        });
+        newSlide.addElem({
+            type: 'text',
+            top: 45,
+            left: 5,
+            width: 90,
+            height: 7,
+            fontSize: 6,
+            text: 'Subtitle',
+            style: {
+                textAlign: 'center',
+                color: '#666',
+            }
+        });
         newSlide.renderSlide();
         
         //Event handlers on slides to manage activeElement
@@ -114,36 +127,69 @@ Show = new (function(){
         },
         addSlide: function(slide){
             var sidebar = $('#sidebar');
-            var sNo = slide.slideId+1;
+            var sNo = $('.side-parent').length+1;
             
-            sidebar.append('<div class="side-no">'+sNo+'.</div>');
-            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(sidebar);
+            parent = $('<div class="side-parent" id="parent'+slide.id+'"></div>').appendTo(sidebar);
+            parent.append('<div class="side-no">'+sNo+'.</div>');
+            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(parent);
             slideDOM.data('slide', slide);
             slideDOM.css({
                 height: slideDOM.width()/slide.ratio,
                 backgroundColor: slide.bgColor
             });
+            if( slide == activeSlide ){
+                Sidebar.activate(slide.id);
+            }
             slideDOM.click(function(){
-                $(this).data('slide').renderSlide();
+                var slide = $(this).data('slide');
+                slide.activate();
             });
             slide.renderSlideSide();
+        },
+        activate: function(slideId){
+            $('.side-slide.active').removeClass('active');
+            $('#side'+slideId).addClass('active');
+        },
+        removeSlide: function(slideId){
+            $('.side-parent#parent'+slideId).remove();
+            Sidebar.updateNo();
+        },
+        updateNo: function(){
+            $('.side-no').each(function(index){
+                $(this).text((index+1)+'.');
+            });
         }
     };
     
     var insertSlide = function(id){
         var newSlide = new Slide();
         newSlide.addElem({
-                type: 'title',
-                top: 5,
-                left: 5,
-                width: 90,
-                height: 13,
-                fontSize: 10,
-                text: 'New Slide',
-                style: {textAlign: 'center'}
-            });
+            type: 'title',
+            top: 5,
+            left: 5,
+            width: 90,
+            height: 13,
+            fontSize: 10,
+            text: 'New Slide',
+            style: {textAlign: 'center'}
+        });
+        newSlide.addElem({
+            type: 'text',
+            top: 25,
+            left: 5,
+            width: 90,
+            height: 70,
+            fontSize: 6,
+            text: 'Text',
+        });
         newSlide.renderSlide();
         Sidebar.addSlide(newSlide);
+    }
+    var removeSlide = function(id){
+        activeSlide.remove();
+        if( !allSlides.length ){
+            insertSlide();
+        }
     }
     
     var Slide = function(){
@@ -203,6 +249,21 @@ Show = new (function(){
             }
             
             activeSlide = slide;
+        },
+        activate: function(){
+            this.renderSlide();
+            Sidebar.activate(this.id);
+        },
+        remove: function(){
+            var index = allSlides.indexOf(this);
+            allSlides.splice(index, 1);
+            Sidebar.removeSlide(this.id);
+            if( allSlides.length > index ){
+                allSlides[index].activate();
+            }
+            else if( index > 0){
+                allSlides[index-1].activate();
+            }
         },
         renderSlideSide: function(){
             var slide = this;
@@ -1358,6 +1419,7 @@ Show = new (function(){
         }
         
         activeSlide = slide;
+        SlideShow.finishAnim();
     }
     Elem.prototype.renderElemShow = function(){
         /* 
@@ -1430,7 +1492,10 @@ Show = new (function(){
         var runnigAnims;
         this.finishAnim = function(){
             --runnigAnims;
-            if( !runnigAnims && SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'wait' ){
+            if( runnigAnims < 0 )
+                runnigAnims = 0;
+            if( !runnigAnims && SlideShow.animQueue.length
+                && (SlideShow.animQueue[0].timing == 'wait' || SlideShow.animQueue[0].timing == 'do' ) ) {
                 SlideShow.next();
             }
         }
@@ -1492,10 +1557,13 @@ Show = new (function(){
         }
     })();
     
-    var slideshow = function(){
+    var slideshow = function(mode){
         Show.resize = SlideShow.resize;
         Base.hideMenu(true);
         Base.fullscreen();
+        if( mode == 'begin' ){
+            activeSlide = allSlides[0];
+        }
         SlideShow.init();
     }
     /*
@@ -1537,6 +1605,13 @@ Show = new (function(){
                             title: 'Slide',
                             callback: insertSlide
                         },
+                        {
+                            type: 'button',
+                            icon: 'fa-times',
+                            id: 'remove-slide',
+                            title: 'Remove Slide',
+                            callback: removeSlide
+                        },
                     ]
                 }
             ]
@@ -1549,12 +1624,19 @@ Show = new (function(){
             groups: [
                 {
                     type: 'group',
-                    id: 'adsf',
+                    id: 'slideShow',
                     items: [
                         {
                             type: 'button',
                             icon: 'fa-desktop',
-                            id: 'insert-text',
+                            id: 'begin',
+                            title: 'Start Slideshow from begining',
+                            callback: slideshow
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-desktop',
+                            id: 'current',
                             title: 'Start Slideshow',
                             callback: slideshow
                         },
