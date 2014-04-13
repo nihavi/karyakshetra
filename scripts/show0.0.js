@@ -204,7 +204,7 @@ Show = new (function(){
         return temp;
     }
 
-    var getFile = function(){
+    this.getFile = function(){
         var file = {};
         file.slideId = slideId;
         file.slides = [];
@@ -214,7 +214,7 @@ Show = new (function(){
         return JSON.stringify(file);
     }
     
-    var openFile = function(file){
+    this.openFile = function(file){
         var file = JSON.parse(file);
         slideId = file.slideId;
         allSlides = [];
