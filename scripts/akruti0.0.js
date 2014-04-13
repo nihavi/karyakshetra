@@ -640,8 +640,8 @@ Akruti = new (function() {
             this.g.appendChild(this.p[i]);
         }
         
-        this.setPivots(x,y,h,w,radius)
-        
+        this.setPivots(x,y,h,w)
+        /*
         this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         this.p[8].id = SelectRef[8];
         this.p[8].setAttribute('r',radius);
@@ -657,6 +657,7 @@ Akruti = new (function() {
         path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
+        */
     };
     
     SelectArea.prototype.setPivots = function (x,y,h,w) {
@@ -760,6 +761,7 @@ Akruti = new (function() {
                 $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
             }
             allSvg[data.pid].children.insertAt(data.pos, myObject);
+            editor.makeEditable(myObject.g);
             returnValue.pastState = myObject.getOp('d');
             returnValue.newState = data;
         }
@@ -773,6 +775,8 @@ Akruti = new (function() {
             var myObject = $('#' + data.id + 'g').data('myObject');
             returnValue = myObject.changeAttributes(data, true);
         }
+        editor.completeOp(data);
+        
         return returnValue;
     };
     
@@ -903,7 +907,7 @@ Akruti = new (function() {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
             
-            $(pivots[pivots.length-1]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
+            //$(pivots[pivots.length-1]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
             $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
             Base.focusMenu('edit');
         };
@@ -1791,7 +1795,7 @@ Akruti = new (function() {
                 if (tmp.length == 2) {
                     elementResize['sA'][tmp[1]].mousemove(x,y);
                 }
-                
+                actives.select.setPivots(actives.select.x,actives.select.y,actives.select.h,actives.select.w);
                 
                 for (i=0;i<actives.list.length;i++) {
                     elementResize[actives.list[i].t].mousemove(actives.list[i],actives.select);
@@ -1800,7 +1804,7 @@ Akruti = new (function() {
             mouseup: function(e, selectRect) {
                 
                 actives.newState = new Array();
-                
+                actives.select.setPivots();
                 for (i=0;i<actives.list.length;i++) {
                     actives.newState[i] = elementResize[actives.list[i].t].mouseup(actives.list[i],actives.select);
                 }
@@ -2033,6 +2037,29 @@ Akruti = new (function() {
             
         };
         
+        this.completeOp = function(data) {
+            switch (data.op) {
+                case 'cr':
+                    if (this.currentMode == 'selectMode') {
+                        $('#'+data.id+'g').css('cursor','pointer');
+                    }
+                    else {
+                        $('#'+data.id+'g').css('cursor','auto');
+                    }
+                    break;
+                case 'd':
+                    for (var i=0; i<actives.list.length; i++) {
+                        if ( actives.list[i].id == data.id ) {
+                            deselectElement.apply(actives.list[i]);
+                            break;
+                        }
+                    }
+                    break;
+                case 'ch':
+                    makeSelectRect(data.pid);
+                    break;
+            }
+        };
         
         
         /*
