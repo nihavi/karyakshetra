@@ -131,7 +131,7 @@ Show = new (function(){
             
             parent = $('<div class="side-parent" id="parent'+slide.id+'"></div>').appendTo(sidebar);
             parent.append('<div class="side-no">'+sNo+'.</div>');
-            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(parent);
+            var slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(parent);
             slideDOM.data('slide', slide);
             slideDOM.css({
                 height: slideDOM.width()/slide.ratio,
@@ -192,18 +192,66 @@ Show = new (function(){
         }
     }
     
-    var Slide = function(){
+    var clone = function(obj){
+        if(obj == null || typeof(obj) != 'object')
+            return obj;
+        
+        var temp = {};
+
+        for(var key in obj)
+            if( obj.hasOwnProperty(key) )
+                temp[key] = clone(obj[key]);
+        return temp;
+    }
+
+    var getFile = function(){
+        var file = {};
+        file.slideId = slideId;
+        file.slides = [];
+        for( var i = 0; i < allSlides.length; ++i ){
+            file.slides.push(allSlides[i].purify());
+        }
+        return JSON.stringify(file);
+    }
+    
+    var openFile = function(file){
+        var file = JSON.parse(file);
+        slideId = file.slideId;
+        allSlides = [];
+        for( var i = 0; i<file.slides.length; ++i ){
+            new Slide(file.slides[i]);
+        }
+        Sidebar.init();
+        allSlides[0].renderSlide();
+    }
+    
+    var Slide = function(slide){
         /*
          * Constructor of class Slide
          */
-        this.slideId=slideId;
-        this.id = 'slide'+slideId;
-        this.ratio = 4/3;
-        this.bgColor = 'white';
-        this.elems = new Object();
-        this.elemId = 0;
+        if( slide ){
+            for( var prop in slide ){
+                if( prop != 'elems' ){
+                    this[prop] = slide[prop];
+                }
+                else {
+                    this[prop] = {};
+                    for( var elem in slide[prop] ){
+                        this[prop][elem] = this.addElem(slide[prop][elem]);
+                    }
+                }
+            }
+        }  
+        else {
+            this.slideId=slideId;
+            this.id = 'slide'+slideId;
+            this.ratio = 4/3;
+            this.bgColor = 'white';
+            this.elems = new Object();
+            this.elemId = 0;
+            slideId++;
+        }
         allSlides.push(this);
-        slideId++;
     }
     
     Slide.prototype = {
@@ -287,6 +335,23 @@ Show = new (function(){
             elem.parent = this;
             return elem;
         },
+        purify: function(){
+            var obj = {};
+            for( var i in this ){
+                if( this.hasOwnProperty(i) ){
+                    if( i != 'elems' ){
+                        obj[i] = clone(this[i]);
+                    }
+                    else {
+                        obj[i] = {};
+                        for( var j in this[i] ){
+                            obj[i][j] = this[i][j].purify();
+                        }
+                    }
+                }
+            }
+            return obj;
+        }
     };
     
     var Elem = function(elem){
@@ -295,7 +360,6 @@ Show = new (function(){
          */
         
         this.type = elem.type;
-        //this.type = 'title';
         if ('fontSize' in elem)
             this.fontSize = elem.fontSize;
         else 
@@ -352,7 +416,7 @@ Show = new (function(){
                     }
                     
                     //Actual element for text
-                    elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
+                    var elemText = $('<div class="elem-text" contentEditable>').html(elem.text).css(elem.style).appendTo(elemDOM);
                     
                     elemDOM.data('elem',elem);
                     elemDOM.appendTo(slide);
@@ -481,18 +545,6 @@ Show = new (function(){
         }
     }
     
-    var clone = function(obj){
-        if(obj == null || typeof(obj) != 'object')
-            return obj;
-        
-        var temp = {}; // changed
-
-        for(var key in obj)
-            if( obj.hasOwnProperty(key) )
-                temp[key] = clone(obj[key]);
-        return temp;
-    }
-
     var activeElement = null;
     var createTextBox = function(ev){
         if(ev.which != 1)return;
@@ -611,14 +663,12 @@ Show = new (function(){
         var ops = command.split('-;-');
         var pastState = '';
         var newState = '';
-        console.log(command);
         for( var i = 0; i<ops.length; i++ ){
             if( i ){
                 pastState += '-;-';
                 newState += '-;-';
             }
             op = ops[i].split(' ');
-            console.log(op);
             switch( op[0] ){
                 case 'sw':
                     var elem = getElem(op[1], op[2]);
@@ -675,7 +725,6 @@ Show = new (function(){
                     break;
             }
         }
-        console.log(pastState, newState);
         return {
             pastState: pastState,
             newState: newState
@@ -1566,7 +1615,7 @@ Show = new (function(){
         }
     */
     
-    allAnims = {
+    var allAnims = {
         'appear': {
             name: 'Appear',
             duration: false,
