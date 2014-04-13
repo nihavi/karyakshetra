@@ -11,4 +11,5 @@ application/logs/*
 *.komodoproject
 *.swp
 /.htaccess
-/data/2**
+/data/**
+!/data/.htaccess
