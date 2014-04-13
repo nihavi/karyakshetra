@@ -5,6 +5,10 @@ Akruti = new (function() {
     
     svgId = 1,
     
+    currentSvg = null,
+    
+    initialized = false,
+    
     zoomState = 'auto',
 
     allAA = {
@@ -257,87 +261,94 @@ Akruti = new (function() {
         }
     };
 
-    var changeAttributes = function(arg) {
-        
-        var pastState = {'op':'ch', 'id':this.id, 'pid':this.pid };
-        var newState = {'op':'ch', 'id':this.id, 'pid':this.pid };
+    var changeAttributes = function(arg, pastAlso) {
+        var opObject = new Object();
+        opObject.newState = this.getOp('ch',[]);
+        if (pastAlso) {
+            opObject.pastState = Object.create(opObject.newState);
+        }
         var j;
         var ele = (this.element)?this.element:document.getElementById(this.id);
         for(j in arg) {
             if (j in allAA[this.t]) {
-                pastState[j] = this[j];
+                if (pastAlso) {
+                    opObject.pastState[j] = this[j];
+                }
                 ele.setAttribute(allAA[this.t][j],arg[j]);
-                newState[j] = this[j] = arg[j];
+                opObject.newState[j] = this[j] = arg[j];
             }
         }
         
-        if (this.pseudo) {
-            if (this.sw > 7) {
-                this.pseudo.remove();
-                delete this.pseudo;
+        {
+            if (this.pseudo) {
+                if (this.sw > 7) {
+                    $(this.pseudo).remove();
+                    delete this.pseudo;
+                }
+                else {
+                    switch (this.t) {
+                        case 'l':
+                            this.pseudo.setAttribute('x1',this.x1);
+                            this.pseudo.setAttribute('y1',this.y1);
+                            this.pseudo.setAttribute('x2',this.x2);
+                            this.pseudo.setAttribute('y2',this.y2);
+                            break;
+                        case 'e':
+                            this.pseudo.setAttribute('cx',this.cx);
+                            this.pseudo.setAttribute('cy',this.cy);
+                            this.pseudo.setAttribute('rx',this.rx);
+                            this.pseudo.setAttribute('ry',this.ry);
+                            break;
+                        case 'r':
+                            this.pseudo.setAttribute('x',this.x-3);
+                            this.pseudo.setAttribute('y',this.y-3);
+                            this.pseudo.setAttribute('h',this.h);
+                            this.pseudo.setAttribute('w',this.w);
+                            break;
+                    }
+                }
             }
             else {
-                switch (this.t) {
-                    case 'l':
-                        this.pseudo.setAttribute('x1',this.x1);
-                        this.pseudo.setAttribute('y1',this.y1);
-                        this.pseudo.setAttribute('x2',this.x2);
-                        this.pseudo.setAttribute('y2',this.y2);
-                        break;
-                    case 'e':
-                        this.pseudo.setAttribute('cx',this.cx);
-                        this.pseudo.setAttribute('cy',this.cy);
-                        this.pseudo.setAttribute('rx',this.rx);
-                        this.pseudo.setAttribute('ry',this.ry);
-                        break;
-                    case 'r':
-                        this.pseudo.setAttribute('x',this.x-3);
-                        this.pseudo.setAttribute('y',this.y-3);
-                        this.pseudo.setAttribute('h',this.h);
-                        this.pseudo.setAttribute('w',this.w);
-                        break;
+                if (this.sw < 7) {
+                    switch (this.t) {
+                        case 'l':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('x1',this.x1);
+                            this.pseudo.setAttribute('y1',this.y1);
+                            this.pseudo.setAttribute('x2',this.x2);
+                            this.pseudo.setAttribute('y2',this.y2);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                        case 'e':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('fill','none');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('cx',this.cx);
+                            this.pseudo.setAttribute('cy',this.cy);
+                            this.pseudo.setAttribute('rx',this.rx);
+                            this.pseudo.setAttribute('ry',this.ry);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                        case 'r':
+                            this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
+                            this.pseudo.setAttribute('stroke','transparent');
+                            this.pseudo.setAttribute('fill','none');
+                            this.pseudo.setAttribute('stroke-width',7);
+                            this.pseudo.setAttribute('x',this.x-3);
+                            this.pseudo.setAttribute('y',this.y-3);
+                            this.pseudo.setAttribute('h',this.h);
+                            this.pseudo.setAttribute('w',this.w);
+                            this.g.appendChild(this.pseudo);
+                            break;
+                    }
                 }
             }
         }
-        else {
-            if (this.sw < 7) {
-                switch (this.t) {
-                    case 'l':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','line');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('x1',this.x1);
-                        this.pseudo.setAttribute('y1',this.y1);
-                        this.pseudo.setAttribute('x2',this.x2);
-                        this.pseudo.setAttribute('y2',this.y2);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                    case 'e':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('fill','none');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('cx',this.cx);
-                        this.pseudo.setAttribute('cy',this.cy);
-                        this.pseudo.setAttribute('rx',this.rx);
-                        this.pseudo.setAttribute('ry',this.ry);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                    case 'r':
-                        this.pseudo = document.createElementNS('http://www.w3.org/2000/svg','rect');
-                        this.pseudo.setAttribute('stroke','transparent');
-                        this.pseudo.setAttribute('fill','none');
-                        this.pseudo.setAttribute('stroke-width',7);
-                        this.pseudo.setAttribute('x',this.x-3);
-                        this.pseudo.setAttribute('y',this.y-3);
-                        this.pseudo.setAttribute('h',this.h);
-                        this.pseudo.setAttribute('w',this.w);
-                        this.g.appendChild(this.pseudo);
-                        break;
-                }
-            }
-        }
-        return {'pastState':pastState, 'newState':newState}
+        
+        return opObject;
     };
 
     var Ellipse = function(arg, parent) {
@@ -357,7 +368,12 @@ Akruti = new (function() {
         
         /* Setting Id */
         this.pid = parent.id;
-        this.id = this.pid+this.t+ parent.childrenId++;
+        if (arg.id) {
+            this.id = arg.id
+        }
+        else {
+            this.id = this.pid+this.t+ parent.childrenId++;
+        }
 
         this.element.setAttribute( 'id', this.id);
         this.g.setAttribute( 'id', this.id + 'g');
@@ -413,7 +429,13 @@ Akruti = new (function() {
 
         /* Setting Id */
         this.pid = parent.id;
-        this.id = this.pid+this.t+ parent.childrenId++;
+        
+        if (arg.id) {
+            this.id = arg.id
+        }
+        else {
+            this.id = this.pid+this.t+ parent.childrenId++;
+        }
         this.element.setAttribute( 'id', this.id);
         this.g.setAttribute( 'id', this.id + 'g');
 
@@ -467,7 +489,12 @@ Akruti = new (function() {
 
         /* Setting Id */
         this.pid = parent.id;
-        this.id = parent.id + 'r' + (parent.childrenId++);
+        if (arg.id) {
+            this.id = arg.id
+        }
+        else {
+            this.id = this.pid+this.t+ parent.childrenId++;
+        }
         this.element.setAttribute('id', this.id);
         this.g.setAttribute( 'id', this.id + 'g');
         
@@ -512,6 +539,36 @@ Akruti = new (function() {
     Ellipse.prototype.changeAttributes = changeAttributes;
     Rectangle.prototype.changeAttributes = changeAttributes;
     
+    var getOp = function(op, changeArr) {
+        var opObject = new Object();
+        opObject.op = op;
+        opObject.t = this.t;
+        opObject.id = this.id;
+        opObject.pid = this.pid;
+        
+        switch (op) {
+            case 'cr':
+                for (var i in allAA[this.t]) {
+                    opObject[i] = this[i];
+                }
+                opObject.pos = allSvg[this.pid].children.indexOf(this);
+                break;
+            case 'd':
+                
+                break;
+            case 'ch':
+                for (var i=0; i<changeArr.length; i++) {
+                    opObject[changeArr[i]] = this[changeArr[i]];
+                }
+                break;
+        }
+        return opObject;
+    }
+    
+    Line.prototype.getOp = getOp;
+    Ellipse.prototype.getOp = getOp;
+    Rectangle.prototype.getOp = getOp;
+    
     var getLinePivots = function(){
         return {
             x:[this.x1,this.x2],
@@ -551,11 +608,10 @@ Akruti = new (function() {
         this.rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
         this.pid = mySvgObject.id;
-        
+        this.rect.classList.add('select-area');
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
         this.rect.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
-        this.rect.style.pointerEvents = 'none';/////////////////////////////////////////////Check
         
         this.rect.setAttribute('x', x);
         this.rect.setAttribute('y', y);
@@ -571,7 +627,8 @@ Akruti = new (function() {
         mySvgObject.g.appendChild(this.g);
         
         this.p = new Array();
-        var radius = 4;
+        var radius = 4;             //Basically half of sidelength of pivots
+        this.r = radius;
         for (var i=0;i<8;i++) {
             this.p[i] = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             this.p[i].setAttribute('fill','#0096fd');
@@ -582,6 +639,28 @@ Akruti = new (function() {
             this.p[i].id = SelectRef[i];
             this.g.appendChild(this.p[i]);
         }
+        
+        this.setPivots(x,y,h,w,radius)
+        
+        this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        this.p[8].id = SelectRef[8];
+        this.p[8].setAttribute('r',radius);
+        this.p[8].setAttribute('fill','#0096fd');
+        this.p[8].setAttribute('stroke','#fff');
+        this.p[8].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
+        this.p[8].setAttribute('cx',x+w/2);
+        this.p[8].setAttribute('cy',y-20);
+        this.g.appendChild(this.p[8]);
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('fill','none');
+        path.setAttribute('stroke','#0096fd');
+        path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
+        path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
+        this.g.appendChild(path);
+    };
+    
+    SelectArea.prototype.setPivots = function (x,y,h,w) {
+        var radius = this.r;
         this.p[0].setAttribute('x',x-radius);
         this.p[0].setAttribute('y',y-radius);
         this.p[1].setAttribute('x',x+w/2-radius);
@@ -598,49 +677,22 @@ Akruti = new (function() {
         this.p[6].setAttribute('y',y+h-radius);
         this.p[7].setAttribute('x',x+w-radius);
         this.p[7].setAttribute('y',y+h-radius);
-        
-        this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        this.p[8].setAttribute('r',radius);
-        this.p[8].setAttribute('fill','#0096fd');
-        this.p[8].setAttribute('stroke','#fff');
-        this.p[8].setAttribute('stroke-width',0.5/mySvgObject.zoomFactor);
-        this.p[8].setAttribute('cx',x+w/2);
-        this.p[8].setAttribute('cy',y-20);
-        this.g.appendChild(this.p[8]);
-        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('fill','none');
-        path.setAttribute('stroke','#0096fd');
-        path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
-        path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
-        this.g.appendChild(path);
-    };
+    }
     
-    var fillSvg = function(color){
+    Svg.prototype.fillSvg = function(color){
         this.element.setAttribute( 'style', 'background-color:'+color+';');
     };
 
-    Svg.prototype.fill = fillSvg;
+    Svg.prototype.fillPage = function(color){
+        this.page.setAttribute( 'fill', color);
+    };
 
     var deleteSelf = function(){
         
-        var pastState = {
-            'op' : 'cr',
-            'pid': this.pid,
-            't'  : this.t,
-        }
-        for (var i in allAA[this.t]) {
-            pastState[i] = this[i];
-        }
-        
-        this.g.remove();
-        var arr = allSvg[this.pid].children;
-        arr.splice(arr.indexOf(this),1);
-        var newState = {
-            'op' :'d',
-            'id' :this.id,
-            'pid':this.pid,
-            't'  :this.t
-        }
+        var pastState = this.getOp('cr');
+        $(this.g).remove();
+        allSvg[this.pid].children.splice(pastState,1);
+        var newState = this.getOp('d');
         return {'pastState':pastState, 'newState':newState}
     };
 
@@ -648,68 +700,68 @@ Akruti = new (function() {
     Ellipse.prototype.delete = deleteSelf;
     Rectangle.prototype.delete = deleteSelf;
     
-    
-
     this.init = function(parent) {
-        var dim = parent.getBoundingClientRect();
-        var arg = {
-            h:(dim.bottom-dim.top-90),
-            w:(dim.right-dim.left-160)
-        };
-        
-        var svgObject = new Svg(arg, parent, true);
-        allSvg[svgObject.id] = svgObject;
-        this.resize();
-        setMode('createLineMode', true);
+        if ( !initialized ) {
+            initialized = true;
+            var dim = parent.getBoundingClientRect();
+            var arg = {
+                h:550,
+                w:1000
+            };
+            var svgObject = new Svg(arg, parent, true);
+            allSvg[svgObject.id] = svgObject;
+            currentSvg = svgObject;
+            this.resize();
+            editor.setMode('createLineMode', true);
+            Base.focusMenu('tools');
+            editor.init();
+        }
     };
 
     this.selectOperation = function(op) {
         editor.currentMode = op;
     };
+    
+    Array.prototype.insertAt = function (index, item) {
+        this.splice(index, 0, item);
+    };
 
     this.performOp = function (data) {
-        var returnValue;
+        var returnValue = new Object();
         
-        if (data instanceof Array) {
+//Debugging {console.log('perOp', data.op, data.t);d=data;if (data instanceof Array || !data.op ) {alert(data);}}
+        
+        if (data.op == 'm') {
             var i;
-            returnValue = new Object();
-            returnValue.pastState = new Array();
-            returnValue.newState = data;
-            for(i=0;i<data.length;i++) {
-                returnValue.pastState[i] = this.performOp(data[i]);
+            returnValue.pastState = new Object();
+            returnValue.newState = new Object();
+            returnValue.pastState.op = returnValue.newState.op = 'm';
+            returnValue.pastState.ar = new Array();
+            returnValue.newState.ar = data;
+            for(i=0;i<data.ar.length;i++) {
+                returnValue.pastState.ar[i] = this.performOp(data.ar[i]).pastState;
             }
         }
         else
         if (data.op == 'cr') {
             var myObject;
             switch (data.t) {
-            case 'e':
-                myObject = new Ellipse(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            case 'l':
-                myObject = new Line(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            case 'r':
-                myObject = new Rectangle(data);
-                allSvg[myObject.pid].children.push(myObject);
-                break;
-            
-                
+                case 'e':
+                    myObject = new Ellipse(data);
+                    break;
+                case 'l':
+                    myObject = new Line(data);
+                    break;
+                case 'r':
+                    myObject = new Rectangle(data);
+                    break;
             }
-            var pastState = {
-                'op' : 'd',
-                't'  : myObject.t,
-                'id' : myObject.id,
-                'pid': myObject.pid,
-                
+            if (allSvg[data.pid].children.length != 0) {
+                $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
             }
-            var newState = data;
-            returnValue = {
-                'pastState': pastState,
-                'newState': newState
-            };
+            allSvg[data.pid].children.insertAt(data.pos, myObject);
+            returnValue.pastState = myObject.getOp('d');
+            returnValue.newState = data;
         }
         else
         if (data.op == 'd') {
@@ -719,21 +771,26 @@ Akruti = new (function() {
         else
         if (data.op == 'ch') {
             var myObject = $('#' + data.id + 'g').data('myObject');
-            returnValue = myObject.changeAttributes(data);
+            returnValue = myObject.changeAttributes(data, true);
         }
         return returnValue;
     };
     
     this.getFileData = function(svg) {
-        var data = new Array();
+        if (!svg) {
+            svg = (currentSvg)?(currentSvg):(allSvg['s1']);
+        }
+        var data = new Object();
+        data.op = 'file';
+        data.ar = new Array();
         var element = $('#'+svg.id).data('myObject');
         for (var i=0; i<element.children.length; i++) {
-            data[i] = new Object();
-            data[i]['id'] = element.children[i]['id'];
-            data[i]['pid'] = element.children[i]['pid'];
-            data[i]['t'] = element.children[i]['t'];
+            data.ar[i] = new Object();
+            data.ar[i]['id'] = element.children[i]['id'];
+            data.ar[i]['pid'] = element.children[i]['pid'];
+            data.ar[i]['t'] = element.children[i]['t'];
             for (var j in allAA[element.children[i]['t']]) {
-                data[i][j] = element.children[i][j];
+                data.ar[i][j] = element.children[i][j];
             }
         }
         return data;
@@ -748,7 +805,7 @@ Akruti = new (function() {
 
         this.currentMode = 'createLineMode';
         this.strokeWidth = 2;
-        this.strokeColor = '#555';
+        this.strokeColor = '#666';
         this.fillColor   = 'none';
         
         actives = new Object();
@@ -778,20 +835,18 @@ Akruti = new (function() {
             }
         };
         
-        /****************** Useless ******************/
-        this.setFillColor = function(id, color){
-            editor.fillColor = color;
-        };
+        this.setStrokeWidth = function(id, value){
+            editor.strokeWidth = parseInt(value);
+        }
         
         this.setStrokeColor = function(id, color){
             editor.strokeColor = color;
         };
-        /****************** Useless ends ******************/
         
-        this.deleteElement = function(a,b){
-            console.log(a,b)
+        this.setFillColor = function(id, color){
+            editor.fillColor = color;
         };
-        
+                
         var getStrokeWidth = function(){
             return editor.strokeWidth;
         }
@@ -805,22 +860,31 @@ Akruti = new (function() {
         }
         
         var eq = function (arg1, arg2){
-            
+            a1=arg1;
+            a2=arg2;
             if (arg1.length != arg2.length) {
                 return false;
             }
             for (var i=0;i<arg1.length;i++) {
-                for (var j in arg1) {
-                    if (arg1[j] != arg2[j]) {
+                for (var j in arg1[i]) {
+                    if (arg1[i][j] != arg2[i][j]) {
                         return false;
                     }
                 }
             }
             return true;
-            
         };
-
-        var select = function(obj) {            //Note:The use of parameter obj is only to get svg ID
+        
+        
+        var makeSelectRect = function(pid) {            //pid is the id of the svg where elements are to be selected
+            
+            if (actives.select) {
+                $(actives.select.g).remove();
+                delete actives.select;
+                if (actives.list.length == 0) {
+                    return;
+                }
+            }
             var pivotsX = new Array();
             var pivotsY = new Array();
             for (var i=0;i<actives.list.length;i++) {
@@ -832,38 +896,38 @@ Akruti = new (function() {
             var y1 = Math.min.apply(undefined, pivotsY);
             var x2 = Math.max.apply(undefined, pivotsX);
             var y2 = Math.max.apply(undefined, pivotsY);
-            if (actives.select) {
-                actives.select.g.remove();
-                delete actives.select;
-            }
-            actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[obj.pid]);
+            
+            actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[pid]);
             var pivots = actives.select.p;
-            for (var i=0;i<pivots.length;i++) {
+            for (var i=0;i<pivots.length-1;i++) {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
             
+            $(pivots[pivots.length-1]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
+            $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
+            Base.focusMenu('edit');
         };
         
-        var activateElement = function(){
+        var selectElement = function(){
             
             if (actives.list.length == 0) {
-                $(superParent).one('mousedown',deactivateAll);
+                $(allSvg[this.pid].element).one('mousedown',deselectAll);
             }
             actives.list.push(this);
             this.g.classList.add('active');
-            select(this);
+            makeSelectRect(this.pid);
         };
         
-        var deactivateElement = function(){
+        var deselectElement = function(){
             actives.list.splice(actives.list.indexOf(this),1);
             this.g.classList.remove('active');
-            select(this);
+            makeSelectRect(this.pid);
         };
         
-        var deactivateAll = function(e){
+        var deselectAll = function(e){
             if (actives.select)
             {
-                actives.select.g.remove();
+                $(actives.select.g).remove();
                 delete actives.select;
                 while (actives.list.length != 0) {
                     actives.list.pop().g.classList.remove('active');
@@ -872,58 +936,26 @@ Akruti = new (function() {
         };
 
         var selectAll = function(){
-            for(var i in allSvg){
-                for(var j=0; j<allSvg[i].children.length; j++) {
-                    activateElement.apply(allSvg[i].children[j]);
-                }
+            
+            if (actives.list.length == 0) {
+                $(currentSvg.element).one('mousedown',deselectAll);
             }
-        };
-
-        var lineMove = function(type, ctrlKey, shiftKey) {
-            var d;
-            if (ctrlKey)
-                d = 1;
-            else if (shiftKey)
-                d = 10;
-            else
-                d = 4;
-            
-            switch (type) {
-                
-                case 'up':
-                    this.changeAttributes({y1:this.y1-d,y2:this.y2-d});
-                    if (!( this.y1 >= d && this.y2 >= d )) {
-                        var svg = allSvg[this.pid];
-                        svg.reqH += d/svg.zoomFactor;
-                        svg.svgH += d;
-                        svg.element.setAttribute('height',svg.svgH);
-                    }
-                    break;
-            
-                case 'down':
-                    this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
-                    if ( this.y1 + d <= allSvg[this.pid].h && this.y2 + d <= allSvg[this.pid].h ) {
-                        this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
-                    }
-                    break;
-                
-                case 'left':
-                    if ( this.x1 >= d && this.x2 >= d ) {
-                        this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
-                    }
-                    break;
-            
-                    case 'right':
-                    if ( this.x1 + d <= allSvg[this.pid].w && this.x2 + d <= allSvg[this.pid].w ) {
-                        this.changeAttributes({x1:this.x1+d,x2:this.x2+d});
-                    }
-                break;
-            
+            for(var j=0; j<currentSvg.children.length; j++) {
+                actives.list.push(currentSvg.children[j]);
+                currentSvg.children[j].g.classList.add('active');
             }
-            this.activate();
+            makeSelectRect(currentSvg.id);
         };
         
-        Line.prototype.move = lineMove;
+        this.init = function(){
+            Base.addShortcuts([
+                {
+                    ctrl: true,
+                    char: 'a',
+                    callback: selectAll
+                },
+            ])
+        };
         
         var svgOnMouseDown = function(e) {
 
@@ -939,22 +971,17 @@ Akruti = new (function() {
                 });
             }
         };
-
-
+        
         this.makeEditable = function(element) {
-            $(element).on('mousedown', svgOnMouseDown);
+            if ( $(element).is('svg') ) {
+                $(element).on('mousedown', svgOnMouseDown);
+            }
+            else {
+                $(element).on('mousedown', elementOn.mousedown);
+            }
         };
 
-        this.init = function(){
-            Base.addShortcuts([
-                {
-                    ctrl: true,
-                    char: 'a',
-                    callback: alert
-                },
-            ])
-        };
-
+/*       Key down key up 
         var keyTimeout, keyInterval, currentKey;
 
         $(window).on('keydown',function(e){
@@ -1109,16 +1136,17 @@ Akruti = new (function() {
                     break;
             }
         });
+        */
 
         var svgOn = {
             createEllipseMode: {
-
                 mousedown: function(e) {
-                    var mySvgObject = e.data;
-
+                    
+                    var mySvgObject = currentSvg = e.data;
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
                     var attributes = {
                         'cx':x,
                         'cy':y,
@@ -1127,24 +1155,25 @@ Akruti = new (function() {
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
                         'f' :getFillColor(),
+                        //'op':getOpacity(),
+                        //'sd':getStrokeDashArray(),
                     };
                     var element = new Ellipse(attributes,mySvgObject);
-                    element.shiftX = x;
-                    element.shiftY = y;
+                    element.X = x;
+                    element.Y = y;
                     return element;
                 },
-
+                
                 mousemove: function(e) {
 
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
-
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     
                     if (e.shiftKey) {
-                        var changes = svgOn.createEllipseMode.snap(element.shiftX,element.shiftY,x,y);
+                        var changes = svgOn.createEllipseMode.snap(element.X,element.Y,x,y);
                         element.changeAttributes({
                             'cx': changes.cx,
                             'cy': changes.cy,
@@ -1155,25 +1184,24 @@ Akruti = new (function() {
                     else
                     {
                         element.changeAttributes({
-                            'cx': (x + element.shiftX) / 2,
-                            'cy': (y + element.shiftY) / 2,
-                            'rx': (Math.abs(x - element.shiftX)) / 2,
-                            'ry': (Math.abs(y - element.shiftY)) / 2,
+                            'cx': (x + element.X) / 2,
+                            'cy': (y + element.Y) / 2,
+                            'rx': (Math.abs(x - element.X)) / 2,
+                            'ry': (Math.abs(y - element.Y)) / 2,
                             });
                     }
                 },
-
+                
                 mouseup: function(e) {
 
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
-
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
 
                     if (e.shiftKey) {
-                        var changes = svgOn.createEllipseMode.snap(element.shiftX,element.shiftY,x,y);
+                        var changes = svgOn.createEllipseMode.snap(element.X,element.Y,x,y);
                         element.changeAttributes({
                             'cx': changes.cx,
                             'cy': changes.cy,
@@ -1184,32 +1212,23 @@ Akruti = new (function() {
                     else
                     {
                         element.changeAttributes({
-                            'cx': (x + element.shiftX) / 2,
-                            'cy': (y + element.shiftY) / 2,
-                            'rx': (Math.abs(x - element.shiftX)) / 2,
-                            'ry': (Math.abs(y - element.shiftY)) / 2,
+                            'cx': (x + element.X) / 2,
+                            'cy': (y + element.Y) / 2,
+                            'rx': (Math.abs(x - element.X)) / 2,
+                            'ry': (Math.abs(y - element.Y)) / 2,
                             });
                     }
-                    
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'cx':element.cx,
-                        'cy':element.cy,
-                        'rx':element.rx,
-                        'ry':element.ry,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'f' :element.f,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    });
+                    delete element.X;
+                    delete element.Y;
+                    ele = element;
+                    if (element.rx == 0 || element.ry == 0) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap: function(sx,sy,x,y) {
@@ -1228,10 +1247,11 @@ Akruti = new (function() {
 
                 mousedown: function(e) {
 
-                    var mySvgObject = e.data;
+                    var mySvgObject = currentSvg = e.data;
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
+                    
                     var attributes = {
                         'x1':x,
                         'y1':y,
@@ -1294,24 +1314,14 @@ Akruti = new (function() {
                             });
                     }
                     
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x1':element.x1,
-                        'y1':element.y1,
-                        'x2':element.x2,
-                        'y2':element.y2,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    });
+                    if (element.x1 == element.x2 && element.y2 == element.y2) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap: function(x1,y1,x2,y2) {
@@ -1343,24 +1353,25 @@ Akruti = new (function() {
             },
             
             createRectangleMode:{
+                
                 mousedown:function(e){
-                    var mySvgObject = e.data;
+                    var mySvgObject = currentSvg = e.data;
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     var attributes = {
                         'x' :x,
                         'y' :y,
-                        'h' :100,
-                        'w' :100,
+                        'h' :0,
+                        'w' :0,
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
                         'f' : getFillColor()
                     };
                     
                     var element = new Rectangle(attributes,mySvgObject);
-                    element.shiftX = x;
-                    element.shiftY = y;
+                    element.X = x;
+                    element.Y = y;
                     return element;
                 
                 },
@@ -1374,7 +1385,7 @@ Akruti = new (function() {
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     
                     if (e.shiftKey) {
-                        var changes = svgOn.createRectangleMode.snap(element.shiftX,element.shiftY,x,y);
+                        var changes = svgOn.createRectangleMode.snap(element.X,element.Y,x,y);
                         element.changeAttributes({
                             'x': changes.x,
                             'y': changes.y,
@@ -1385,10 +1396,10 @@ Akruti = new (function() {
                     else
                     {
                         element.changeAttributes({
-                            'h': Math.abs(element.shiftY - y),
-                            'w': Math.abs(element.shiftX - x),
-                            'x': Math.min(element.shiftX, x),
-                            'y': Math.min(element.shiftY, y),
+                            'h': Math.abs(element.Y - y),
+                            'w': Math.abs(element.X - x),
+                            'x': Math.min(element.X, x),
+                            'y': Math.min(element.Y, y),
                         });
                     }
                 },
@@ -1402,7 +1413,7 @@ Akruti = new (function() {
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     
                     if (e.shiftKey) {
-                        var changes = svgOn.createRectangleMode.snap(element.shiftX,element.shiftY,x,y);
+                        var changes = svgOn.createRectangleMode.snap(element.X,element.Y,x,y);
                         element.changeAttributes({
                             'x': changes.x,
                             'y': changes.y,
@@ -1413,33 +1424,21 @@ Akruti = new (function() {
                     else
                     {
                         element.changeAttributes({
-                            'h': Math.abs(element.shiftY - y),
-                            'w': Math.abs(element.shiftX - x),
-                            'x': Math.min(element.shiftX, x),
-                            'y': Math.min(element.shiftY, y),
+                            'h': Math.abs(element.Y - y),
+                            'w': Math.abs(element.X - x),
+                            'x': Math.min(element.X, x),
+                            'y': Math.min(element.Y, y),
                         });
                     }
                     
-                    $(element.g).on('mousedown', elementOn.mousedown);
-                    mySvgObject.children.push(element);
-                    Base.addOp({
-                        'op':'d',           //op = [d]elete; when this objects come, delete the Object
-                        'id':element.id,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    },{
-                        'op':'cr',          //op = [cr]eate; when this objects come, create the Object
-                        'x':element.x,
-                        'y':element.y,
-                        'h':element.h,
-                        'w':element.w,
-                        'sc':element.sc,
-                        'sw':element.sw,
-                        'f' :element.f,
-                        'pid':element.pid,
-                        't'  :element.t,
-                    });
-                    
+                    if (element.h == 0 || element.w == 0) {
+                        $(element.g).remove();
+                    }
+                    else {
+                        $(element.g).on('mousedown', elementOn.mousedown);
+                        mySvgObject.children.push(element);
+                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    }
                 },
                 
                 snap:function(sx, sy, x, y){
@@ -1464,7 +1463,7 @@ Akruti = new (function() {
             selectMode: {
                 mousedown:function(e){
 
-                    var mySvgObject = e.data;
+                    var mySvgObject = currentSvg = e.data;
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
@@ -1473,10 +1472,10 @@ Akruti = new (function() {
                         'y' :y,
                         'h' :0,
                         'w' :0,
-                        'sc': '#555',
-                        'sw': 2,
+                        'sc': '#222',
+                        'sw': 1,
                         'f' : 'none',
-                        'sd':'3 3',
+                        'sd':'5 5',
                     };
                     
                     var element = new Rectangle(attributes,mySvgObject);
@@ -1543,7 +1542,7 @@ Akruti = new (function() {
                     var y1 = element.y;
                     var x2 = element.x + element.w;
                     var y2 = element.y + element.h;
-                    element.g.remove();
+                    $(element.g).remove();
                     for(var i=0;i<mySvgObject.children.length;i++) {
                         var pivots = mySvgObject.children[i].getPivots();
                         var flag =  (x1 <= pivots.x[0]) && (pivots.x[0] <= x2)
@@ -1551,8 +1550,7 @@ Akruti = new (function() {
                         && (y1 <= pivots.y[0]) && (pivots.y[0] <= y2)
                         && (y1 <= pivots.y[1]) && (pivots.y[1] <= y2);
                         if(flag) {
-                            console.log('in;')
-                            activateElement.apply(mySvgObject.children[i]);
+                            selectElement.apply(mySvgObject.children[i]);
                         }
                     }
                 },
@@ -1563,21 +1561,23 @@ Akruti = new (function() {
 
             mousedown : function(e){
                 if (editor.currentMode == 'selectMode') {
-                    
                     e.stopImmediatePropagation();
-                    var myObject = $(this).data('myObject');
-                    if (actives.list.indexOf(myObject) == -1) {
-                        if (e.ctrlKey) {
-                            activateElement.apply(myObject);
+                    if (!e.data || !e.data.selectArea) {
+                        var myObject = $(this).data('myObject');
+                        currentSvg = allSvg[myObject.pid];
+                        if (actives.list.indexOf(myObject) == -1) {
+                            if (e.ctrlKey) {
+                                selectElement.apply(myObject);
+                            }
+                            else {
+                                deselectAll();
+                                selectElement.apply(myObject);
+                            }
                         }
                         else {
-                            deactivateAll();
-                            activateElement.apply(myObject);
-                        }
-                    }
-                    else {
-                        if (e.ctrlKey) {
-                            deactivateElement.apply(myObject);
+                            if (e.ctrlKey) {
+                                deselectElement.apply(myObject);
+                            }
                         }
                     }
                     actives.pastState = new Array();
@@ -1594,23 +1594,29 @@ Akruti = new (function() {
                     e.data = actives.list[i];
                     elementMove[actives.list[i].t].mousemove(e);
                 }
-                if (actives.list[0]) select(actives.list[0]);
+                if (actives.list[0]) makeSelectRect(actives.list[0].pid);
             },
             
             mouseup : function(e){
                 
                 actives.newState = new Array();
-                
                 for(var i=0;i<actives.list.length;i++) {
                     e.data = actives.list[i];
                     actives.newState[i] = elementMove[actives.list[i].t].mouseup(e);
                 }
-                if (actives.list[0]) select(actives.list[0]);
+                makeSelectRect(actives.select.pid);
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
-                
                 if ( !( eq( actives.pastState, actives.newState )) ) {
-                    Base.addOp(actives.pastState,actives.newState);
+                    Base.addOp({
+                        'op':'m',
+                        'ar':actives.pastState
+                    },{
+                        'op':'m',
+                        'ar':actives.newState
+                    });
                 }
+                delete actives.pastState;
+                delete actives.newState;
             },
             
         };
@@ -1630,15 +1636,7 @@ Akruti = new (function() {
                     element.dy1 = element.y1 - y;
                     element.dx2 = element.x2 - x;
                     element.dy2 = element.y2 - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        'x1' : element.x1,
-                        'y1' : element.y1,
-                        'x2' : element.x2,
-                        'y2' : element.y2,
-                    }
+                    return element.getOp('ch', ['x1','y1','x2','y2']);
                 },
                 mousemove:function(e){
                     
@@ -1685,13 +1683,7 @@ Akruti = new (function() {
                     element.diff = new Object();
                     element.diff.cx = element.cx - x;
                     element.diff.cy = element.cy - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        'cx' : element.cx,
-                        'cy' : element.cy,
-                    }
+                    return element.getOp('ch',['cx','cy']);
                 },
                 mousemove:function(e){
                     
@@ -1733,13 +1725,7 @@ Akruti = new (function() {
                     element.diff = new Object();
                     element.diff.x = element.x - x;
                     element.diff.y = element.y - y;
-                    return {
-                        'op' :'ch',
-                        'id' : element.id,
-                        'pid': element.pid,
-                        'x' : element.x,
-                        'y' : element.y,
-                    }
+                    return element.getOp('ch', ['x','y']);
                 },
                 mousemove:function(e){
                     
@@ -1785,12 +1771,17 @@ Akruti = new (function() {
                 if (tmp.length == 2) {
                     elementResize['sA'][tmp[1]].mousedown(x,y);
                 }
+                /* Calling resize of all Actives */
+                actives.pastState = new Array();
+                for (i=0;i<actives.list.length;i++) {
+                    actives.pastState[i] = elementResize[actives.list[i].t].mousedown(actives.list[i],actives.select);
+                }
                 $(superParent).on('mousemove', pivotsOn.mousemove).on('mouseup',pivotsOn.mouseup);
                 actives.tmp = tmp;
             },
             mousemove: function(e, selectRect) {
-                e.stopPropagation();
                 var tmp = actives.tmp;
+                
                 /* Resizing select Rect */
                 var mySvgObject = allSvg[actives.select.pid];
                 var offset = mySvgObject.page.getBoundingClientRect();
@@ -1801,119 +1792,284 @@ Akruti = new (function() {
                     elementResize['sA'][tmp[1]].mousemove(x,y);
                 }
                 
+                
+                for (i=0;i<actives.list.length;i++) {
+                    elementResize[actives.list[i].t].mousemove(actives.list[i],actives.select);
+                }
             },
             mouseup: function(e, selectRect) {
+                
+                actives.newState = new Array();
+                
+                for (i=0;i<actives.list.length;i++) {
+                    actives.newState[i] = elementResize[actives.list[i].t].mouseup(actives.list[i],actives.select);
+                }
+                makeSelectRect(actives.select.pid);
                 $(superParent).off('mousemove', pivotsOn.mousemove).off('mouseup',pivotsOn.mouseup);
+                
+                if ( !( eq( actives.pastState, actives.newState )) ) {
+                    Base.addOp({
+                        'op':'m',
+                        'ar':actives.pastState
+                    },{
+                        'op':'m',
+                        'ar':actives.newState
+                    });
+                }
+                delete actives.pastState;
+                delete actives.newState;
                 delete actives.tmp;
             }
         };
         
         var elementResize = {
+            
             l : {
-                left: {
-                    mousedown: function(element, rect) {
-                        
-                        element.initialX = rect.x;
+                mousedown: function(element, rect) {
+                    if (rect.w != 0) {
                         element.ratioX1 = Math.abs(element.x1-rect.x)/rect.w;
                         element.ratioX2 = Math.abs(element.x2-rect.x)/rect.w;
-                        
-
-                        return {
-                            'op' :'ch',
-                            'id' : element.id,
-                            'pid': element.pid,
-                            'x1' : element.x1,
-                            'y1' : element.y1,
-                            'x2' : element.x2,
-                            'y2' : element.y2,
-                        }
-                    },
-                    mousemove:function(element, rect){
-                        
-                        /*rect.changeAttributes({
-                            'w': Math.abs(shiftX - x),
-                            'x': Math.min(shiftX, x),
-                        });*/
-                        var changes = {
-                            'x1':element.initialX+element.ratioX1*rect.w,
-                            'x2':element.initialX+element.ratioX2*rect.w,
-                        }
-                        element.changeAttributes(changes);
-                        select(e);
-                    },
-                    mouseup:function(e, rect){
-                        
-                        var element = e;
-                        var mySvgObject = allSvg[element.pid];
-                        var offset = mySvgObject.page.getBoundingClientRect();
-                        var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
-                        /*rect.changeAttributes({
-                            'w': Math.abs(shiftX - x),
-                            'x': Math.min(shiftX, x),
-                        });*/
-                        var changes = {
-                            'x1':element.initialX+element.ratioX1*rect.w,
-                            'x2':element.initialX+element.ratioX2*rect.w,
-                        }
-                        var state = element.changeAttributes(changes);
-                        return state.newState;
-                    },
-                }
+                    }
+                    else {
+                        element.ratioX1 = element.ratioX2 = 0;
+                    }
+                    
+                    if (rect.h != 0) {
+                        element.ratioY1 = Math.abs(element.y1-rect.y)/rect.h;
+                        element.ratioY2 = Math.abs(element.y2-rect.y)/rect.h;
+                    }
+                    else {
+                        element.ratioY1 = element.ratioY2 = 0;
+                    }
+                    
+                    return element.getOp('ch', ['x1','y1','x2','y2']);
+                },
+                mousemove:function(element, rect){
+                    var changes = {
+                        'x1':rect.x+element.ratioX1*rect.w,
+                        'x2':rect.x+element.ratioX2*rect.w,
+                        'y1':rect.y+element.ratioY1*rect.h,
+                        'y2':rect.y+element.ratioY2*rect.h,
+                    }
+                    element.changeAttributes(changes);
+                },
+                mouseup:function(element, rect){
+                    
+                    var changes = {
+                        'x1':rect.x+element.ratioX1*rect.w,
+                        'x2':rect.x+element.ratioX2*rect.w,
+                        'y1':rect.y+element.ratioY1*rect.h,
+                        'y2':rect.y+element.ratioY2*rect.h,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
+                },
             },
             e:{
-                left:{
-                    mousedown:function(myObject, rect){
-                        
-                    },
-                    mousemove:function(myObject, rect) {
-                        
-                    },
-                    mouseup:function(myObject, rect) {
-                        
-                    },
-                }
+                mousedown:function(element, rect){
+                    
+                    element.ratioCX = Math.abs(element.cx-rect.x)/rect.w;
+                    element.ratioCY = Math.abs(element.cy-rect.y)/rect.h;
+                    element.ratioRX = element.rx/rect.w;
+                    element.ratioRY = element.ry/rect.h;
+                    
+                    return element.getOp('ch',['cx','cy','rx','ry']);
+                },
+                mousemove:function(element, rect) {
+                    var changes = {
+                        'cx':rect.x+element.ratioCX*rect.w,
+                        'cy':rect.y+element.ratioCY*rect.h,
+                        'rx':element.ratioRX*rect.w,
+                        'ry':element.ratioRY*rect.h,
+                    }
+                    element.changeAttributes(changes);
+                },
+                mouseup:function(element, rect) {
+                    var changes = {
+                        'cx':rect.x+element.ratioCX*rect.w,
+                        'cy':rect.y+element.ratioCY*rect.h,
+                        'rx':element.ratioRX*rect.w,
+                        'ry':element.ratioRY*rect.h,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
+                },
             },
+            r:{
+                mousedown:function(element, rect){
+                    
+                    element.ratioX = Math.abs(element.x-rect.x)/rect.w;
+                    element.ratioY = Math.abs(element.y-rect.y)/rect.h;
+                    element.ratioW = element.w/rect.w;
+                    element.ratioH = element.h/rect.h;
+                    
+                    return element.getOp('ch',['x','y','h','w'])
+                },
+                mousemove:function(element, rect) {
+                    var changes = {
+                        'x':rect.x+element.ratioX*rect.w,
+                        'y':rect.y+element.ratioY*rect.h,
+                        'h':element.ratioH*rect.H,
+                        'w':element.ratioW*rect.W,
+                    }
+                    element.changeAttributes(changes);
+                    
+                },
+                mouseup:function(element, rect) {
+                    var changes = {
+                        'x':rect.x+element.ratioX*rect.w,
+                        'y':rect.y+element.ratioY*rect.h,
+                        'h':element.ratioH*rect.H,
+                        'w':element.ratioW*rect.W,
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState;
+                },
+            },
+            
             sA:{
                 left:{
                     mousedown:function(x,y) {
-                        actives.select.X = x;
+                        actives.select.X1 = actives.select.x;
                         actives.select.W = actives.select.w;
+                        actives.select.X2 = actives.select.w+actives.select.x;
                     },
                     mousemove:function(x,y) {
-                        actives.select.w = actives.select.W - x + actives.select.X;
+                        actives.select.x = Math.min(x,actives.select.X2)
+                        actives.select.w = Math.abs(actives.select.X2-x);
                         actives.select.rect.setAttribute('width', actives.select.w);
-                        actives.select.rect.setAttribute('x',x);
+                        actives.select.rect.setAttribute('x',actives.select.x);
                     },
                     mouseup:function(x,y) {
                         
                     },
                 },
-                
+                top:{
+                    mousedown:function(x,y) {
+                        actives.select.Y1 = actives.select.y;
+                        actives.select.H = actives.select.h;
+                        actives.select.Y2 = actives.select.h+actives.select.y;
+                    },
+                    mousemove:function(x,y) {
+                        actives.select.y = Math.min(y,actives.select.Y2)
+                        actives.select.h = Math.abs(actives.select.Y2-y);
+                        actives.select.rect.setAttribute('height', actives.select.h);
+                        actives.select.rect.setAttribute('y',actives.select.y);
+                    },
+                    mouseup:function(x,y) {
+                        
+                    },
+                },
+                right:{
+                    mousedown:function(x,y) {
+                        actives.select.X1 = actives.select.x;
+                        actives.select.X2 = actives.select.w+actives.select.x;
+                        actives.select.W = actives.select.w;
+                    },
+                    mousemove:function(x,y) {
+                        actives.select.x = Math.min(x,actives.select.X1);
+                        actives.select.w = Math.abs(actives.select.X1-x);
+                        actives.select.rect.setAttribute('width', actives.select.w);
+                        actives.select.rect.setAttribute('x',actives.select.x);
+                    },
+                    mouseup:function(x,y) {
+                        
+                    },
+                },
+                bottom:{
+                    mousedown:function(x,y) {
+                        actives.select.Y1 = actives.select.y;
+                        actives.select.Y2 = actives.select.h+actives.select.y;
+                        actives.select.H = actives.select.h;
+                    },
+                    mousemove:function(x,y) {
+                        actives.select.y = Math.min(y,actives.select.Y1)
+                        actives.select.h = Math.abs(actives.select.Y1-y);
+                        actives.select.rect.setAttribute('height', actives.select.h);
+                        actives.select.rect.setAttribute('y',actives.select.y);
+                    },
+                    mouseup:function(x,y) {
+                        
+                    },
+                },
             }
         }
 
-        var deleteSelected = function(){
+        this.deleteAllSelected = function(){
+            var pastState = new Array();
+            var newState = new Array();
             for(var i=0;i<actives.list.length;i++) {
-                actives.list[i].delete();
+                var states = actives.list[i].delete();
+                pastState[i] = states.pastState;
+                newState[i] = states.newState;
             }
-            deactivateAll();
-            actives.list.length = 0;
+            Base.addOp({
+                'op':'m',
+                'ar':pastState
+            },{
+                'op':'m',
+                'ar':newState
+            });
+            deselectAll();
         }
+        
+        $(window).on('keydown',function(e){
+            if (e.which == 46 && actives.list.length != 0) {                //DeleteKey
+                editor.deleteAllSelected();
+            }
+        });
+        
+        var elementsRotate = {
+            mousedown:function(e){
+                $(superParent).on('mousemove',elementsRotate.mousemove).on('mouseup',elementsRotate.mouseup);
+                
+            },
+            mousemove:function(e){
+                
+            },
+            mouseup:function(e){
+                $(superParent).off('mousemove',elementsRotate.mousemove).off('mouseup',elementsRotate.mouseup);
+            }
+            
+        };
+        
+        
+        
+        /*
+        var lineMoveWithArrowKeys = function(type, ctrlKey, shiftKey) {
+            var d;
+            if (ctrlKey)
+                d = 1;
+            else if (shiftKey)
+                d = 10;
+            else
+                d = 4;
+            
+            switch (type) {
+                case 'up':
+                    this.changeAttributes({y1:this.y1-d,y2:this.y2-d});
+                    break;
+            
+                case 'down':
+                    this.changeAttributes({y1:this.y1+d,y2:this.y2+d});
+                    break;
+                
+                case 'left':
+                    this.changeAttributes({x1:this.x1-d,x2:this.x2-d});
+                    break;
+            
+                case 'right':
+                    this.changeAttributes({x1:this.x1+d,x2:this.x2+d});
+                    break;
+            }
+        };
+        
+        Line.prototype.move = lineMoveWithArrowKeys;
+        */
+        
         
     })();
     /******************************* Editor Module End *******************************/
-    
-    var setMode = function(mode, onOff){
-        editor.setMode(mode, onOff);
-    };
-    
-    var setFillColor = function(id, color){
-        editor.fillColor = color;
-    };
-    
-    var setStrokeColor = function(id, color){
-        editor.strokeColor = color;
-    };
         
     var defaultMenu = [
         {
@@ -1926,6 +2082,7 @@ Akruti = new (function() {
                     type: 'group',
                     id: 'modeSelectorGroup',
                     multiple: false,
+                    required: true,
                     items: [
                         {
                             type:'button',
@@ -1934,7 +2091,7 @@ Akruti = new (function() {
                             title:'Select',
                             onoff: true,
                             currState:false,
-                            callback: setMode
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1943,7 +2100,7 @@ Akruti = new (function() {
                             title:'Line',
                             onoff: true,
                             currState:true,
-                            callback: setMode
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1952,7 +2109,7 @@ Akruti = new (function() {
                             title:'Free Hand Drawing',
                             onoff: true,
                             currState:false,
-                            callback: console.log
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1961,7 +2118,7 @@ Akruti = new (function() {
                             title:'Rectangle',
                             onoff: true,
                             currState:false,
-                            callback: setMode
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1970,7 +2127,7 @@ Akruti = new (function() {
                             title:'Ellipse',
                             onoff: true,
                             currState:false,
-                            callback: setMode
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1979,7 +2136,7 @@ Akruti = new (function() {
                             title:'Magic',
                             onoff: true,
                             currState:false,
-                            callback: console.log
+                            callback: editor.setMode
                         },
                         {
                             type: 'button',
@@ -1988,7 +2145,7 @@ Akruti = new (function() {
                             title:'Lightning',
                             onoff: true,
                             currState:false,
-                            callback: console.log
+                            callback: editor.setMode
                         }
                     ]
                 }
@@ -2002,55 +2159,55 @@ Akruti = new (function() {
             groups: [
                 {
                     type: 'group',
-                    id: 'g1',
+                    id: 'colorGroup',
                     items: [
                         {
                             type: 'color',
                             id: 'fillColor',
                             title:'Fill',
                             text: 'Fill Color',
+                            currState: 'none',
                             icon: 'fa-tint',
-                            callback: setFillColor,
+                            callback: editor.setFillColor,
                         },
                         {
                             type: 'color',
                             id: 'strokeColor',
                             title:'Stroke Color',
+                            currState: '#000',
                             icon: 'fa-tint', 
                             text: 'Stroke',
-                            callback: setStrokeColor,
+                            callback: editor.setStrokeColor,
                         },
-                        /*{
-                            type: 'size',
-                            id: 'strokeWidth', 
-                            title: 'Stroke Width', //Name of button
-                            icon: 'fa-barcode', //Font awesome icon name
-                            currState: 2, //Default size
-                            rangeStart: 2, //Minimum size
-                            rangeEnd: 20,   //Maximum size
-                            callback: setStrokeWidth,  //Callback on change
-                        },*/
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'delete',
+                    items: [
+                        {
+                            type: 'button',
+                            id: 'delete',
+                            title: 'Delete',
+                            icon: 'fa-eraser', //Font awesome icon name
+                            onoff: false,  //Is a on/off button
+                            callback: editor.deleteAllSelected
+                        },
                     ],
                 },
                 {
                     type: 'group',
-                    id: 'g2',
+                    id: 'strokeProperties',
                     items: [
                         {
-                            type: 'button',
-                            icon: 'fa-reply',
-                            callback: Base.undo,
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-share',
-                            callback: Base.redo,
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-eraser',
-                            callback: editor.deleteElement
-                        },
+                            type:'list',
+                            id:'stroke-width',
+                            title:'Stroke Weight',
+                            icon:'fa-th-list',
+                            currState:2,
+                            list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
+                            callback:editor.setStrokeWidth
+                        }
                     ]
                 }
             ]  
@@ -2062,5 +2219,35 @@ Akruti = new (function() {
     };
     
 })();
-
 module = Akruti;
+/*
+{
+            type: 'main',
+            id: 'edit',
+            title: 'Edit', //Name of menu
+            icon: 'fa-edit', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'undoRedo',
+                    items: [
+                        {
+                            type: 'button',
+                            id: 'undo',
+                            title: 'Undo',
+                            icon: 'fa-undo',
+                            onoff: false,
+                            callback: this.undo
+                        },
+                        {
+                            type: 'button',
+                            id: 'redo',
+                            title: 'Redo',
+                            icon: 'fa-repeat', //Font awesome icon name
+                            onoff: false,  //Is a on/off button
+                            callback: this.redo
+                        },
+                    ]
+                },
+            ]
+        }*/
