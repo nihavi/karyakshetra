@@ -30,15 +30,28 @@ Show = new (function(){
         
         var newSlide = new Slide();
         newSlide.addElem({
-                type: 'title',
-                top: 5,
-                left: 5,
-                width: 90,
-                height: 13,
-                fontSize: 10,
-                text: 'Title here',
-                style: {textAlign: 'center'}
-            });
+            type: 'title',
+            top: 30,
+            left: 5,
+            width: 90,
+            height: 13,
+            fontSize: 10,
+            text: 'Title',
+            style: {textAlign: 'center'}
+        });
+        newSlide.addElem({
+            type: 'text',
+            top: 45,
+            left: 5,
+            width: 90,
+            height: 7,
+            fontSize: 6,
+            text: 'Subtitle',
+            style: {
+                textAlign: 'center',
+                color: '#666',
+            }
+        });
         newSlide.renderSlide();
         
         //Event handlers on slides to manage activeElement
@@ -77,14 +90,24 @@ Show = new (function(){
     Elem
     {
         type: 'title' | 'text',
+        parent: Slide Object,   //Parent Slide
+        id: String, //Id of element
+        aminations: Array,  //Array of Animations
         fontSize: Number,   //Font-size in percentage relative to slide height
         text: String,   //Text inside the box
         style: Object,  //Css key-value pairs
         top: Number,    //Distance from top edge of the slide in percentage
         left: Number,   //Distance from left edge of the slide in percentage
         width: Number,  //Width in percentage with respect to width of slide
-        height: Number,  //Height in percentage with respect to height of slide
+        height: Number, //Height in percentage with respect to height of slide
         elemDOM: DOMElement //DOM element corresponding to this object
+    }
+    Animation
+    {
+        type: 'entry' | 'highlight' | 'exit',
+        name: String,   //Name of animation
+        duration: Number,   //Duration of animation in milliseconds
+        timing: 'click' | 'wait' | 'do',    //When to trigger animation
     }
     */
     
@@ -104,36 +127,69 @@ Show = new (function(){
         },
         addSlide: function(slide){
             var sidebar = $('#sidebar');
-            var sNo = slide.slideId+1;
+            var sNo = $('.side-parent').length+1;
             
-            sidebar.append('<div class="side-no">'+sNo+'.</div>');
-            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(sidebar);
+            parent = $('<div class="side-parent" id="parent'+slide.id+'"></div>').appendTo(sidebar);
+            parent.append('<div class="side-no">'+sNo+'.</div>');
+            slideDOM = $('<div class="side-slide" id="side'+slide.id+'"></div>').appendTo(parent);
             slideDOM.data('slide', slide);
             slideDOM.css({
                 height: slideDOM.width()/slide.ratio,
                 backgroundColor: slide.bgColor
             });
+            if( slide == activeSlide ){
+                Sidebar.activate(slide.id);
+            }
             slideDOM.click(function(){
-                $(this).data('slide').renderSlide();
+                var slide = $(this).data('slide');
+                slide.activate();
             });
             slide.renderSlideSide();
+        },
+        activate: function(slideId){
+            $('.side-slide.active').removeClass('active');
+            $('#side'+slideId).addClass('active');
+        },
+        removeSlide: function(slideId){
+            $('.side-parent#parent'+slideId).remove();
+            Sidebar.updateNo();
+        },
+        updateNo: function(){
+            $('.side-no').each(function(index){
+                $(this).text((index+1)+'.');
+            });
         }
     };
     
     var insertSlide = function(id){
         var newSlide = new Slide();
         newSlide.addElem({
-                type: 'title',
-                top: 5,
-                left: 5,
-                width: 90,
-                height: 13,
-                fontSize: 10,
-                text: 'New Slide',
-                style: {textAlign: 'center'}
-            });
+            type: 'title',
+            top: 5,
+            left: 5,
+            width: 90,
+            height: 13,
+            fontSize: 10,
+            text: 'New Slide',
+            style: {textAlign: 'center'}
+        });
+        newSlide.addElem({
+            type: 'text',
+            top: 25,
+            left: 5,
+            width: 90,
+            height: 70,
+            fontSize: 6,
+            text: 'Text',
+        });
         newSlide.renderSlide();
         Sidebar.addSlide(newSlide);
+    }
+    var removeSlide = function(id){
+        activeSlide.remove();
+        if( !allSlides.length ){
+            insertSlide();
+        }
     }
     
     var Slide = function(){
@@ -194,6 +250,21 @@ Show = new (function(){
             
             activeSlide = slide;
         },
+        activate: function(){
+            this.renderSlide();
+            Sidebar.activate(this.id);
+        },
+        remove: function(){
+            var index = allSlides.indexOf(this);
+            allSlides.splice(index, 1);
+            Sidebar.removeSlide(this.id);
+            if( allSlides.length > index ){
+                allSlides[index].activate();
+            }
+            else if( index > 0){
+                allSlides[index-1].activate();
+            }
+        },
         renderSlideSide: function(){
             var slide = this;
             if('elems' in slide){
@@ -240,6 +311,15 @@ Show = new (function(){
         this.elemDOM = null;
         if ('height' in elem)
             this.height = elem.height;
+            
+        this.animations = [
+            {
+                type: 'entry',
+                name: 'fade',
+                duration: 'normal',
+                timing: 'click'
+            }
+        ]
     }
     
     Elem.prototype = {
@@ -394,7 +474,7 @@ Show = new (function(){
                             top: elemY,
                             left: elemX,
                             width: 0,
-                            fontSize: 5,
+                            fontSize: 6,
                         }).renderElem().data('elem');
         $('#slides').bind('mousemove',resizeNewTextBox);
         $(window).one('mouseup',finishNewTextBox);
@@ -644,6 +724,45 @@ Show = new (function(){
             });
         }
     }
+    var elemFormat = function(mode, value){
+        var style = {}
+        switch (mode){
+            case 'bold':
+                if(value)
+                    style.fontWeight = 'bold';
+                else 
+                    style.fontWeight = 'normal';
+                break;
+            case 'italics':
+                if(value)
+                    style.fontStyle = 'italic';
+                else 
+                    style.fontStyle = 'normal';
+                break;
+            case 'underline':
+                if(value)
+                    style.textDecoration = 'underline';
+                else 
+                    style.textDecoration = 'none';
+                break;
+        }
+        if(activeElement){
+            activeElement.editElement({
+                style: style
+            });
+        }
+    }
+    var elemEdit = function(mode, value){
+        var changes = {}
+        switch ( mode ){
+            case 'fontsize':
+                changes.fontSize = value;
+                break;
+        }
+        if(activeElement){
+            activeElement.editElement(changes);
+        }
+    }
     var elemColor = function(mode, color){
         if(activeElement){
             var style = new Object();
@@ -652,6 +771,40 @@ Show = new (function(){
                 style: style
             });
         }
+    }
+    var elemAnimation = function(id, name){
+        if( activeElement ){
+            if( !('animations' in activeElement) ){
+                activeElement.animations = [];
+            }
+            if( name == 'none' ){
+                activeElement.animations = [];
+            }
+            else if( activeElement.animations.length ){
+                activeElement.animations[0].name = name;
+            }
+            else {
+                activeElement.animations[0] = {
+                    type: 'entry',
+                    name: name,
+                    duration: 'normal',
+                    timing: 'click'
+                }
+            }
+            Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+            Base.focusMenu('animation');
+        }
+    }
+    var elemEditAnimation = function(mode, value){
+        if( activeElement ){
+            if( ('animations' in activeElement) && activeElement.animations.length ){
+                activeElement.animations[0][mode] = value;
+            }
+        }
+    }
+    var elemAnimTiming = function(mode, onoff){
+        if(!onoff)return;
+        elemEditAnimation('timing', mode);
     }
     var removeElem = function(btnId){
         if(activeElement)
@@ -733,6 +886,113 @@ Show = new (function(){
         
         format.groups.push(group);
         
+        //Formating group
+        group = {
+            type: 'group',
+            id: 'textDecor',
+            multiple: true,
+            required: false,
+            items: [
+                {
+                    type: 'button',
+                    icon: 'fa-bold',
+                    id: 'bold',
+                    title: 'Bold',
+                    onoff: true,
+                    callback: elemFormat
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-italic',
+                    id: 'italics',
+                    title: 'Italics',
+                    onoff: true,
+                    callback: elemFormat
+                },
+                {
+                    type: 'button',
+                    icon: 'fa-underline',
+                    id: 'underline',
+                    title: 'Underline',
+                    onoff: true,
+                    callback: elemFormat
+                }
+            ]
+        };
+        if(('style' in elem)){
+            if( 'fontWeight' in elem.style && elem.style.fontWeight == 'bold')
+                group.items[0].currState = true;
+            else 
+                group.items[0].currState = false;
+                
+            if( 'fontStyle' in elem.style && elem.style.fontStyle == 'italic')
+                group.items[1].currState = true;
+            else 
+                group.items[1].currState = false;
+                
+            if( 'textDecoration' in elem.style && elem.style.textDecoration == 'underline')
+                group.items[2].currState = true;
+            else 
+                group.items[2].currState = false;
+        }
+        
+        format.groups.push(group);
+        
+        //Font size
+        group = {
+            type: 'group',
+            id: 'fontsize',
+            items: [
+                {
+                    type: 'list',
+                    id: 'fontsize',
+                    title: 'Font size',
+                    list: [
+                        {
+                            id: '4',
+                            value: '4'
+                        },
+                        {
+                            id: '6',
+                            value: '6'
+                        },
+                        {
+                            id: '8',
+                            value: '8'
+                        },
+                        {
+                            id: '10',
+                            value: '10'
+                        },
+                        {
+                            id: '12',
+                            value: '12'
+                        },
+                        {
+                            id: '14',
+                            value: '14'
+                        },
+                        {
+                            id: '16',
+                            value: '16'
+                        },
+                        {
+                            id: '18',
+                            value: '18'
+                        },
+                        {
+                            id: '20',
+                            value: '20'
+                        }
+                    ],
+                    callback: elemEdit
+                },
+            ]
+        }
+        group.items[0].currState = elem.fontSize;
+        
+        format.groups.push(group);
+        
         //Colors group
         group = {
             type: 'group',
@@ -789,85 +1049,187 @@ Show = new (function(){
         };
         format.groups.push(group);
         
-        return [format];
-        /*
-        return [
-            {
-                type: 'main',
-                id: 'format',
-                title: 'Format', //Name of menu
-                icon: 'fa-format', //Font awesome icon name
-                groups: [
+        /*var wordArt = {
+            type: 'main',
+            id: 'wordart',
+            title: 'Word Art', //Name of menu
+            icon: 'fa-font', //Font awesome icon name
+            groups: []
+        };
+        
+        group = {
+            type: 'group',
+            id: 'remove',
+            items: [
+                {
+                    type: 'list',
+                    id: 'textShadow',
+                    title: 'Font effect',
+                    list: [
+                        {
+                            id: 'none',
+                            value: '<span style="text-shadow: none">No Effect</span>'
+                        },
+                        {
+                            id: 'blue1',
+                            value: '<span style="text-shadow: 1px 1px blue">Blue Shadow</span>'
+                        },
+                        {
+                            id: 'blue2',
+                            value: '<span style="text-shadow: 2px 2px 2px blue">Blue Shadow</span>'
+                        }
+                    ],
+                    callback: console.log
+                }
+            ]
+        };
+        wordArt.groups.push(group);
+        */
+        
+        var animation = {
+            type: 'main',
+            id: 'animation',
+            title: 'Animation', //Name of menu
+            icon: 'fa-magic', //Font awesome icon name
+            groups: []
+        };
+        
+        group = {
+            type: 'group',
+            id: 'animationName',
+            items: [
+                {
+                    type: 'list',
+                    id: 'animName',
+                    title: 'Animation',
+                    list: [
+                        {
+                            id: 'none',
+                            value: 'None'
+                        }
+                    ],
+                    callback: elemAnimation
+                }
+            ]
+        };
+        
+        for(var i in allAnims){
+            group.items[0].list.push({
+                id: i,
+                value: allAnims[i].name
+            });
+        }
+        
+        if( ('animations' in elem) && (elem.animations.length) ){
+            group.items[0].currState = elem.animations[0].name;
+        }
+        else {
+            group.items[0].currState = 'none';
+        }
+        
+        animation.groups.push(group);
+        
+        if( group.items[0].currState != 'none' ) {
+            var anim = allAnims[group.items[0].currState];
+            if( !('duration' in anim && anim.duration == false) ){
+                group = {
+                    type: 'group',
+                    id: 'animSpeed',
+                    items: [
+                        {
+                            type: 'list',
+                            id: 'duration',
+                            title: 'Animation speed',
+                            list: [
+                                {
+                                    id: 'slow',
+                                    value: 'Slow'
+                                },
+                                {
+                                    id: 'normal',
+                                    value: 'Normal'
+                                },
+                                {
+                                    id: 'fast',
+                                    value: 'Fast'
+                                },
+                                {
+                                    id: 300,
+                                    value: '300 ms'
+                                },
+                                {
+                                    id: 600,
+                                    value: '600 ms'
+                                },
+                                {
+                                    id: 900,
+                                    value: '900 ms'
+                                },
+                                {
+                                    id: 1200,
+                                    value: '1200 ms'
+                                },
+                                {
+                                    id: 1500,
+                                    value: '1500 ms'
+                                }
+                            ],
+                            callback: elemEditAnimation,
+                            currState: elem.animations[0].duration
+                        }
+                    ]
+                };
+                animation.groups.push(group);
+            }
+            
+            group = {
+                type: 'group',
+                id: 'animTiming',
+                multiple: false,
+                required: true,
+                items: [
                     {
-                        type: 'group',
-                        id: 'align',
-                        multiple: false,
-                        items: [
-                            {
-                                type: 'button',
-                                icon: 'fa-align-left',
-                                id: 'left',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-align-center',
-                                id: 'center',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-align-right',
-                                id: 'right',
-                                onoff: true,
-                                callback: elemAlign
-                            },
-                        ]
+                        type: 'button',
+                        id: 'click',
+                        icon: 'fa-stop',
+                        title: 'Wait for user input',
+                        onoff: true,
+                        callback: elemAnimTiming,
                     },
                     {
-                        type: 'group',
-                        id: 'colors',
-                        items: [
-                            {
-                                type: 'color',
-                                icon: 'fa-circle',
-                                id: 'color',
-                                currState: '#000000',
-                                text: 'F',
-                                callback: elemColor
-                            },
-                            {
-                                type: 'color',
-                                icon: 'fa-circle',
-                                id: 'background-color',
-                                currState: '#ffffff',
-                                text: 'B',
-                                callback: elemColor
-                            },
-                            {
-                                type: 'list',
-                                //icon: 'fa-circle',
-                                id: 'list',
-                                title: 'List',
-                                list: [
-                                    {
-                                        id: 'da',
-                                        value: 'Hello'
-                                    },
-                                    {
-                                        id: 'da1',
-                                        value: 'Hello2'
-                                    }
-                                ],
-                                callback: log
-                            },
-                        ]
+                        type: 'button',
+                        id: 'wait',
+                        icon: 'fa-clock-o',
+                        title: 'After previous animation',
+                        onoff: true,
+                        callback: elemAnimTiming,
+                    },
+                    {
+                        type: 'button',
+                        id: 'do',
+                        icon: 'fa-play',
+                        title: 'With previous animation',
+                        onoff: true,
+                        callback: elemAnimTiming,
                     }
                 ]
-            },
-        ];*/
+            };
+            switch ( elem.animations[0].timing ){
+                case 'click':
+                    group.items[0].currState = true;
+                    break;
+                case 'wait':
+                    group.items[1].currState = true;
+                    break;
+                case 'do':
+                    group.items[2].currState = true;
+                    break;
+            }
+            animation.groups.push(group);
+        }
+        
+        return [format, animation];
+        
     }
     var moveInit = function(ev){
         if(ev.which != 1)return;
@@ -968,6 +1330,43 @@ Show = new (function(){
     }
     
     /*
+     * Available animations
+        id: {
+            name: String,   //Human readable name for animation
+            execute: Function(object),  //Accepts object and do animation. On completion call SlideShow.finishAnim
+            duration: Boolean,  //Is duration applicable for animation, default true
+        }
+    */
+    
+    allAnims = {
+        'appear': {
+            name: 'Appear',
+            duration: false,
+            execute: function(object){
+                object.elem.elemDOM.show();
+                SlideShow.finishAnim();
+            }
+        },
+        'ease': {
+            name: 'Ease',
+            execute: function(object){
+                object.elem.elemDOM.show(object.duration, SlideShow.finishAnim);
+            }
+        },
+        'fade': {
+            name: 'Fade',
+            execute: function(object){
+                object.elem.elemDOM.fadeIn(object.duration, SlideShow.finishAnim);
+            }
+        },
+        'slidedown': {
+            name: 'Slide Down',
+            execute: function(object){
+                object.elem.elemDOM.slideDown(object.duration, SlideShow.finishAnim);
+            }
+        },
+    }
+    /*
      * for slideshow
      */
     Slide.prototype.renderSlideShow = function(){
@@ -1000,14 +1399,27 @@ Show = new (function(){
             'boxShadow': 'none'
         });
         
+        SlideShow.animQueue = [];
         if('elems' in slide){
             var i;
             for(i in slide.elems){
                 slide.elems[i].renderElemShow();
+                
+                if ( ('animations' in slide.elems[i])
+                    && (slide.elems[i].animations.length)
+                    && (slide.elems[i].animations[0].type == 'entry') ) {
+                        
+                    var anim = Object.create( slide.elems[i].animations[0] );
+                    anim.elem = slide.elems[i];
+                    SlideShow.animQueue.push(anim);
+                    
+                    slide.elems[i].elemDOM.hide();
+                }
             }
         }
         
         activeSlide = slide;
+        SlideShow.finishAnim();
     }
     Elem.prototype.renderElemShow = function(){
         /* 
@@ -1048,10 +1460,13 @@ Show = new (function(){
         }
     }
     
-    var currSlideShowIndex;
-    var SlideShow = {
-        init: function(){
-            //if($('#sidebar').length)
+    var SlideShow = new (function(){
+        var currSlideShowIndex;
+        var endSlide;
+        this.animQueue;
+        this.init = function(){
+            endSlide = 0;
+            
             $('#sidebar').hide();
             $('#slides').css({
                 'width': '100%',
@@ -1067,11 +1482,44 @@ Show = new (function(){
             
             activeSlide.renderSlideShow();
             var endBtn = $('<div class="end-pres"><i class="fa">X</i></div>').appendTo('#interface');
-            endBtn.click(SlideShow.end);
-            $('#slides').bind('click', SlideShow.nextSlide);
-            $(window).bind('keydown', SlideShow.nextSlide);
-        },
-        nextSlide: function(ev){
+            endBtn.click(function(){
+                SlideShow.end(true);
+            });
+            $('#slides').bind('click', SlideShow.next);
+            $(window).bind('keydown', SlideShow.next);
+        };
+        
+        var runnigAnims;
+        this.finishAnim = function(){
+            --runnigAnims;
+            if( runnigAnims < 0 )
+                runnigAnims = 0;
+            if( !runnigAnims && SlideShow.animQueue.length
+                && (SlideShow.animQueue[0].timing == 'wait' || SlideShow.animQueue[0].timing == 'do' ) ) {
+                SlideShow.next();
+            }
+        }
+        
+        this.next = function(ev){
+            if( SlideShow.animQueue.length ){
+                runnigAnims = 0;
+                var anim;
+                do{
+                    ++runnigAnims;
+                    anim = SlideShow.animQueue.shift();
+                    switch( anim.type ){
+                        case 'entry':
+                            allAnims[anim.name].execute(anim);
+                            break;
+                    }
+                }while( SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'do' );
+            }
+            else {
+                SlideShow.nextSlide(ev);
+            }
+        }
+        
+        this.nextSlide = function(ev){
             currSlideShowIndex++;
             if( currSlideShowIndex < allSlides.length ){
                 allSlides[currSlideShowIndex].renderSlideShow();
@@ -1080,17 +1528,25 @@ Show = new (function(){
             else {
                 SlideShow.end();
             }
-        },
-        resize: function(){
+        };
+        
+        this.resize = function(){
             if(activeSlide)
                 activeSlide.renderSlideShow();
-        },
-        end: function(){
+        };
+        
+        this.end = function(force){
+            $('#slides').empty();
+            if(endSlide == 0 && !force){
+                $('#slides').append('<div class="pres-end-mes">Click once more to exit the show</div>');
+                endSlide = 1;
+                return;
+            }
             Show.resize = resizeEditor;
             Base.showMenu();
             Base.exitFullscreen();
-            $('#slides').unbind('click', SlideShow.nextSlide);
-            $(window).unbind('keydown', SlideShow.nextSlide);
+            $('#slides').unbind('click', SlideShow.next);
+            $(window).unbind('keydown', SlideShow.next);
             $('#slides').css({
                 'width': '80%',
                 'backgroundColor': ''
@@ -1099,12 +1555,15 @@ Show = new (function(){
             activeSlide.renderSlide();
             Sidebar.init();
         }
-    }
+    })();
     
-    var slideshow = function(){
+    var slideshow = function(mode){
         Show.resize = SlideShow.resize;
         Base.hideMenu(true);
         Base.fullscreen();
+        if( mode == 'begin' ){
+            activeSlide = allSlides[0];
+        }
         SlideShow.init();
     }
     /*
@@ -1146,6 +1605,13 @@ Show = new (function(){
                             title: 'Slide',
                             callback: insertSlide
                         },
+                        {
+                            type: 'button',
+                            icon: 'fa-times',
+                            id: 'remove-slide',
+                            title: 'Remove Slide',
+                            callback: removeSlide
+                        },
                     ]
                 }
             ]
@@ -1158,12 +1624,19 @@ Show = new (function(){
             groups: [
                 {
                     type: 'group',
-                    id: 'adsf',
+                    id: 'slideShow',
                     items: [
                         {
                             type: 'button',
                             icon: 'fa-desktop',
-                            id: 'insert-text',
+                            id: 'begin',
+                            title: 'Start Slideshow from begining',
+                            callback: slideshow
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-desktop',
+                            id: 'current',
                             title: 'Start Slideshow',
                             callback: slideshow
                         },
