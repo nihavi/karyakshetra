@@ -515,7 +515,7 @@ Base = new (function(){
                                 if('list' in item) {
                                 
                                     menuItem.empty();
-                                    menuItem.addClass('select btn-text btn-icon');
+                                    menuItem.addClass('select btn-text btn-longtext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
                                     for(var i = 0; i<item.list.length; i++) {
                                         

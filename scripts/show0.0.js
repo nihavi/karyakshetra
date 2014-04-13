@@ -44,7 +44,7 @@ Show = new (function(){
             top: 45,
             left: 5,
             width: 90,
-            height: 7,
+            height: 8,
             fontSize: 6,
             text: 'Subtitle',
             style: {
