@@ -388,22 +388,34 @@ Base = new (function(){
         
     };
     
+    var activeMenu;
+    
     this.updateMenu = function(menuObject){
         //Will be called by module with menuObject
         //Will merge defaultMenus and menuObject and create menu
+        var oldActiveMenu = activeMenu;
         var menu = defaultMenus;
         if ( menuObject ){
             menu = menu.concat(menuObject);
         }
         createMenu(menu);
-        this.focusMenu('file');
+        if( !this.focusMenu(oldActiveMenu) )
+            this.focusMenu('file');
     };
     
     this.focusMenu = function(id){
-        //Will nbe called by module with id of a menu to activate that menu
+        //Will be called by module with id of a menu to activate that menu
         if (id && id in menuMeta){
             activateMenu.bind($('#'+menuMeta[id]))();
+            return true;
         }
+        else {
+            return false;
+        }
+    }
+    
+    this.getFocusMenu = function(){
+        return activeMenu;
     }
     
     var createMenu = function(menuObject){
@@ -448,6 +460,7 @@ Base = new (function(){
         //Onclick event handler on main menu items
         var id = $(this).attr('id');
         var menu = menus[id];
+        activeMenu = menu.id;
         
         //Change classes of item in main menu
         $('#mainMenu .active').removeClass('active');
