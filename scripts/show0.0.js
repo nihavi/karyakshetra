@@ -276,8 +276,13 @@ Show = new (function(){
         },
         addElem: function(obj){
             var elem = new Elem(obj);
-            elem.id = 'elem'+this.elemId;
-            this.elemId++;
+            if( obj.id ){
+                elem.id = obj.id;
+            }
+            else {
+                elem.id = 'elem'+this.elemId;
+                this.elemId++;
+            }
             this.elems[elem.id] = elem;
             elem.parent = this;
             return elem;
@@ -311,15 +316,10 @@ Show = new (function(){
         this.elemDOM = null;
         if ('height' in elem)
             this.height = elem.height;
-            
-        this.animations = [
-            {
-                type: 'entry',
-                name: 'fade',
-                duration: 'normal',
-                timing: 'click'
-            }
-        ]
+        
+        if( 'animations' in elem ){
+            this.animations = elem.animations;
+        }
     }
     
     Elem.prototype = {
@@ -360,8 +360,12 @@ Show = new (function(){
                     elemText.blur(textBlur);
                     elemText.bind('keypress keyup', function(ev){
                         elem = $(this).closest('.elem').data('elem');
-                        elem.text = $(this).html();
-                        elem.renderElemSide(elem.parent.id);
+                        if( elem.text != $(this).html() ){
+                            startOp( 'ct '+ elem.parent.slideId +' '+ elem.id +' '+ elem.text );
+                            elem.text = $(this).html()
+                            endOp( 'ct '+ elem.parent.slideId +' '+ elem.id +' '+ elem.text );
+                            elem.renderElemSide(elem.parent.id);
+                        }
                     });
                     
                     //To move
@@ -443,23 +447,52 @@ Show = new (function(){
         },
         remove: function(){
             $('#'+this.id).remove();
-            $('#'+activeSlide.id+this.id).remove();
-            delete activeSlide.elems[activeElement.id];
-            activeElement.blur();
-            activeElement = null;
+            $('#'+this.parent.id+this.id).remove();
+            delete activeSlide.elems[this.id];
+            this.blur();
+            if( activeElement == this )
+                activeElement = null;
         },
         focus: function(){
             Base.updateMenu(defaultMenus.concat(formatMenu(this)));
             Base.focusMenu('format');
         },
         blur: function(){
-            activeElement.elemDOM.removeClass('active');
-            activeElement.elemDOM.find('.elem-text').blur();
-            activeElement = null;
+            this.elemDOM.removeClass('active');
+            this.elemDOM.find('.elem-text').blur();
+            if( activeElement == this )
+                activeElement = null;
             Base.updateMenu(defaultMenus);
+        },
+        purify: function(){
+            //Returns pure object without cyclic references
+            /*
+             * removes
+             * - parent,
+             * - elemDOM
+             */
+            var obj = {};
+            for( var i in this ){
+                if( i != 'parent' && i != 'elemDOM' && this.hasOwnProperty(i) ){
+                    obj[i] = clone(this[i]);
+                }
+            }
+            return obj;
         }
     }
     
+    var clone = function(obj){
+        if(obj == null || typeof(obj) != 'object')
+            return obj;
+        
+        var temp = {}; // changed
+
+        for(var key in obj)
+            if( obj.hasOwnProperty(key) )
+                temp[key] = clone(obj[key]);
+        return temp;
+    }
+
     var activeElement = null;
     var createTextBox = function(ev){
         if(ev.which != 1)return;
@@ -508,6 +541,8 @@ Show = new (function(){
             width: elemX - activeElement.left,
         }).elemDOM.find('.elem-text').focus();
         $('#slides').unbind('mousemove',resizeNewTextBox);
+        startOp('de '+ activeElement.parent.slideId +' '+ activeElement.id);
+        endOp('cr '+ activeElement.parent.slideId +' '+ JSON.stringify(activeElement.purify()));
     }
     
     var textFocus = function(ev){
@@ -536,6 +571,117 @@ Show = new (function(){
     };
     
     /*
+     * Undo/redo
+     */
+    /*
+     * opCodes ( separated by -;- )
+     * sw|sh|st|sl [slideId] [elemId] [width]    - set width|height|top|left
+     * de [slideId] [elemId]    - Delete element
+     * cr [slideId] [elemJSON]  - Create element
+     * ct [slideId] [elemId]    - Change text
+     */
+    var currOp;
+    var startOp = function(state){
+        currOp = {};
+        currOp.init = state;
+    }
+    var endOp = function(state){
+        currOp.end = state;
+        Base.addOp(currOp.init, currOp.end);
+    }
+    var getSlide = function(slideId){
+        for( var i = 0; i<allSlides.length; i++ ){
+            if( allSlides[i].slideId == slideId ){
+                return allSlides[i];
+            }
+        }
+    }
+    var getElem = function(slideId, elemId){
+        var slide = getSlide(slideId);
+        if( elemId )
+            if( 'elems' in slide )
+                return slide.elems[elemId];
+            else return undefined;
+        else 
+            return undefined;
+    };
+    this.performOp = function(command){
+        //For now only one command
+        
+        var ops = command.split('-;-');
+        var pastState = '';
+        var newState = '';
+        console.log(command);
+        for( var i = 0; i<ops.length; i++ ){
+            if( i ){
+                pastState += '-;-';
+                newState += '-;-';
+            }
+            op = ops[i].split(' ');
+            console.log(op);
+            switch( op[0] ){
+                case 'sw':
+                    var elem = getElem(op[1], op[2]);
+                    pastState += 'sw '+ op[1] +' '+ op[2] +' '+ elem.width;
+                    elem.editElement({
+                        width: parseInt(op[3])
+                    });
+                    newState += op.join(' ');
+                    break;
+                case 'sh':
+                    var elem = getElem(op[1], op[2]);
+                    pastState += 'sh '+ op[1] +' '+ op[2] +' '+ elem.height;
+                    elem.editElement({
+                        height: parseInt(op[3])
+                    });
+                    newState += op.join(' ');
+                    break;
+                case 'st':
+                    var elem = getElem(op[1], op[2]);
+                    pastState += 'st '+ op[1] +' '+ op[2] +' '+ elem.top;
+                    elem.editElement({
+                        top: parseInt(op[3])
+                    });
+                    newState += op.join(' ');
+                    break;
+                case 'sl':
+                    var elem = getElem(op[1], op[2]);
+                    pastState += 'sl '+ op[1] +' '+ op[2] +' '+ elem.left;
+                    elem.editElement({
+                        left: parseInt(op[3])
+                    });
+                    newState += op.join(' ');
+                    break;
+                case 'cr':
+                    var slide = getSlide(op[1]);
+                    obj = JSON.parse(op.slice(2).join(' '));
+                    slide.addElem(obj);
+                    slide.renderSlide();
+                    pastState = 'de ' + slide.slideId +' '+ obj.id;
+                    newState = op.join(' ');
+                    break;
+                case 'de':
+                    var elem = getElem(op[1], op[2]);
+                    pastState = 'cr '+ elem.parent.slideId +' '+ JSON.stringify(elem.purify())
+                    elem.remove();
+                    newState = op.join(' ');
+                    break;
+                case 'ct':
+                    var elem = getElem(op[1], op[2]);
+                    pastState = 'ct '+ elem.parent.slideId +' '+ elem.id +' '+elem.text;
+                    elem.text = op.slice(3).join(' ');
+                    elem.renderElem();
+                    newState = op.join(' ');
+                    break;
+            }
+        }
+        console.log(pastState, newState);
+        return {
+            pastState: pastState,
+            newState: newState
+        }
+    }
+    /*
      * Resize mechanisms 
      */
     var resizeRightInit = function(ev){
@@ -545,10 +691,12 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        startOp('sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width);
         $('#slides').bind('mousemove',resizeRightMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            endOp('sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width);
         });
         ev.preventDefault();
     }
@@ -570,10 +718,18 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sw ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+        op += '-;-';
+        op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+        startOp(op);
         $('#slides').bind('mousemove',resizeLeftMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sw ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+            op += '-;-';
+            op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -596,10 +752,18 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+        op += '-;-';
+        op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+        startOp(op);
         $('#slides').bind('mousemove',resizeTopMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+            op += '-;-';
+            op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -625,10 +789,12 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        startOp('sh '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height);
         $('#slides').bind('mousemove',resizeBottomMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            endOp('sh '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height);
         });
         ev.preventDefault();
     }
@@ -650,12 +816,24 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+        op += '-;-';
+        op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+        op += '-;-';
+        op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+        startOp(op);
         $('#slides').bind('mousemove',resizeTopMove);
         $('#slides').bind('mousemove',resizeRightMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+            op += '-;-';
+            op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+            op += '-;-';
+            op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -667,12 +845,28 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+        op += '-;-';
+        op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+        op += '-;-';
+        op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+        op += '-;-';
+        op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+        startOp(op);
         $('#slides').bind('mousemove',resizeTopMove);
         $('#slides').bind('mousemove',resizeLeftMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeTopMove);
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+            op += '-;-';
+            op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+            op += '-;-';
+            op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+            op += '-;-';
+            op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -684,12 +878,24 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+        op += '-;-';
+        op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+        op += '-;-';
+        op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+        startOp(op);
         $('#slides').bind('mousemove',resizeBottomMove);
         $('#slides').bind('mousemove',resizeLeftMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             $('#slides').unbind('mousemove',resizeLeftMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+            op += '-;-';
+            op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+            op += '-;-';
+            op += 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -701,12 +907,20 @@ Show = new (function(){
         }
         var elem = $(this).closest('.elem');
         activeElement = elem.data('elem');
+        var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+        op += '-;-';
+        op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+        startOp(op);
         $('#slides').bind('mousemove',resizeBottomMove);
         $('#slides').bind('mousemove',resizeRightMove);
         $(window).one('mouseup', function(){
             $('#slides').unbind('mousemove',resizeBottomMove);
             $('#slides').unbind('mousemove',resizeRightMove);
             activeElement.elemDOM.css('overflow', 'hidden');
+            var op = 'sh ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.height;
+            op += '-;-';
+            op += 'sw '+activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.width;
+            endOp(op);
         });
         ev.preventDefault();
     }
@@ -807,8 +1021,11 @@ Show = new (function(){
         elemEditAnimation('timing', mode);
     }
     var removeElem = function(btnId){
-        if(activeElement)
+        if(activeElement){
+            startOp('cr '+ activeElement.parent.slideId +' '+ JSON.stringify(activeElement.purify()));
+            endOp('de '+ activeElement.parent.slideId +' '+ activeElement.id);
             activeElement.remove();
+        }
     }
     var log = function(a, b){
         console.log(a, b);
@@ -1270,6 +1487,11 @@ Show = new (function(){
             x: ev.clientX
         }
         //activeElement.elemDOM.css('overflow', 'visible');
+        var op = 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+        op += '-;-';
+        op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+        startOp(op);
+        
         $('#slides').bind('mousemove', moveElement);
         activeElement.focus();
         
@@ -1287,7 +1509,10 @@ Show = new (function(){
                 else {
                     delete activeElement.origMousePos;
                     delete activeElement.lastMousePos;
-                    //activeElement = null;
+                    var op = 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+                    op += '-;-';
+                    op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+                    endOp(op);
                 }
             });
         }
@@ -1303,7 +1528,10 @@ Show = new (function(){
                 else {
                     delete activeElement.origMousePos;
                     delete activeElement.lastMousePos;
-                    //activeElement = null;
+                    var op = 'sl ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.left;
+                    op += '-;-';
+                    op += 'st ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.top;
+                    endOp(op);
                 }
             });
         }
