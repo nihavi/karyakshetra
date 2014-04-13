@@ -62,6 +62,289 @@
 */
 
 Base = new (function(){
+    /*
+     * Base backend
+     */
+    
+    /*
+     * File save mechanism
+     * 
+     * Uses global variable "baseUrl"
+     */
+    var currFileId;
+    
+    var saveFile = function(filedata, filename){
+        var data = {
+            file: filedata,
+        }
+        var url;
+        if( currFileId ){
+            url = baseUrl + 'save/file';
+            data.id = currFileId;
+        }
+        else {
+            url = baseUrl + 'save/newfile';
+            if( filename )
+                data.filename = filename;
+            else
+                data.filename = 'New file';
+        }
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            success: function(data){
+                currFileId = data;
+                console.log('File saved with id '+data);
+            },
+            error: function(){
+                console.log('File not saved');
+            }
+        });
+    }
+    
+    var isNewFile = function(){
+        if( currFileId )
+            return false;
+        else 
+            return true;
+    }
+    
+    
+    /*
+     * opQueue implementation
+     */
+    var exQueue = new Array();
+    var newQueue = new Array();
+    var exPointer = 0;
+    
+    this.addOp = function(pastState, newState){
+        
+        /*
+         * pastState - previous state to be restored on undo
+         * newState - next state to be rendered on viewer
+         * 
+         * Will not return anything
+         */
+        exQueue[exPointer] = pastState;
+        exPointer++;
+        exQueue[exPointer] = null;
+        newQueue.push(newState);
+    };
+    
+    this.undo = function(){
+        /*
+         * if undo is possible,
+         * This function will call module's 'performOp' function with pastState
+         * Assuming module is an object with performOp function defined
+         * 
+         * module.performOp should return pastState and newState in a object 
+         * with properties of same names
+         * 
+         * Will not return anything
+         */
+        if(exPointer > 0){
+            var op = module.performOp(exQueue[exPointer-1]);
+            if(exQueue.length == exPointer+1)
+                exQueue[exPointer+1] = null;
+            exQueue[exPointer] = op.pastState;
+            exPointer--;
+            exQueue[exPointer] = null;
+            newQueue.push(op.newState);
+        }
+    }
+    this.redo = function(){
+        /*
+         * if redo is possible,
+         * This function will call module's 'performOp' function with newState
+         * Assuming module is an object with performOp function defined
+         * 
+         * module.performOp should return pastState and newState in a object 
+         * with properties of same names
+         * 
+         * Will not return anything
+         */
+        if(exQueue[exPointer+1] != null){
+            var op = module.performOp(exQueue[exPointer+1]);
+            exQueue[exPointer] = op.pastState;
+            exPointer++;
+            exQueue[exPointer] = null;
+            newQueue.push(op.newState);
+        }
+    }
+    
+    
+    /*
+     * Keyboard shortcuts
+     *
+    
+    Prototype of shortcut object
+    {
+        ctrl: Boolean,
+        shift: Boolean,
+        alt: Boolean,
+        char: String,
+        callback: Function()
+    }
+    
+    */
+    
+    var registeredShortcuts = new Object();
+    
+    this.getShortcuts = function(){
+        /*
+         * Returns object containing all registered shortcuts
+         */
+        return registeredShortcuts;
+    }
+    
+    this.addShortcuts = function( shortcuts ){
+        /*
+         * Adds key shortcuts
+         * 
+         * Expects an Array of Objects as argument.
+         * Object is defined as followed
+        
+        {
+            ctrl: Boolean,
+            shift: Boolean,
+            alt: Boolean,
+            char: String,
+            callback: Function()
+        }
+        
+         */
+        var i;
+        for ( i = 0; i<shortcuts.length; i++ ){
+            var short = shortcuts[i];
+            if( short.char ){
+                short.char = short.char.charAt(0).toUpperCase();
+                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
+                    if( short.ctrl || short.shift || short.alt ){
+                        //Create key binding string
+                        var reg = '';
+                        if( short.ctrl )reg += 'ctrl+';
+                        if( short.shift )reg += 'shift+';
+                        if( short.alt )reg += 'alt+';
+                        reg += short.char;
+                        //If not already registered, register.
+                        if( !(reg in registeredShortcuts)){
+                            registeredShortcuts[reg] = short.callback;
+                        }
+                        else {
+                            //Error: Shortcut already registered
+                        }
+                    }
+                    else {
+                        //Error: Invalid controll key
+                    }
+                }
+                else {
+                    //Error: Invalid character
+                }
+            }
+            else {
+                //Error: Invalid character
+            }
+        }
+    };
+    
+    this.removeShortcuts = function( shortcuts ){
+        /*
+         * Removes key shortcuts
+         * 
+         * Expects an Array of Objects as argument.
+         * Object is defined as followed
+        
+        {
+            ctrl: Boolean,
+            shift: Boolean,
+            alt: Boolean,
+            char: String,
+        }
+        
+         */
+        var i;
+        for ( i = 0; i<shortcuts.length; i++ ){
+            var short = shortcuts[i];
+            if( short.char ){
+                short.char = short.char.charAt(0).toUpperCase();
+                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
+                    if( short.ctrl || short.shift || short.alt ){
+                        //Create key binding string
+                        var reg = '';
+                        if( short.ctrl )reg += 'ctrl+';
+                        if( short.shift )reg += 'shift+';
+                        if( short.alt )reg += 'alt+';
+                        reg += short.char;
+                        //If registered, remove.
+                        if( (reg in registeredShortcuts)){
+                            if(delete registeredShortcuts[reg]){
+                                registeredShortcuts[reg] = null;
+                            }
+                        }
+                        else {
+                            //Error: Shortcut not registered
+                        }
+                    }
+                    else {
+                        //Error: Invalid controll key
+                    }
+                }
+                else {
+                    //Error: Invalid character
+                }
+            }
+            else {
+                //Error: Invalid character
+            }
+        }
+    };
+    
+    var handleKeyShortcuts = function(ev){
+        var comb = '';
+        if( ev.ctrlKey )comb += 'ctrl+';
+        if( ev.shiftKey )comb += 'shift+';
+        if( ev.altKey )comb += 'alt+';
+        comb += String.fromCharCode(ev.which);
+                
+        if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
+            registeredShortcuts[comb]();
+            ev.preventDefault();
+        }
+    }
+    
+    //Add event listener for key shortcuts
+    $(window).keydown(handleKeyShortcuts);
+    
+    //Add common shortcuts
+    this.addShortcuts([
+        {
+            ctrl: true,
+            char: 'Z',
+            callback: this.undo
+        },
+        {
+            ctrl: true,
+            shift: true,
+            char: 'Z',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'Y',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'R',
+            callback: this.redo
+        }
+    ]);
+    
+    /*
+     * Base Frontend
+     */
     var defaultPalette = [
         '000000',
         '434343',
@@ -151,6 +434,22 @@ Base = new (function(){
     var log = function(id,t){
         console.log(id,t);
     }
+    
+    var saveFrontEnd = function(){
+        if( 'getFile' in module ){
+            var data = module.getFile();
+            if( isNewFile() ){
+                var filename = prompt("Enter file name");
+                saveFile(data, filename);
+            }
+            else {
+                saveFile(data);
+            }
+        }
+        else {
+            alert('File save not supported');
+        }
+    }
     var defaultMenus = [
         {
             type: 'main',
@@ -166,7 +465,7 @@ Base = new (function(){
                             type: 'button',
                             icon: 'fa-save',
                             title: 'Save',
-                            callback: log
+                            callback: saveFrontEnd
                         }
                     ]
                 }
@@ -838,237 +1137,6 @@ Base = new (function(){
             tooltip.bind( 'click', remove_tooltip );
         });
     }
-
-    /*
-     * opQueue implementation
-     */
-    var exQueue = new Array();
-    var newQueue = new Array();
-    var exPointer = 0;
-    
-    this.addOp = function(pastState, newState){
-        
-        /*
-         * pastState - previous state to be restored on undo
-         * newState - next state to be rendered on viewer
-         * 
-         * Will not return anything
-         */
-        exQueue[exPointer] = pastState;
-        exPointer++;
-        exQueue[exPointer] = null;
-        newQueue.push(newState);
-    };
-    
-    this.undo = function(){
-        /*
-         * if undo is possible,
-         * This function will call module's 'performOp' function with pastState
-         * Assuming module is an object with performOp function defined
-         * 
-         * module.performOp should return pastState and newState in a object 
-         * with properties of same names
-         * 
-         * Will not return anything
-         */
-        if(exPointer > 0){
-            var op = module.performOp(exQueue[exPointer-1]);
-            if(exQueue.length == exPointer+1)
-                exQueue[exPointer+1] = null;
-            exQueue[exPointer] = op.pastState;
-            exPointer--;
-            exQueue[exPointer] = null;
-            newQueue.push(op.newState);
-        }
-    }
-    this.redo = function(){
-        /*
-         * if redo is possible,
-         * This function will call module's 'performOp' function with newState
-         * Assuming module is an object with performOp function defined
-         * 
-         * module.performOp should return pastState and newState in a object 
-         * with properties of same names
-         * 
-         * Will not return anything
-         */
-        if(exQueue[exPointer+1] != null){
-            var op = module.performOp(exQueue[exPointer+1]);
-            exQueue[exPointer] = op.pastState;
-            exPointer++;
-            exQueue[exPointer] = null;
-            newQueue.push(op.newState);
-        }
-    }
-    
-    
-    /*
-     * Keyboard shortcuts
-     *
-    
-    Prototype of shortcut object
-    {
-        ctrl: Boolean,
-        shift: Boolean,
-        alt: Boolean,
-        char: String,
-        callback: Function()
-    }
-    
-    */
-    
-    var registeredShortcuts = new Object();
-    
-    this.getShortcuts = function(){
-        /*
-         * Returns object containing all registered shortcuts
-         */
-        return registeredShortcuts;
-    }
-    
-    this.addShortcuts = function( shortcuts ){
-        /*
-         * Adds key shortcuts
-         * 
-         * Expects an Array of Objects as argument.
-         * Object is defined as followed
-        
-        {
-            ctrl: Boolean,
-            shift: Boolean,
-            alt: Boolean,
-            char: String,
-            callback: Function()
-        }
-        
-         */
-        var i;
-        for ( i = 0; i<shortcuts.length; i++ ){
-            var short = shortcuts[i];
-            if( short.char ){
-                short.char = short.char.charAt(0).toUpperCase();
-                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
-                    if( short.ctrl || short.shift || short.alt ){
-                        //Create key binding string
-                        var reg = '';
-                        if( short.ctrl )reg += 'ctrl+';
-                        if( short.shift )reg += 'shift+';
-                        if( short.alt )reg += 'alt+';
-                        reg += short.char;
-                        //If not already registered, register.
-                        if( !(reg in registeredShortcuts)){
-                            registeredShortcuts[reg] = short.callback;
-                        }
-                        else {
-                            //Error: Shortcut already registered
-                        }
-                    }
-                    else {
-                        //Error: Invalid controll key
-                    }
-                }
-                else {
-                    //Error: Invalid character
-                }
-            }
-            else {
-                //Error: Invalid character
-            }
-        }
-    };
-    
-    this.removeShortcuts = function( shortcuts ){
-        /*
-         * Removes key shortcuts
-         * 
-         * Expects an Array of Objects as argument.
-         * Object is defined as followed
-        
-        {
-            ctrl: Boolean,
-            shift: Boolean,
-            alt: Boolean,
-            char: String,
-        }
-        
-         */
-        var i;
-        for ( i = 0; i<shortcuts.length; i++ ){
-            var short = shortcuts[i];
-            if( short.char ){
-                short.char = short.char.charAt(0).toUpperCase();
-                if((short.char >= 'A' && short.char <= 'Z') || (short.char > '0' && short.char < '9')){
-                    if( short.ctrl || short.shift || short.alt ){
-                        //Create key binding string
-                        var reg = '';
-                        if( short.ctrl )reg += 'ctrl+';
-                        if( short.shift )reg += 'shift+';
-                        if( short.alt )reg += 'alt+';
-                        reg += short.char;
-                        //If registered, remove.
-                        if( (reg in registeredShortcuts)){
-                            if(delete registeredShortcuts[reg]){
-                                registeredShortcuts[reg] = null;
-                            }
-                        }
-                        else {
-                            //Error: Shortcut not registered
-                        }
-                    }
-                    else {
-                        //Error: Invalid controll key
-                    }
-                }
-                else {
-                    //Error: Invalid character
-                }
-            }
-            else {
-                //Error: Invalid character
-            }
-        }
-    };
-    
-    var handleKeyShortcuts = function(ev){
-        var comb = '';
-        if( ev.ctrlKey )comb += 'ctrl+';
-        if( ev.shiftKey )comb += 'shift+';
-        if( ev.altKey )comb += 'alt+';
-        comb += String.fromCharCode(ev.which);
-                
-        if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
-            registeredShortcuts[comb]();
-            ev.preventDefault();
-        }
-    }
-    
-    //Add event listener for key shortcuts
-    $(window).keydown(handleKeyShortcuts);
-    
-    //Add common shortcuts
-    this.addShortcuts([
-        {
-            ctrl: true,
-            char: 'Z',
-            callback: this.undo
-        },
-        {
-            ctrl: true,
-            shift: true,
-            char: 'Z',
-            callback: this.redo
-        },
-        {
-            ctrl: true,
-            char: 'Y',
-            callback: this.redo
-        },
-        {
-            ctrl: true,
-            char: 'R',
-            callback: this.redo
-        }
-    ]);
     
     /*
      * Full screen request

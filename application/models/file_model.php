@@ -5,15 +5,27 @@ class File_model extends CI_Model {
     function __construct()
     {
         parent::__construct();
+        date_default_timezone_set('Asia/Kolkata');
         $this->load->database();
     }
     
-    function save($file_id, $file_path, $file_data, $update_db = TRUE)
+    function save($file_id, $file_data, $file_path = NULL, $update_db = TRUE)
     {
+        if( !$file_path ){
+            $this->db->where('fid', $file_id);
+            $query = $this->db->get('files');
+            $file_path = $query->row()->path;
+        }
+        
+        /*
+         * TODO
+         * Check and report if soft file/physical file does not exist
+         */
+        
         $this->load->helper('file');
         write_file($file_path . 'data.kdat', $file_data);
         
-        if ($update_db)
+        if ( $update_db )
         {
             $this->db->trans_start();
             $this->db->where('fid', $file_id);
@@ -22,6 +34,7 @@ class File_model extends CI_Model {
             $this->db->trans_complete();
         }
         
+        return $file_id;
     }
     
     function save_as($file_name, $file_data, $ftype = 0)
@@ -50,7 +63,6 @@ class File_model extends CI_Model {
         if (!is_dir($file_path))
         {
             umask(0);
-            echo $file_path;
             mkdir($file_path, 0777, true);
         }
         
@@ -73,9 +85,10 @@ class File_model extends CI_Model {
         );
         
         //Actual file save call
-        $this->save($file_id, $file_path, $file_data, FALSE);
-        
+        $this->save($file_id, $file_data, $file_path, FALSE);
         
         $this->db->trans_complete();
+        
+        return $file_id;
     }
 }
