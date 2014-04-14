@@ -1,13 +1,6 @@
 Submit = new(function(){
-    /*
-     * JSON
-     */
     
-    
-    /* The following are the getters required for testing.
-	 * Maybe later when the base tries to access stuff.
-	 */ 
-    this.newForm = function(){
+	this.newForm = function(){
 		return new Form();
 	}
 	
@@ -27,8 +20,8 @@ Submit = new(function(){
         this.id = 1;
         this.children = [];
     };
-    
-    Form.prototype = {
+
+        Form.prototype = {
 		
         addPages : function(pages){
             this.children.push(pages);
@@ -86,7 +79,7 @@ Submit = new(function(){
     var Page = function(){
         this.containers = [];
     };
-    
+
     Page.prototype = {
 		
 		addContainers : function(containerList){
@@ -142,7 +135,7 @@ Submit = new(function(){
 			return this;
 		}
 	}
-
+    
     var Container = function(){
 		this.controls = [];
     };
@@ -202,74 +195,127 @@ Submit = new(function(){
 			return this;
 		}
 	}
-	
-	var Control = function(controlType){
+    
+	var updateJSON = function(defaultObject, userObject) {
+		for (key in defaultObject) {
+			if (key in userObject) {
+				defaultObject[key] = userObject[key];
+			}
+		}
+		return defaultObject;
+	}
+
+var Control = function(controlType, args) {
 		
 		this.type = controlType;
-		if (this.type == "text"){
+		
+		if (this.type == "text") {
 			var options = {
 				name : null,
 				minLength : 10,
 				maxLength : 99,
 				required : true,
-				placeholder : "Input required data"
+				placeholder : "Input required data",
 			};
+			options = updateJSON(options, args);
 			textBoxObject = new textBox(options);
 		}
-		else
-		if (this.type == "radioButtonGroup"){
+		
+		else if (this.type == "radioButtonGroup") {
 			var options = {
 				name : null,
 				value : new Array(),
 				checked : new Array(),
-				defaultCheck : null
+				defaultCheck : null,
 			};
+			options = updateJSON(options, args);
 			radioButtonObject = new radioButtonGroup(options);
 		}
-		else
-		if (this.type == "checkboxGroup"){
+		
+		else if (this.type == "checkboxGroup"){
 			var options = {
 				name : null,
 				value : new Array(),
 				checked : new Array(),
-				defaultCheck : null
+				defaultCheck : null,
 			};
+			options = updateJSON(options, args);
 			checkboxObject = new checkboxGroup(options);
 		}
-		else
-		if (this.type == "dropdown"){
-			var options = {
+		
+		else if (this.type == "dropdown"){
+			var options = {	
 				name : null,
 				size : null,
 				multiple : null,
-				selected : null
+				selected : null,
+				optList : new Array(),				
 			};
+			options = updateJSON(options, args);
 			dropdownObject = new dropdown(options);
 		}
-		else
-		if (this.type == "datetime"){
+		
+		else if (this.type == "datetime"){
 			var options = {
 				name : null,
 				year : null,
 				month : null,
 				date : null,
 				hour : null,
-				minute : null
+				minute : null,
 			};
+			options = updateJSON(options, args);
 			dateTimeObject = new datetime(options);
 		}
+		
+		var textBox = function(options){
+			name = options.name;
+			minLength = options.minLength;
+			maxLength = options.maxLength;
+			required = options.required;
+			placeholder = options.placeholder;
+		}
+		
+		var radioButtonGroup = function(options){
+			name = options.name;
+			value = options.value;
+			checked = options.checked;
+			defaultCheck = options.defaultCheck;
+		}
+		
+		var checkboxGroup = function(options){
+			name = options.name;
+			value = options.value;
+			checked = options.checked;
+			defaultCheck = options.defaultCheck;
+		}
+		
+		var dropdown = function(options){
+			name = options.name;
+			size = options.size;
+			multiple = options.multiple;
+			selected = options.selected;
+			optList = options.optList;
+			if (multiple == true){		
+			}
+			else{
+			}
+		}
+		var datetime = function(options){
+			name = options.name;
+			year = options.year;
+			month = options.month;
+			date = options.date;
+			hour = options.hour;
+			minute = options.minute;
+		}
 	}
-
-    /*
-     * DOM Manipulation
-     */
-
+    
     this.init = function(){
     
     };
 
     this.getMenu = function(){
-    
         return {}
     };
     
