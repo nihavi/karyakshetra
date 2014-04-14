@@ -692,7 +692,7 @@ Akruti = new (function() {
         
         var pastState = this.getOp('cr');
         $(this.g).remove();
-        allSvg[this.pid].children.splice(pastState,1);
+        allSvg[this.pid].children.splice(pastState.pos,1);
         var newState = this.getOp('d');
         return {'pastState':pastState, 'newState':newState}
     };
@@ -831,7 +831,7 @@ Akruti = new (function() {
                         for (var i in allSvg) {
                             allSvg[i].element.style.cursor = 'crosshair';
                             for (var j=0;j<allSvg[i].children.length; j++) {
-                                allSvg[i].children[j].g.style.cursor = 'auto';
+                                allSvg[i].children[j].g.style.cursor = 'inherit';
                             }
                         }
                     }
@@ -1318,7 +1318,7 @@ Akruti = new (function() {
                             });
                     }
                     
-                    if (element.x1 == element.x2 && element.y2 == element.y2) {
+                    if (element.x1 == element.x2 && element.y1 == element.y2) {
                         $(element.g).remove();
                     }
                     else {
