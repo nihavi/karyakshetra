@@ -2,28 +2,28 @@
 
 class Base extends CI_Controller
 {
-    function akruti()
+    function akruti($file_id = null)
     {
-        $this->index('akruti');
+        $this->index('akruti', $file_id);
     }
-    function dash()
+    function dash($file_id = null)
     {
-        $this->index('dash');
+        $this->index('dash', $file_id);
     }
-    function show()
+    function show($file_id = null)
     {
-        $this->index('show');
+        $this->index('show', $file_id);
     }
-    function submit()
+    function submit($file_id = null)
     {
-        $this->index('submit');
+        $this->index('submit', $file_id);
     }
-    function aksharam()
+    function aksharam($file_id = null)
     {
-        $this->index('aksharam');
+        $this->index('aksharam', $file_id);
     }
     
-    function index($module = 'dash')
+    function index($module = 'dash', $file_id = null)
     {
         /*
          * Assumes that /scripts contains '<module>.js' file for each module
@@ -54,6 +54,17 @@ class Base extends CI_Controller
             'module_script' => $module_scripts_repo[$module],
             'module_style' => $module_style_repo[$module]
         );
+        
+        if( $file_id ){
+            $this->load->model('File_model', 'file');
+            $file_data = $this->file->open($file_id);
+            
+            if($file_data){
+                $data['file_id'] = $file_id;
+                $data['file_data'] = $file_data;
+            }
+        }
+        
         $this->load->view('init', $data);
     }
 }

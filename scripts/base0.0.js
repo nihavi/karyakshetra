@@ -74,8 +74,6 @@ Base = new (function(){
     
     /*
      * File save mechanism
-     * 
-     * Uses global variable "baseUrl"
      */
     var currFileId;
     
@@ -624,11 +622,34 @@ Base = new (function(){
     var submenu;//Keeps track and information of the current submenu
     var menuId;
     
+    
+    /*
+     * Global response variables
+     */
+    
+    var baseUrl;
+    
     this.init = function(){
         /*
          * init function for Base
          * To be called when all js and css are loaded for the first time
          */
+         
+        /*
+         * get response variables
+         */
+        baseUrl = response.baseUrl;
+        
+        if( ('fileId' in response) && ('fileData' in response) ){
+            //Open file
+            if( !('openFile' in module) ){
+                alert('Files are not supported');
+            }
+            else {
+                currFileId = response.fileId;
+                var file = response.fileData;
+            }
+        }
 
         //Set default palette
         this.setPalette(defaultPalette);
@@ -657,7 +678,7 @@ Base = new (function(){
         this.setEditable();
         
         //Call module's init
-        module.init(edit.get(0));
+        module.init(edit.get(0), file);
         module.resize();
     }
 
