@@ -213,6 +213,28 @@ i.fa.fa-cfw {
     outline: 2px solid #111;
 }
 
+.input-text {
+    line-height: 1.28571em;
+    height: 1.28571em;
+    padding: 2px;
+    margin: 4px;
+    vertical-align: middle;
+}
+
+.menu-input {
+    color: inherit;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    background-color: inherit;
+    padding-left: 4px;
+    width: 100px;
+}
+
+.menu-input:focus {
+    background-color: #0F88C4;
+}
+
 .select .option {
     color: #000;
 }

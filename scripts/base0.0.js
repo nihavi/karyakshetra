@@ -51,10 +51,16 @@
     callback: Function(String id, Number size)  //Callback on change
 },
 {
+    type: 'text',
+    id: String, //Id selected by module
+    title: String, //Name of input
+    currState: String, //Default value
+    callback: Function(String id, Number newValue)    //Callback on change
+}
+{
     type: 'list',
     id: String, //Id selected by module
     title: String, //Name of button
-    icon: String, //Font awesome icon name
     currState: String, //Default size
     list = Array, //Array of Objects. Object is defined as {id: String, value: String}
     callback: Function(String id, Number selectedItemId)    //Callback on change
@@ -822,10 +828,23 @@ Base = new (function(){
                             }
                             else if( item.type == 'size' ){
                             }
+                            else if( item.type == 'text' ){
+                                menuItem.empty();
+                                menuItem.addClass('input-text btn-text btn-longtext btn-icon');
+                                var input = $('<input class="menu-input" />').appendTo(menuItem);
+                                if( 'currState' in item ){
+                                    input.val(item.currState);
+                                }
+                                input.change(function(){
+                                    var elem = $(this).closest('.input-text');
+                                    var itemId = elem.attr('id');
+                                    var item = submenu[itemId];
+                                    item.callback(item.id, $(this).val());
+                                    item.currState = $(this).val();
+                                });
+                            }
                             else if( item.type == 'list' ){
-                                
                                 if('list' in item) {
-                                
                                     menuItem.empty();
                                     menuItem.addClass('select btn-text btn-longtext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
@@ -960,6 +979,9 @@ Base = new (function(){
         else if( item.type == 'font' ){
         }
         else if( item.type == 'size' ){
+        }
+        else if( item.type == 'text' ){
+            //Do nothing
         }
         else if( item.type == 'list' ){
             var dropdown = elem.find('.dropdown');
