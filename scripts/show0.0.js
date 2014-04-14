@@ -1065,9 +1065,19 @@ Show = new (function(){
             }
         }
     }
-    var elemAnimTiming = function(mode, onoff){
-        if(!onoff)return;
+    var elemAnimTiming = function(mode, value){
+        if( mode == 'delay' ) {
+            var sec = parseFloat(value) * 1000;
+            elemEditAnimation('delay', sec);
+            return;
+        }
+        if(!value)return;
         elemEditAnimation('timing', mode);
+        if( mode != 'wait' ) {
+            delete activeElement.animations[0].delay;
+        }
+        Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+        Base.focusMenu('animation');
     }
     var removeElem = function(btnId){
         if(activeElement){
@@ -1421,23 +1431,23 @@ Show = new (function(){
                                 },
                                 {
                                     id: 300,
-                                    value: '300 ms'
+                                    value: '0.3 s'
                                 },
                                 {
                                     id: 600,
-                                    value: '600 ms'
+                                    value: '0.6 s'
                                 },
                                 {
                                     id: 900,
-                                    value: '900 ms'
+                                    value: '0.9 s'
                                 },
                                 {
                                     id: 1200,
-                                    value: '1200 ms'
+                                    value: '1.2 s'
                                 },
                                 {
                                     id: 1500,
-                                    value: '1500 ms'
+                                    value: '1.5 s'
                                 }
                             ],
                             callback: elemEditAnimation,
@@ -1492,6 +1502,33 @@ Show = new (function(){
                     break;
             }
             animation.groups.push(group);
+            
+            if( elem.animations[0].timing == 'wait' ){
+                group = {
+                    type: 'group',
+                    id: 'animTiming',
+                    multiple: false,
+                    required: true,
+                    items: [
+                        {
+                            type: 'text',
+                            id: 'delay',
+                            title: 'Delay (in seconds)',
+                            callback: elemAnimTiming,
+                        }
+                    ],
+                };
+                
+                if( 'delay' in elem.animations[0] ){
+                    group.items[0].currState = (elem.animations[0].delay / 1000) + ' s';
+                }
+                else {
+                    group.items[0].currState = '0 s';
+                    elem.animations[0].delay = 0;
+                }
+                
+                animation.groups.push(group);
+            }
         }
         
         return [format, animation];
@@ -1786,7 +1823,14 @@ Show = new (function(){
                     anim = SlideShow.animQueue.shift();
                     switch( anim.type ){
                         case 'entry':
-                            allAnims[anim.name].execute(anim);
+                            if( anim.delay ){
+                                setTimeout( function(){
+                                    allAnims[anim.name].execute(anim);
+                                }, anim.delay );
+                            }
+                            else {
+                                allAnims[anim.name].execute(anim);
+                            }
                             break;
                     }
                 }while( SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'do' );
