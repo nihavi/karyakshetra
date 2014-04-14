@@ -6,6 +6,8 @@
     <head>
         <title>Karyakshetra</title>
         <script>
+            // A global variable for baseUrl
+            var baseUrl = '<?php echo base_url(); ?>';
             function loadJquery(fallback)
             {
                 fallback = true;
