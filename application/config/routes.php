@@ -40,7 +40,7 @@
 
 $route['default_controller'] = "base";
 $route['404_override'] = '';
-$route['show(/.*)?|submit(/.*)?|akruti(/.*)?|aksharam(/.*)?)'] = "base/$1";
+$route['(show(/.*)?|submit(/.*)?|akruti(/.*)?|aksharam(/.*)?)'] = "base/$1";
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
