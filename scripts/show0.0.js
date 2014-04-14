@@ -9,7 +9,7 @@ Show = new (function(){
     var allSlides;
     var insertOp;
     
-    this.init = function(parent){
+    this.init = function(parent, file){
         /*
          * Initialize show
          * 
@@ -28,31 +28,39 @@ Show = new (function(){
         
         this.resize();
         
-        var newSlide = new Slide();
-        newSlide.addElem({
-            type: 'title',
-            top: 30,
-            left: 5,
-            width: 90,
-            height: 13,
-            fontSize: 10,
-            text: 'Title',
-            style: {textAlign: 'center'}
-        });
-        newSlide.addElem({
-            type: 'text',
-            top: 45,
-            left: 5,
-            width: 90,
-            height: 8,
-            fontSize: 6,
-            text: 'Subtitle',
-            style: {
-                textAlign: 'center',
-                color: '#666',
-            }
-        });
-        newSlide.renderSlide();
+        if( file ){
+            var newSlide = new Slide();
+            newSlide.renderSlide();
+            //Two lines above is a hack, do it properly :FIXME
+            this.openFile(file);
+        }
+        else {
+            var newSlide = new Slide();
+            newSlide.addElem({
+                type: 'title',
+                top: 30,
+                left: 5,
+                width: 90,
+                height: 13,
+                fontSize: 10,
+                text: 'Title',
+                style: {textAlign: 'center'}
+            });
+            newSlide.addElem({
+                type: 'text',
+                top: 45,
+                left: 5,
+                width: 90,
+                height: 8,
+                fontSize: 6,
+                text: 'Subtitle',
+                style: {
+                    textAlign: 'center',
+                    color: '#666',
+                }
+            });
+            newSlide.renderSlide();
+        }
         
         //Event handlers on slides to manage activeElement
         $('#slides').bind('mousedown',function(ev){
