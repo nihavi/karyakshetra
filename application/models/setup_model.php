@@ -153,7 +153,7 @@ class Setup_model extends CI_Model {
         echo "Inserting 'public' user";
         $this->db->trans_start();
         $this->db->insert('groups', array(
-                'gname' => 'Public',
+                'gname' => 'public',
                 'isUser' => TRUE
             ));
         $gid = $this->db->insert_id();
@@ -171,6 +171,6 @@ class Setup_model extends CI_Model {
             echo "\t\t[Done]\n";
         }
     }
-    
+
 }
 ?>

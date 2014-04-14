@@ -108,4 +108,11 @@ class File_model extends CI_Model {
             return false;
         }
     }
+
+    function get_files_of_user($user)
+    {
+        //Query database and return array of PHP object
+        //called, for now, from karyakshetra/dash, which is the controllers/dash.php controller.
+    }
+    
 }
