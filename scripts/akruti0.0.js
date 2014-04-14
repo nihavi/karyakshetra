@@ -57,7 +57,7 @@ Akruti = new (function() {
             //'fo':'fill-opacity',
         }
     };
-
+    
     var Svg = function(arg, parent, editable) {
 
         /* Creating DOM element */
@@ -80,7 +80,7 @@ Akruti = new (function() {
                 this[j] = arg[j];
             }
         }
-
+        
         /* Default Attributes | They will be same everytime */
         this.element.setAttribute( 'xmlns', 'http://www.w3.org/2000/svg');
         //this.element.setAttributeNS( 'http://www.w3.org/2000/svg','xlink','http://www.w3.org/1999/xlink');
@@ -726,11 +726,11 @@ Akruti = new (function() {
     Array.prototype.insertAt = function (index, item) {
         this.splice(index, 0, item);
     };
-
+    
     this.performOp = function (data) {
         var returnValue = new Object();
         
-//Debugging {console.log('perOp', data.op, data.t);d=data;if (data instanceof Array || !data.op ) {alert(data);}}
+    //{console.log('perOp', data.op, data.t);d=data;if (data instanceof Array || !data.op ) {alert(data);}}
         
         if (data.op == 'm') {
             var i;
@@ -739,8 +739,8 @@ Akruti = new (function() {
             returnValue.pastState.op = returnValue.newState.op = 'm';
             returnValue.pastState.ar = new Array();
             returnValue.newState.ar = data;
-            for(i=0;i<data.ar.length;i++) {
-                returnValue.pastState.ar[i] = this.performOp(data.ar[i]).pastState;
+            for(i=data.ar.length-1;i>=0;i--) {
+                returnValue.pastState.ar[data.ar.length-i-1] = this.performOp(data.ar[i]).pastState;
             }
         }
         else
@@ -757,10 +757,19 @@ Akruti = new (function() {
                     myObject = new Rectangle(data);
                     break;
             }
-            if (allSvg[data.pid].children.length != 0) {
-                $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
+            /*
+            if (allSvg[data.pid].children.length != data.pos) {
+                if (data.pos != 0) {
+                    $(myObject.g).detach().insertAfter( $(allSvg[data.pid].children[data.pos-1]) );
+                }
+                else {
+                    $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
+                }
             }
             allSvg[data.pid].children.insertAt(data.pos, myObject);
+            */
+            allSvg[data.pid].children.push(myObject);
+            
             editor.makeEditable(myObject.g);
             returnValue.pastState = myObject.getOp('d');
             returnValue.newState = data;
@@ -840,7 +849,27 @@ Akruti = new (function() {
         };
         
         this.setStrokeWidth = function(id, value){
-            editor.strokeWidth = parseInt(value);
+            if (actives.list.length == 0) {
+                editor.strokeWidth = parseInt(value);
+            }
+            else {
+                var pastState = new Array();
+                var newState = new Array();                
+                for (var i=0; i<actives.list.length; i++) {
+                    var states = actives.list[i].changeAttributes({'sw':value}, true);
+                    pastState[i] = states.pastState;
+                    newState[i] = states.newState;
+                }
+                Base.addOp({
+                    op:'m',
+                    ar:pastState
+                },{
+                    op:'m',
+                    ar:newState
+                })
+                
+            }
+            
         }
         
         this.setStrokeColor = function(id, color){
@@ -864,8 +893,6 @@ Akruti = new (function() {
         }
         
         var eq = function (arg1, arg2){
-            a1=arg1;
-            a2=arg2;
             if (arg1.length != arg2.length) {
                 return false;
             }
@@ -903,7 +930,7 @@ Akruti = new (function() {
             
             actives.select = new SelectArea(x1, y1, x2-x1, y2-y1, allSvg[pid]);
             var pivots = actives.select.p;
-            for (var i=0;i<pivots.length-1;i++) {
+            for (var i=0;i<pivots.length;i++) {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
             
@@ -940,7 +967,9 @@ Akruti = new (function() {
         };
 
         var selectAll = function(){
-            
+            if (currentSvg.children.length == 0) {
+                return;
+            }
             if (actives.list.length == 0) {
                 $(currentSvg.element).one('mousedown',deselectAll);
             }
@@ -1266,6 +1295,7 @@ Akruti = new (function() {
                     };
                     
                     var element = new Line(attributes,mySvgObject);
+                    element.origin = 'createLineMode'; element.originData = attributes;
                     return element;
                 },
 
@@ -1480,6 +1510,7 @@ Akruti = new (function() {
                         'sw': 1,
                         'f' : 'none',
                         'sd':'5 5',
+                        'id':'selectDottedRect'
                     };
                     
                     var element = new Rectangle(attributes,mySvgObject);
@@ -1804,7 +1835,7 @@ Akruti = new (function() {
             mouseup: function(e, selectRect) {
                 
                 actives.newState = new Array();
-                actives.select.setPivots();
+                actives.select.setPivots(actives.select.x,actives.select.y,actives.select.h,actives.select.w);
                 for (i=0;i<actives.list.length;i++) {
                     actives.newState[i] = elementResize[actives.list[i].t].mouseup(actives.list[i],actives.select);
                 }
@@ -2038,6 +2069,7 @@ Akruti = new (function() {
         };
         
         this.completeOp = function(data) {
+            deselectAll()
             switch (data.op) {
                 case 'cr':
                     if (this.currentMode == 'selectMode') {
@@ -2046,17 +2078,6 @@ Akruti = new (function() {
                     else {
                         $('#'+data.id+'g').css('cursor','auto');
                     }
-                    break;
-                case 'd':
-                    for (var i=0; i<actives.list.length; i++) {
-                        if ( actives.list[i].id == data.id ) {
-                            deselectElement.apply(actives.list[i]);
-                            break;
-                        }
-                    }
-                    break;
-                case 'ch':
-                    makeSelectRect(data.pid);
                     break;
             }
         };
