@@ -683,7 +683,6 @@ Base = new (function(){
             $(this).addClass('active');
             var selectedColor = $(this).css('background-color');
             $('#' + $('.colorpicker').data('caller')).find('i').css('color', selectedColor);
-            //TODO callback
             var item = submenu[$('.colorpicker').data('caller')];
             item.currState = selectedColor;
             item.callback(item.id, selectedColor);
@@ -836,6 +835,7 @@ Base = new (function(){
                                     input.val(item.currState);
                                 }
                                 input.change(function(){
+                                    //FIXME: on updateMenu text does not get changed
                                     var elem = $(this).closest('.input-text');
                                     var itemId = elem.attr('id');
                                     var item = submenu[itemId];
