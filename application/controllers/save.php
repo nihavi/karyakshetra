@@ -4,7 +4,7 @@ class Save extends CI_Controller {
     
     function index()
     {
-        echo "You need to know internal structure to use file saving.";
+        echo "Sorry, you need to know the predefined internal structure to use file saving.";
     }
     
     function newfile()
@@ -12,7 +12,8 @@ class Save extends CI_Controller {
         $this->load->model('File_model', 'file');
         
         $fname = $this->input->post('filename', TRUE);
-        if( !$fname ){
+        
+        if(!$fname) {
             $fname = 'Untitled file';
         }
         $data = $this->input->post('file');
