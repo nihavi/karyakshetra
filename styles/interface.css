@@ -1,4 +1,4 @@
-body{
+body {
     overflow:hidden;
     width:100%;
     height:100%;
@@ -180,6 +180,7 @@ i.fa.fa-cfw {
 }
 
 .editable {
+    box-sizing: border-box;
     width: 100%;
     background-color: #eee;
     position: relative;

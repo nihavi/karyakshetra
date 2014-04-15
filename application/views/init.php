@@ -77,7 +77,7 @@
                                     function(){
                                         //Scripts loaded
                                         linkCss('<?php echo base_url(); ?>styles/font-awesome.min.css').load(function(){
-                                            $( "#wait_message" ).remove();
+                                            $( "#wait-message" ).remove();
                                             Base.init();
                                         }).error(function(){
                                             //Error: font-awesome error
@@ -122,6 +122,14 @@
         </script>
     </head>
     <body onload='loadJquery()'>
-        <div id='wait_message'>Please wait...</div>
+        <div id='wait-message'>Please wait...</div>
+        <script>
+        window.onload = function() {
+            window.setTimeout(function() {
+                document.getElementById('wait-message').innerHTML = "Calm down. Take a deep breath. Unfortunately, your code isn't working. :/";
+            },
+            3000);
+        };
+        </script>
     </body>
 </html>
