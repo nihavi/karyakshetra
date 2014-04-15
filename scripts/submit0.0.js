@@ -324,29 +324,30 @@ var Control = function(controlType, args) {
      */
     
     var DOM = {
-        form : $('#form'),
         addPage : function() {
-            var page = $('<div class="page"></div>').appendTo(form);
+            var page = $('<div class="page"></div>').appendTo($('#form'));
+            
             var titleElem = {
                 type: 'heading',
-                value: 'Page title',
-                block: true
+                value: 'Page title'
             };
             
+            /*
             var pElem = {
                 type: 'paragraph',
                 value: 'This is a sample paragraph.',
                 block: true
             };
-            
+            */
             var inputElem = {
                 type: 'textbox',
                 value: 'Some text',
                 label: 'Label:',
             }
             
+            
             DOM.addControl(page, titleElem);
-            DOM.addControl(page, pElem);
+            //DOM.addControl(page, pElem);
             DOM.addControl(page, inputElem);
         },
         addControl: function(page, elem) {
@@ -355,72 +356,46 @@ var Control = function(controlType, args) {
             switch (elem.type) {
                 case 'heading':
                     var control = $('<h1 class="control"></h1>');
-                    if (elem.value) {
-                        innerText = elem.value;
+                    
+                    var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
+                        $(this).closest('.control').addClass('focus');
+                        $(this).closest('.page').addClass('focus');
+                    }).on('blur', function() {
+                        $(this).closest('.control').removeClass('focus');
+                        $(this).closest('.page').removeClass('focus');
+                    });
+                    
+                    
+                    if ('value' in elem) {
+                        inner.text(elem.value);
                     }
-                    if (elem.block) {
-                        var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    else
-                    {
-                        var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-
-                    if (innerText) {
-                        inner.html(innerText);
-                    }
+                    
                     control.append(inner);
                     page.append(control);
                     break;
                 
                 case 'paragraph':
                     var control = $('<p class="control"></p>');
-                    if (elem.value) {
-                        innerText = elem.value;
+                    
+                    var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
+                        $(this).closest('.control').addClass('focus');
+                        $(this).closest('.page').addClass('focus');
+                    }).on('blur', function() {
+                        $(this).closest('.control').removeClass('focus');
+                        $(this).closest('.page').removeClass('focus');
+                    });
+
+                    if ('value' in elem) {
+                        inner.text(elem.value);
                     }
                     
-                    if (elem.block) {
-                        var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    else
-                    {
-                        var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    if (innerText) {
-                        inner.html(innerText);
-                    }
                     control.append(inner);
                     page.append(control);
                     break;
+                
                 case 'textbox':
                     var control = $('<span style="display:inline-block" class="textbox control"><input style="margin-left: 5px;" type="text"></span>');
-                    if (elem.value) {
-                        control.val(elem.value);
-                    }
+                    
                     var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
                             $(this).closest('.page').addClass('focus');
@@ -429,11 +404,12 @@ var Control = function(controlType, args) {
                             $(this).closest('.page').removeClass('focus');
                         });
                     
-                    if (elem.label) {
-                        inner.html(elem.label);
+                    if ('label' in elem) {
+                        inner.text(elem.label);
                     }
                     control.prepend(inner);
                     page.append(control);
+                    
                     break;
             }
         }
@@ -487,7 +463,7 @@ var Control = function(controlType, args) {
     
     var menu = defaultMenus;
     
-    this.init = function(){
+    this.init = function() {
         var form = $('<div id="form"></div>').appendTo($('#editable'));
     };
 
