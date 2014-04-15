@@ -7,7 +7,15 @@
         <title>Karyakshetra</title>
         <script>
             // A global variable for baseUrl
-            var baseUrl = '<?php echo base_url(); ?>';
+            response = {
+                baseUrl: '<?php echo base_url(); ?>',
+                <?php 
+                    if( isset($file_id) ){
+                        echo "fileId: '".$file_id."',";
+                        echo "fileData: '".$file_data."',";
+                    }
+                ?>
+            }
             function loadJquery(fallback)
             {
                 fallback = true;

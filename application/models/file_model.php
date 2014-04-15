@@ -92,6 +92,23 @@ class File_model extends CI_Model {
         return $file_id;
     }
     
+    function open($file_id){
+        $this->db->where('fid', $file_id);
+        $query = $this->db->get('files');
+        if ($query->num_rows() > 0){
+            $file_path = $query->row()->path;
+            
+            $this->load->helper('file');
+            
+            $file_data = read_file( $file_path . 'data.kdat' );
+            
+            return $file_data;
+        }
+        else {
+            return false;
+        }
+    }
+
     function get_files_of_user($user)
     {
         //Query database and return array of PHP object

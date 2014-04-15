@@ -901,6 +901,15 @@ Akruti = new (function() {
         actives = new Object();
         actives.list = new Array();
         
+        var colorEqual = function(color1, color2) {
+            var dummy = document.createElement('div');
+            dummy.style.backgroundColor = color1;
+            var c1 = window.getComputedStyle(dummy, null).getPropertyValue("background-color");
+            dummy.style.backgroundColor = color2;
+            var c2 = window.getComputedStyle(dummy, null).getPropertyValue("background-color");
+            return c1 == c2;
+        }
+        
         this.setMode = function(mode,onOff){
             if (onOff == true) {
                 if (allModes.indexOf(mode) != -1) {
@@ -917,7 +926,7 @@ Akruti = new (function() {
                         for (var i in allSvg) {
                             allSvg[i].element.style.cursor = 'crosshair';
                             for (var j=0;j<allSvg[i].children.length; j++) {
-                                allSvg[i].children[j].g.style.cursor = 'auto';
+                                allSvg[i].children[j].g.style.cursor = 'inherit';
                             }
                         }
                     }
@@ -926,35 +935,85 @@ Akruti = new (function() {
         };
         
         this.setStrokeWidth = function(id, value){
+            value = parseInt(value);
             if (actives.list.length == 0) {
-                editor.strokeWidth = parseInt(value);
+                editor.strokeWidth = value;
             }
             else {
                 var pastState = new Array();
                 var newState = new Array();                
                 for (var i=0; i<actives.list.length; i++) {
                     var states = actives.list[i].changeAttributes({'sw':value}, true);
-                    pastState[i] = states.pastState;
-                    newState[i] = states.newState;
+                    if ( states.pastState.sw != states.newState.sw ) {
+                        pastState[i] = states.pastState;
+                        newState[i] = states.newState;
+                    }
                 }
-                Base.addOp({
-                    op:'m',
-                    ar:pastState
-                },{
-                    op:'m',
-                    ar:newState
-                })
-                
+                if ( pastState.length != 0) {
+                    Base.addOp({
+                        op:'m',
+                        ar:pastState
+                    },{
+                        op:'m',
+                        ar:newState
+                    })
+                }
             }
-            
-        }
+        };
         
         this.setStrokeColor = function(id, color){
-            editor.strokeColor = color;
+            if (actives.list.length == 0) {
+                editor.strokeColor = color;
+            }
+            else {
+                var pastState = new Array();
+                var newState = new Array();                
+                for (var i=0; i<actives.list.length; i++) {
+                    var states = actives.list[i].changeAttributes({'sc':color}, true);
+                    if ( !colorEqual(states.pastState.sc, states.newState.sw) ) {
+                        pastState[i] = states.pastState;
+                        newState[i] = states.newState;
+                    }
+                }
+                if ( pastState.length != 0) {
+                    Base.addOp({
+                        op:'m',
+                        ar:pastState
+                    },{
+                        op:'m',
+                        ar:newState
+                    })
+                }
+            }
         };
         
         this.setFillColor = function(id, color){
-            editor.fillColor = color;
+            if (actives.list.length == 0) {
+                editor.fillColor = color;
+            }
+            else {
+                var pastState = new Array();
+                var newState = new Array();                
+                for (var i=0; i<actives.list.length; i++) {
+                    if ('f' in allAA[actives.list[i].t]) {
+                        var states = actives.list[i].changeAttributes({'f':color}, true);
+                        console.log(states.pastState.f, states.newState.f,colorEqual(states.pastState.f, states.newState.f));
+                        if ( !colorEqual(states.pastState.f, states.newState.f) ) {
+                            pastState[i] = states.pastState;
+                            newState[i] = states.newState;
+                        }
+                    }
+                }
+                if ( pastState.length != 0) {
+                    Base.addOp({
+                        op:'m',
+                        ar:pastState
+                    },{
+                        op:'m',
+                        ar:newState
+                    })
+                }
+            }
         };
                 
         var getStrokeWidth = function(){
