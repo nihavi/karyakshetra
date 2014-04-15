@@ -49,7 +49,7 @@
                                 var module_style = '<?php echo base_url().'styles/'.$module_style; ?>';
                                 window.setTimeout(function() {
                                     if(document.getElementById('wait-message'))
-                                        document.getElementById('wait-message').innerHTML = "Calm down. Take a deep breath. Unfortunately, your code isn't working. :/";
+                                        document.getElementById('wait-message').innerHTML = "Calm down. Take a deep breath. Unfortunately, something's broken. :/";
                                 },3000);
                                 $.when(
                                     $.ajax({
