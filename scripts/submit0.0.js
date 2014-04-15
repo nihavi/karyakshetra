@@ -1,5 +1,9 @@
 Submit = new(function(){
-    
+
+	//var listOfPages = [];
+	//var listOfContainers = [];
+	//var listOfControls = [];
+	
     this.newForm = function(){
         return new Form();
     }
@@ -21,10 +25,12 @@ Submit = new(function(){
         this.children = [];
     };
 
-        Form.prototype = {
+//add code for new page and 'addPage' this new page
+
+    Form.prototype = {
         
-        addPages : function(pages){
-            this.children.push(pages);
+        addPage : function(page){
+            this.children.push(page);
             return this;
         },
         
@@ -43,8 +49,8 @@ Submit = new(function(){
             }
         },
 
-        addPagesAtStart : function(pages){
-            this.children.unshift(pages);
+        addPageAtStart : function(page){
+            this.children.unshift(page);
             return this;
         },
 
@@ -82,7 +88,7 @@ Submit = new(function(){
 
     Page.prototype = {
         
-        addContainers : function(containerList){
+        addContainer : function(containerList){
             this.containers.push(containerList);
             return this;
         },
@@ -102,7 +108,7 @@ Submit = new(function(){
             }
         },
         
-        addContainersAtStart : function(containerList){
+        addContainerAtStart : function(containerList){
             this.containers.unshift(containerList);
             return this;
         },
@@ -142,7 +148,7 @@ Submit = new(function(){
     
     Container.prototype = {
         
-        addControls : function(controlList){
+        addControl : function(controlList){
             this.controls.push(controlList);
             return this;
         },
@@ -162,7 +168,7 @@ Submit = new(function(){
             }
         },
         
-        addControlsAtStart : function(controlList){
+        addControlAtStart : function(controlList){
             this.controls.unshift(controlList);
             return this;
         },
@@ -195,127 +201,124 @@ Submit = new(function(){
             return this;
         }
     }
-    
-    var updateJSON = function(defaultObject, userObject) {
-        for (key in defaultObject) {
-            if (key in userObject) {
-                defaultObject[key] = userObject[key];
-            }
-        }
-        return defaultObject;
-    }
 
-var Control = function(controlType, args) {
+	var Control = function(controlType, options) {
         
         this.type = controlType;
         
         if (this.type == "text") {
-            var options = {
-                name : null,
-                minLength : 10,
-                maxLength : 99,
-                required : true,
-                placeholder : "Input required data",
-                //value: "",
-            };
-            options = updateJSON(options, args);
-            textBoxObject = new textBox(options);
+			var textBoxObject = new TextBox(options);
         }
         
         else if (this.type == "radioButtonGroup") {
-            var options = {
-                name : null,
-                value : new Array(),
-                checked : new Array(),
-                defaultCheck : null,
-            };
-            options = updateJSON(options, args);
-            radioButtonObject = new radioButtonGroup(options);
+            var radioButtonObject = new RadioButtonGroup(options);
         }
         
         else if (this.type == "checkboxGroup"){
-            var options = {
-                name : null,
-                value : new Array(),
-                checked : new Array(),
-                defaultCheck : null,
-            };
-            options = updateJSON(options, args);
-            checkboxObject = new checkboxGroup(options);
+            checkboxObject = new CheckboxGroup(options);
         }
         
         else if (this.type == "dropdown"){
-            var options = {    
-                name : null,
-                size : null,
-                multiple : null,
-                selected : null,
-                optList : new Array(),
-            };
-            options = updateJSON(options, args);
-            dropdownObject = new dropdown(options);
+            dropdownObject = new Dropdown(options);
         }
         
         else if (this.type == "datetime"){
-            var options = {
-                name : null,
-                year : null,
-                month : null,
-                date : null,
-                hour : null,
-                minute : null,
-            };
-            options = updateJSON(options, args);
-            dateTimeObject = new datetime(options);
+            dateTimeObject = new Datetime(options);
         }
         
-        var textBox = function(options){
-            name = options.name;
-            minLength = options.minLength;
-            maxLength = options.maxLength;
-            required = options.required;
-            placeholder = options.placeholder;
-            
-            this.value = options.value;
-            
-            this.isEmpty = function() {
+        var TextBox = function(options){
+			if('label' in options ){
+				this.label = options.label;
+			}
+			if('name' in options){
+				this.name = options.name;
+			}
+			if('minLength' in options){
+				this.minLength = options.minLength;
+			}
+			if('maxLength' in options){
+				this.maxLength = options.maxLength;
+			}
+			if('required' in options){
+				this.required = options.required;
+			}
+			if('value' in options){
+				this.value = options.value;
+			}
+		}
+		TextBox.prototype = {
+            isEmpty : function() {
                 return !(this.value.length);
-            }
-            
+			},
+		}
+        
+        var RadioButtonGroup = function(options){
+			if('name' in options){
+				this.name = options.name;
+			}
+			if('value' in options){
+				this.value = options.value;
+			}
+			if('checked' in options){
+				this.checked = options.checked;
+			}
+			if('defaultCheck' in options){
+				this.defaultCheck = options.defaultCheck;
+			}
         }
         
-        var radioButtonGroup = function(options){
-            name = options.name;
-            value = options.value;
-            checked = options.checked;
-            defaultCheck = options.defaultCheck;
+        var CheckboxGroup = function(options){
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('value' in options){
+				this.value = options.value;
+			}
+            if('checked' in options){
+				this.checked = options.checked;
+			}
+            if('defaultCheck' in options){
+				this.defaultCheck = options.defaultCheck;
+			}
         }
         
-        var checkboxGroup = function(options){
-            name = options.name;
-            value = options.value;
-            checked = options.checked;
-            defaultCheck = options.defaultCheck;
+        var Dropdown = function(options){
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('size' in options){
+				this.size = options.size;
+			}
+            if('multiple' in options){
+				this.multiple = options.multiple;
+			}
+            if('selected' in options){
+				this.selected = options.selected;
+			}
+            if('optList' in options){
+				this.optList = options.optList;
+			}
         }
         
-        var dropdown = function(options){
-            name = options.name;
-            size = options.size;
-            multiple = options.multiple;
-            selected = options.selected;
-            optList = options.optList;
-            if (multiple == true){        
-            }
-            else{
-            }
-        }
-        var datetime = function(options){
-            name = options.name;
-            year = options.year;
-            month = options.month;
-            date = options.date;
-            hour = options.hour;
-            minute = options.minute;
+        var Datetime = function(options){
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('year' in options){
+				this.year = options.year;
+			}
+            if('month' in options){
+				this.month = options.month;
+			}
+            if('date' in options){
+				this.date = options.date;
+			}
+            if('hour' in options){
+				this.hour = options.hour;
+			}
+            if('minute' in options){
+				this.minute = options.minute;
+			}
         }
     }
     
@@ -324,29 +327,30 @@ var Control = function(controlType, args) {
      */
     
     var DOM = {
-        form : $('#form'),
         addPage : function() {
-            var page = $('<div class="page"></div>').appendTo(form);
+            var page = $('<div class="page"></div>').appendTo($('#form'));
+            
             var titleElem = {
                 type: 'heading',
-                value: 'Page title',
-                block: true
+                value: 'Page title'
             };
             
+            /*
             var pElem = {
                 type: 'paragraph',
                 value: 'This is a sample paragraph.',
                 block: true
             };
-            
+            */
             var inputElem = {
                 type: 'textbox',
                 value: 'Some text',
                 label: 'Label:',
             }
             
+            
             DOM.addControl(page, titleElem);
-            DOM.addControl(page, pElem);
+            //DOM.addControl(page, pElem);
             DOM.addControl(page, inputElem);
         },
         addControl: function(page, elem) {
@@ -355,72 +359,46 @@ var Control = function(controlType, args) {
             switch (elem.type) {
                 case 'heading':
                     var control = $('<h1 class="control"></h1>');
-                    if (elem.value) {
-                        innerText = elem.value;
+                    
+                    var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
+                        $(this).closest('.control').addClass('focus');
+                        $(this).closest('.page').addClass('focus');
+                    }).on('blur', function() {
+                        $(this).closest('.control').removeClass('focus');
+                        $(this).closest('.page').removeClass('focus');
+                    });
+                    
+                    
+                    if ('value' in elem) {
+                        inner.text(elem.value);
                     }
-                    if (elem.block) {
-                        var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    else
-                    {
-                        var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-
-                    if (innerText) {
-                        inner.html(innerText);
-                    }
+                    
                     control.append(inner);
                     page.append(control);
                     break;
                 
                 case 'paragraph':
                     var control = $('<p class="control"></p>');
-                    if (elem.value) {
-                        innerText = elem.value;
+                    
+                    var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
+                        $(this).closest('.control').addClass('focus');
+                        $(this).closest('.page').addClass('focus');
+                    }).on('blur', function() {
+                        $(this).closest('.control').removeClass('focus');
+                        $(this).closest('.page').removeClass('focus');
+                    });
+
+                    if ('value' in elem) {
+                        inner.text(elem.value);
                     }
                     
-                    if (elem.block) {
-                        var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    else
-                    {
-                        var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
-                            $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
-                        }).on('blur', function() {
-                            $(this).closest('.control').removeClass('focus');
-                            $(this).closest('.page').removeClass('focus');
-                        });
-                    }
-                    if (innerText) {
-                        inner.html(innerText);
-                    }
                     control.append(inner);
                     page.append(control);
                     break;
+                
                 case 'textbox':
                     var control = $('<span style="display:inline-block" class="textbox control"><input style="margin-left: 5px;" type="text"></span>');
-                    if (elem.value) {
-                        control.val(elem.value);
-                    }
+                    
                     var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
                             $(this).closest('.page').addClass('focus');
@@ -429,11 +407,12 @@ var Control = function(controlType, args) {
                             $(this).closest('.page').removeClass('focus');
                         });
                     
-                    if (elem.label) {
-                        inner.html(elem.label);
+                    if ('label' in elem) {
+                        inner.text(elem.label);
                     }
                     control.prepend(inner);
                     page.append(control);
+                    
                     break;
             }
         }
@@ -456,7 +435,7 @@ var Control = function(controlType, args) {
                         {
                             type: 'button',
                             icon: 'fa-save',
-                            title: 'Save lalala',
+                            title: 'Save',
                             callback: log
                         }
                     ]
@@ -487,7 +466,7 @@ var Control = function(controlType, args) {
     
     var menu = defaultMenus;
     
-    this.init = function(){
+    this.init = function() {
         var form = $('<div id="form"></div>').appendTo($('#editable'));
     };
 
