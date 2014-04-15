@@ -52,10 +52,10 @@ class Setup_model extends CI_Model {
         
 
         //Groups Table
-        if ($this->db->table_exists('groups')){
-            $this->dbforge->drop_table('groups');
-            echo "Table 'groups' dropped\n";
-        }
+    
+        $this->dbforge->drop_table('groups');
+        echo "Table 'groups' dropped\n";
+
         $fields = array(
             'gid' => array(
                 'type' => 'INT',
@@ -106,10 +106,9 @@ class Setup_model extends CI_Model {
         echo "Table 'users' created\n";
 
         //Ownership Table
-        if ($this->db->table_exists('filePermissions')){
-            $this->dbforge->drop_table('filePermissions');
-            echo "Table 'filePermissions' dropped\n";
-        }
+        $this->dbforge->drop_table('filepermissions');
+        echo "Table 'filepermissions' dropped\n";
+        
         $fields=array(
             'gid'=>array(
                 'type'=>'INT'
@@ -125,16 +124,15 @@ class Setup_model extends CI_Model {
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('gid', TRUE);
         $this->dbforge->add_key('fid', TRUE);
-        $this->dbforge->create_table('filePermissions');
-        echo "Table 'filePermissions' created\n";
+        $this->dbforge->create_table('filepermissions');
+        echo "Table 'filepermissions' created\n";
 
 
         //Group Mapping(parent files to child files)
 
-        if ($this->db->table_exists('groupMapping')){
-            $this->dbforge->drop_table('groupMapping');
-            echo "Table 'groupMapping' dropped\n";
-        }
+        $this->dbforge->drop_table('groupmapping');
+        echo "Table 'groupmapping' dropped\n";
+
         $fields=array(
             'gid'=>array(
                 'type'=>'INT'
@@ -147,8 +145,9 @@ class Setup_model extends CI_Model {
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('gid', TRUE);
         $this->dbforge->add_key('uid', TRUE);
-        $this->dbforge->create_table('groupMapping');
-        echo "Table 'groupMapping' created\n";
+
+        $this->dbforge->create_table('groupmapping');
+        echo "Table 'groupmapping' created\n";
         
         echo "Inserting 'public' user";
         $this->db->trans_start();
