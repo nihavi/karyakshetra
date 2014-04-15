@@ -201,78 +201,28 @@ Submit = new(function(){
             return this;
         }
     }
-    
-    var updateJSON = function(defaultObject, userObject) {
-        for (key in defaultObject) {
-            if (key in userObject) {
-                defaultObject[key] = userObject[key];
-            }
-        }
-        return defaultObject;
-    }
 
-	var Control = function(controlType, args) {
+	var Control = function(controlType, options) {
         
         this.type = controlType;
         
         if (this.type == "text") {
-            var options = {
-				label : null,
-                name : null,
-                minLength : 10,
-                maxLength : 99,
-                required : true,
-                placeholder : "Input required data",
-                value: "",
-            };
-            options = updateJSON(options, args);
-            var textBoxObject = new TextBox(options);
+			var textBoxObject = new TextBox(options);
         }
         
         else if (this.type == "radioButtonGroup") {
-            var options = {
-                name : null,
-                value : new Array(),
-                checked : new Array(),
-                defaultCheck : null,
-            };
-            options = updateJSON(options, args);
             var radioButtonObject = new RadioButtonGroup(options);
         }
         
         else if (this.type == "checkboxGroup"){
-            var options = {
-                name : null,
-                value : new Array(),
-                checked : new Array(),
-                defaultCheck : null,
-            };
-            options = updateJSON(options, args);
             checkboxObject = new CheckboxGroup(options);
         }
         
         else if (this.type == "dropdown"){
-            var options = {    
-                name : null,
-                size : null,
-                multiple : null,
-                selected : null,
-                optList : new Array(),
-            };
-            options = updateJSON(options, args);
             dropdownObject = new Dropdown(options);
         }
         
         else if (this.type == "datetime"){
-            var options = {
-                name : null,
-                year : null,
-                month : null,
-                date : null,
-                hour : null,
-                minute : null,
-            };
-            options = updateJSON(options, args);
             dateTimeObject = new Datetime(options);
         }
         
