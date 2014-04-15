@@ -219,7 +219,7 @@ var Control = function(controlType, args) {
                 //value: "",
             };
             options = updateJSON(options, args);
-            textBoxObject = new textBox(options);
+            var textBoxObject = new TextBox(options);	//TODO
         }
         
         else if (this.type == "radioButtonGroup") {
@@ -230,7 +230,7 @@ var Control = function(controlType, args) {
                 defaultCheck : null,
             };
             options = updateJSON(options, args);
-            radioButtonObject = new radioButtonGroup(options);
+            radioButtonObject = new RadioButtonGroup(options);
         }
         
         else if (this.type == "checkboxGroup"){
@@ -241,7 +241,7 @@ var Control = function(controlType, args) {
                 defaultCheck : null,
             };
             options = updateJSON(options, args);
-            checkboxObject = new checkboxGroup(options);
+            checkboxObject = new CheckboxGroup(options);
         }
         
         else if (this.type == "dropdown"){
@@ -253,7 +253,7 @@ var Control = function(controlType, args) {
                 optList : new Array(),
             };
             options = updateJSON(options, args);
-            dropdownObject = new dropdown(options);
+            dropdownObject = new Dropdown(options);
         }
         
         else if (this.type == "datetime"){
@@ -266,15 +266,15 @@ var Control = function(controlType, args) {
                 minute : null,
             };
             options = updateJSON(options, args);
-            dateTimeObject = new datetime(options);
+            dateTimeObject = new Datetime(options);
         }
         
-        var textBox = function(options){
-            name = options.name;
-            minLength = options.minLength;
-            maxLength = options.maxLength;
-            required = options.required;
-            placeholder = options.placeholder;
+        var TextBox = function(options){
+            this.name = options.name;
+            this.minLength = options.minLength;
+            this.maxLength = options.maxLength;
+            this.required = options.required;
+            this.placeholder = options.placeholder;
             
             this.value = options.value;
             
@@ -284,38 +284,38 @@ var Control = function(controlType, args) {
             
         }
         
-        var radioButtonGroup = function(options){
-            name = options.name;
-            value = options.value;
-            checked = options.checked;
-            defaultCheck = options.defaultCheck;
+        var RadioButtonGroup = function(options){
+            this.name = options.name;
+            this.value = options.value;
+            this.checked = options.checked;
+            this.defaultCheck = options.defaultCheck;
         }
         
-        var checkboxGroup = function(options){
-            name = options.name;
-            value = options.value;
-            checked = options.checked;
-            defaultCheck = options.defaultCheck;
+        var CheckboxGroup = function(options){
+            this.name = options.name;
+            this.value = options.value;
+            this.checked = options.checked;
+            this.defaultCheck = options.defaultCheck;
         }
         
-        var dropdown = function(options){
-            name = options.name;
-            size = options.size;
-            multiple = options.multiple;
-            selected = options.selected;
-            optList = options.optList;
+        var Dropdown = function(options){
+            this.name = options.name;
+            this.size = options.size;
+            this.multiple = options.multiple;
+            this.selected = options.selected;
+            this.optList = options.optList;
             if (multiple == true){        
             }
             else{
             }
         }
-        var datetime = function(options){
-            name = options.name;
-            year = options.year;
-            month = options.month;
-            date = options.date;
-            hour = options.hour;
-            minute = options.minute;
+        var Datetime = function(options){
+            this.name = options.name;
+            this.year = options.year;
+            this.month = options.month;
+            this.date = options.date;
+            this.hour = options.hour;
+            this.minute = options.minute;
         }
     }
     
