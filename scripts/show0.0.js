@@ -204,11 +204,17 @@ Show = new (function(){
         if(obj == null || typeof(obj) != 'object')
             return obj;
         
-        var temp = {};
+        var temp;
+        if( Array.isArray(obj) ){
+            temp = obj.slice();
+        }
+        else {
+            temp = {};
 
-        for(var key in obj)
-            if( obj.hasOwnProperty(key) )
-                temp[key] = clone(obj[key]);
+            for(var key in obj)
+                if( obj.hasOwnProperty(key) )
+                    temp[key] = clone(obj[key]);
+        }
         return temp;
     }
 
