@@ -127,13 +127,5 @@
     </head>
     <body onload='loadJquery()'>
         <div id='wait-message'>Please wait...</div>
-        <script>
-        /*window.onload = function() {
-            window.setTimeout(function() {
-                document.getElementById('wait-message').innerHTML = "Calm down. Take a deep breath. Unfortunately, your code isn't working. :/";
-            },
-            3000);
-        };*/
-        </script>
     </body>
 </html>
