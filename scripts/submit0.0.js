@@ -1,5 +1,9 @@
 Submit = new(function(){
-    
+
+	//var listOfPages = [];
+	//var listOfContainers = [];
+	//var listOfControls = [];
+	
     this.newForm = function(){
         return new Form();
     }
@@ -21,10 +25,12 @@ Submit = new(function(){
         this.children = [];
     };
 
-        Form.prototype = {
+//add code for new page and 'addPage' this new page
+
+    Form.prototype = {
         
-        addPages : function(pages){
-            this.children.push(pages);
+        addPage : function(page){
+            this.children.push(page);
             return this;
         },
         
@@ -43,8 +49,8 @@ Submit = new(function(){
             }
         },
 
-        addPagesAtStart : function(pages){
-            this.children.unshift(pages);
+        addPageAtStart : function(page){
+            this.children.unshift(page);
             return this;
         },
 
@@ -82,7 +88,7 @@ Submit = new(function(){
 
     Page.prototype = {
         
-        addContainers : function(containerList){
+        addContainer : function(containerList){
             this.containers.push(containerList);
             return this;
         },
@@ -102,7 +108,7 @@ Submit = new(function(){
             }
         },
         
-        addContainersAtStart : function(containerList){
+        addContainerAtStart : function(containerList){
             this.containers.unshift(containerList);
             return this;
         },
@@ -142,7 +148,7 @@ Submit = new(function(){
     
     Container.prototype = {
         
-        addControls : function(controlList){
+        addControl : function(controlList){
             this.controls.push(controlList);
             return this;
         },
@@ -162,7 +168,7 @@ Submit = new(function(){
             }
         },
         
-        addControlsAtStart : function(controlList){
+        addControlAtStart : function(controlList){
             this.controls.unshift(controlList);
             return this;
         },
@@ -205,21 +211,22 @@ Submit = new(function(){
         return defaultObject;
     }
 
-var Control = function(controlType, args) {
+	var Control = function(controlType, args) {
         
         this.type = controlType;
         
         if (this.type == "text") {
             var options = {
+				label : null,
                 name : null,
                 minLength : 10,
                 maxLength : 99,
                 required : true,
                 placeholder : "Input required data",
-                //value: "",
+                value: "",
             };
             options = updateJSON(options, args);
-            var textBoxObject = new TextBox(options);	//TODO
+            var textBoxObject = new TextBox(options);
         }
         
         else if (this.type == "radioButtonGroup") {
@@ -230,7 +237,7 @@ var Control = function(controlType, args) {
                 defaultCheck : null,
             };
             options = updateJSON(options, args);
-            radioButtonObject = new RadioButtonGroup(options);
+            var radioButtonObject = new RadioButtonGroup(options);
         }
         
         else if (this.type == "checkboxGroup"){
@@ -270,52 +277,98 @@ var Control = function(controlType, args) {
         }
         
         var TextBox = function(options){
-            this.name = options.name;
-            this.minLength = options.minLength;
-            this.maxLength = options.maxLength;
-            this.required = options.required;
-            this.placeholder = options.placeholder;
-            
-            this.value = options.value;
-            
-            this.isEmpty = function() {
+			if('label' in options ){
+				this.label = options.label;
+			}
+			if('name' in options){
+				this.name = options.name;
+			}
+			if('minLength' in options){
+				this.minLength = options.minLength;
+			}
+			if('maxLength' in options){
+				this.maxLength = options.maxLength;
+			}
+			if('required' in options){
+				this.required = options.required;
+			}
+			if('value' in options){
+				this.value = options.value;
+			}
+		}
+		TextBox.prototype = {
+            isEmpty : function() {
                 return !(this.value.length);
-            }
-            
-        }
+			},
+		}
         
         var RadioButtonGroup = function(options){
-            this.name = options.name;
-            this.value = options.value;
-            this.checked = options.checked;
-            this.defaultCheck = options.defaultCheck;
+			if('name' in options){
+				this.name = options.name;
+			}
+			if('value' in options){
+				this.value = options.value;
+			}
+			if('checked' in options){
+				this.checked = options.checked;
+			}
+			if('defaultCheck' in options){
+				this.defaultCheck = options.defaultCheck;
+			}
         }
         
         var CheckboxGroup = function(options){
-            this.name = options.name;
-            this.value = options.value;
-            this.checked = options.checked;
-            this.defaultCheck = options.defaultCheck;
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('value' in options){
+				this.value = options.value;
+			}
+            if('checked' in options){
+				this.checked = options.checked;
+			}
+            if('defaultCheck' in options){
+				this.defaultCheck = options.defaultCheck;
+			}
         }
         
         var Dropdown = function(options){
-            this.name = options.name;
-            this.size = options.size;
-            this.multiple = options.multiple;
-            this.selected = options.selected;
-            this.optList = options.optList;
-            if (multiple == true){        
-            }
-            else{
-            }
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('size' in options){
+				this.size = options.size;
+			}
+            if('multiple' in options){
+				this.multiple = options.multiple;
+			}
+            if('selected' in options){
+				this.selected = options.selected;
+			}
+            if('optList' in options){
+				this.optList = options.optList;
+			}
         }
+        
         var Datetime = function(options){
-            this.name = options.name;
-            this.year = options.year;
-            this.month = options.month;
-            this.date = options.date;
-            this.hour = options.hour;
-            this.minute = options.minute;
+			if('name' in options){
+				this.name = options.name;
+			}
+            if('year' in options){
+				this.year = options.year;
+			}
+            if('month' in options){
+				this.month = options.month;
+			}
+            if('date' in options){
+				this.date = options.date;
+			}
+            if('hour' in options){
+				this.hour = options.hour;
+			}
+            if('minute' in options){
+				this.minute = options.minute;
+			}
         }
     }
     
@@ -456,7 +509,7 @@ var Control = function(controlType, args) {
                         {
                             type: 'button',
                             icon: 'fa-save',
-                            title: 'Save lalala',
+                            title: 'Save',
                             callback: log
                         }
                     ]
