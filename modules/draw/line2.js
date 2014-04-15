@@ -247,6 +247,13 @@ var akruti = new(function () {
         this.resize(true);
         this.g.setAttribute('transform', 'translate(' + (this.svgW - this.zoomFactor * this.pageW) / 2 + ',' + (this.svgH - this.zoomFactor * this.pageH) / 2 + ')');
     }
+        fd: {
+            'd': 'd',
+            'sc': 'stroke',
+            'sw': 'stroke-width',
+            //'sd': 'stroke-dasharray',
+            //'so': 'stroke-opacity',
+        },
 
     Svg.prototype.zoom = svgZoom;
 
@@ -535,8 +542,9 @@ var akruti = new(function () {
         this.element = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
         /*Setting Class and type*/
-        this.g.setAttribute('class', 'fd');
         this.t = 'fd';
+        this.g.classList.add(this.t);
+        this.g.classList.add('drawing-elements');
 
         /* Setting Id */
         this.pid = parent.id;
@@ -556,7 +564,7 @@ var akruti = new(function () {
 
         /* Provided Attributes */
         var j;
-        for (j in allAA['fdd']) {
+        for (j in allAA['fd']) {
             if (j in attributes) {
                 this.element.setAttribute(allAA['fd'][j], attributes[j]);
                 this[j] = attributes[j];
@@ -572,6 +580,7 @@ var akruti = new(function () {
 
         return this;
     };
+    
     Line.prototype.changeAttributes = changeAttributes;
     Ellipse.prototype.changeAttributes = changeAttributes;
     Rectangle.prototype.changeAttributes = changeAttributes;
@@ -1645,73 +1654,53 @@ var akruti = new(function () {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
+                    
+                    var dArray = new Array('M', x, y);
                     var attributes = {
-                        'd': 'M' + x + '' + y,
+                        'd': dArray.join(' '),
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
                     }
                     var element = new FreeHandDrawing(attributes, mySvgObject);
-                    element.initX = x;
-                    element.initY = y;
-                    element.attributes = attributes;
-                    element.points = new Array;
-                    element.points.push([x, y]);
+                    element.dArray = dArray;
                     return element;
                 },
 
                 mousemove: function (e) {
+                    
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
-                    var previous_state = element.attributes['d'];
-                    previous_state = previous_state + 'L' + x + '' + y;
-                    element.attributes['d'] = previous_state;
-                    element.points.push([x, y]);
-                    return element;
+                    
+                    element.dArray('L', x, y);
+                    element.changeAttributes({
+                        'd':element.d + ' L ' + x + ' ' + y
+                    });
+                    
                 },
 
                 mouseup: function (e) {
+                    
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
-                    /*element.changeAttributes({
-                        'p': element.p + ' ' + x + ',' + y,
-                    })*/
-                    var previous_state = element.attributes['d'];
-                    previous_state = previous_state + 'L' + x + '' + y;
-                    element.attributes['d'] = previous_state;
-                    element.points.push([x, y]);
-                    element.lastX = x;
-                    element.lastY = y;
-
+                    
+                    element.dArray('L', x, y);
+                    element.changeAttributes({
+                        'd':element.d + ' L ' + x + ' ' + y
+                    });
+                    
+                    
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    Base.addOp({
-                        pastState: {
-                            'op': 'd', //op = [d]elete; when this objects come, delete the Object
-                            'id': element.id,
-                            'pid': element.pid,
-                            't': element.t,
-                        },
-                        newState: {
-                            'op': 'cr', //op = [cr]eate; when this objects come, create the Object
-                            'p': element.p,
-                            'sc': element.sc,
-                            'sw': element.sw,
-                            'pid': element.pid,
-                            't': element.t,
-                        }
-                    });
-
+                    Base.addOp(element.getOp('d'),element.getOp('cr'));
                 },
-
             },
-
-
+            
             selectMode: {
                 mousedown: function (e) {
                     return
