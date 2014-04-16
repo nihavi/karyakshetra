@@ -2158,7 +2158,51 @@ Akruti = new (function() {
                     return state.newState;
                 },
             },
-            
+            fd:{
+                mousedown:function(element, rect) {
+                    element.ratio = new Array();
+                    element.minX.ratio = Math.abs(element.minX - rect.x)/rect.w;
+                    element.maxX.ratio = Math.abs(element.maxX - rect.x)/rect.w;
+                    element.minY.ratio = Math.abs(element.minY - rect.y)/rect.h;
+                    element.maxY.ratio = Math.abs(element.maxY - rect.y)/rect.h;
+                    for(var i=1; i<element.dArray.length; i++) {
+                        element.ratio[i] = Math.abs(parseInt(element.dArray[i++]) - rect.x)/rect.w;
+                        element.ratio[i] = Math.abs(parseInt(element.dArray[i++]) - rect.y)/rect.h;
+                    }
+                    return element.getOp('ch',['d'])
+                },
+                mousemove:function(element, rect) {
+                    for(var i=1; i<element.dArray.length; i++) {
+                        element.dArray[i] = rect.x + (rect.w * element.ratio[i++]);
+                        element.dArray[i] = rect.y + (rect.h * element.ratio[i++]);
+                    }
+                    element.minX = rect.x + (rect.w * element.minX.ratio);
+                    element.maxX = rect.x + (rect.w * element.maxX.ratio);
+                    element.minY = rect.y + (rect.h * element.minY.ratio);
+                    element.maxY = rect.y + (rect.h * element.maxY.ratio);
+                    var changes = {
+                        'd':element.dArray.join(' ')
+                    }
+                    var state = element.changeAttributes(changes);
+                    
+                    
+                },
+                mouseup:function(element, rect) {
+                    for(var i=1; i<element.dArray.length; i++) {
+                        element.dArray[i] = rect.x + (rect.w * element.ratio[i++]);
+                        element.dArray[i] = rect.y + (rect.h * element.ratio[i++]);
+                    }
+                    element.minX = rect.x + (rect.w * element.minX.ratio);
+                    element.maxX = rect.x + (rect.w * element.maxX.ratio);
+                    element.minY = rect.y + (rect.h * element.minY.ratio);
+                    element.maxY = rect.y + (rect.h * element.maxY.ratio);
+                    var changes = {
+                        'd':element.dArray.join(' ')
+                    }
+                    var state = element.changeAttributes(changes);
+                    return state.newState; 
+                }, 
+            },
             sA:{
                 left:{
                     mousedown:function(x,y) {
