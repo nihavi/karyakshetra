@@ -432,6 +432,14 @@ Submit = new(function(){
             }
             DOM.addControl(activeContainer, input);
         },
+        addHeading: function() { 
+            var titleElem = {
+                type: 'heading',
+                value: 'Page title'
+            };
+            
+            DOM.addControl(activeContainer, titleElem);
+        },
         addControl: function(page, elem) {
             
             var control, innerText;
@@ -571,6 +579,12 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title: 'New textbox',
                             callback: DOM.addTextbox
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New heading',
+                            callback: DOM.addHeading
                         }
                     ]
                 }
