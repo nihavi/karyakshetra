@@ -28,6 +28,18 @@ class Opqueue extends CI_Controller {
         
         $ops = $this->opqueue->getop($fid, $last_op);
         
-        echo json_encode($ops);
+        if( $ops )
+            echo json_encode($ops);
+        else 
+            echo '';
+    }
+    
+    function lastop()
+    {
+        $this->load->model('Opqueue_model', 'opqueue');
+        
+        $fid = $this->input->post('fid', TRUE);
+        
+        echo $this->opqueue->getlastop($fid);
     }
 }

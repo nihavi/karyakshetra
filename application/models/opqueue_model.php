@@ -36,12 +36,25 @@ class Opqueue_model extends CI_Model {
         $query = $this->db->get('opqueue');
         $query = $query->result();
         
-        $res = Array(
-            'lastOp' => $query[count($query) - 1]->id,
-            'ops' => $query,
-        );
+        if( count($query) ){
+            $res = Array(
+                'lastOp' => $query[count($query) - 1]->id,
+                'ops' => $query,
+            );
+        }
+        else{
+            $res = '';
+        }
         
         return $res;
     }
     
+    function getlastop($fid)
+    {
+        $this->db->select_max('id');
+        $this->db->where('fid', $fid);
+        $query = $this->db->get('opqueue');
+        return $query->row()->id;
+        //return $query->row()->id;
+    }
 }

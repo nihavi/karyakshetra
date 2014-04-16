@@ -184,7 +184,8 @@ class Setup_model extends CI_Model {
                 'type'=>'INT'
             ),
             'op'=>array(
-                'type'=>'SMALLINT'
+                'type'=>'VARCHAR',
+                'constraint'=>'65535'
             ),
             'time TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
         );
