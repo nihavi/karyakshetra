@@ -1865,6 +1865,7 @@ Show = new (function(){
             endBtn.click(function(){
                 SlideShow.end(true);
             });
+            Base.listen(true);
             $('#slides').bind('click', SlideShow.next);
             $(window).bind('keydown', SlideShow.next);
         };
@@ -1933,6 +1934,7 @@ Show = new (function(){
                 endSlide = 1;
                 return;
             }
+            Base.listen(false);
             Show.resize = resizeEditor;
             Base.showMenu();
             Base.exitFullscreen();
