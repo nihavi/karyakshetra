@@ -111,12 +111,11 @@ class File_model extends CI_Model {
 
     function get_files_of_user($group_id)
     {
-		//$temp ="SELECT * FROM files WHERE fid = ?";
-		//$sql 
-		= $this->db->query($temp, array($group_id));
-		
-		$sql = $this->db->get_where('gid', $group_id);
-		
+		$this->db->select('files.*');
+		$this->db->from('files, filepermissions');
+		$this->db->where('files.fid = filepermissions.fid');
+		$this->db->where("filepermissions.gid = $group_id");
+		$sql = $this->db->get();
 		return $sql;
     }
     
