@@ -9,7 +9,6 @@ var Aksharam = new(function(){
         this.docBody.contentEditable = "true";
         this.docWidth = 80;
         this.padding = [5, 2, 3];
-        this.render();
     }
     
     var docProto = MyDoc.prototype;
@@ -28,9 +27,10 @@ var Aksharam = new(function(){
 		backDrop.appendChild(this.docBody);
 	};
     
-    this.init = function(){
+    this.init = function() {
 		this.newDoc = new MyDoc();
-		doc = this.newDoc;		
+		doc = this.newDoc;
+		doc.render();		
     };
 
     this.getMenu = function(){
@@ -121,14 +121,25 @@ var Aksharam = new(function(){
     };
     
     function changeText(e) {
-		var sel = document.getSelection(),
-			arr = new Array();
-		for(var i = 0; i < sel.rangeCount; ++i) 
-			arr.push(sel.getRangeAt(i));
-		for(var i = 0; i < arr.length; ++i) {
+		var sel = document.getSelection();
+		if(sel.rangeCount == 1) {
+			var range = document.createRange();
+			range = sel.getRangeAt(0).cloneRange();
+			doc.docBody.focus();
 			sel.removeAllRanges();
-			sel.addRange(arr[i]);
+			sel.addRange(range);
 			document.execCommand(e);
+		}
+		else {
+			var	arr = new Array();
+			for(var i = 0; i < sel.rangeCount; ++i) 
+				arr.push(sel.getRangeAt(i));
+			for(var i = 0; i < arr.length; ++i) {
+				sel.removeAllRanges();
+				sel.addRange(arr[i]);
+				document.execCommand(e);
+			}
+			sel.removeAllRanges();
 		}
 	}
 
