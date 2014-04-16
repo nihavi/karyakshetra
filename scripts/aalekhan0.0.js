@@ -2861,12 +2861,17 @@ var Aalekhan = new (function(){
         $('.expr').eq(id).remove();
         $('.expr').each(function(i){
             $(this).find('.expr-in').attr('id','expr'+i);
+            $(this).find('.expr-dis').attr('id','exprDis'+i);
             $(this).find('.expr-no').text(i+1);
         });
-        if($('.expr').eq(id).length)
+        if($('.expr').eq(id).length){
+            $('.expr .expr-in').eq(id).show();
             $('.expr .expr-in').eq(id).focus();
-        else 
+        }
+        else {
+            $('.expr .expr-in').eq(id-1).show();
             $('.expr .expr-in').eq(id-1).focus();
+        }
         if(!$('.expr').length)
             addF();
         //Base.updateMenu(defaultMenu);
