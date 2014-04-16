@@ -135,6 +135,8 @@ Base = new (function(){
         exPointer++;
         exQueue[exPointer] = null;
         newQueue.push(newState);
+        if( isStreaming )
+            sendOp(newState);
     };
     
     this.undo = function(){
@@ -175,6 +177,86 @@ Base = new (function(){
             exPointer++;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);
+        }
+    }
+    var isListening = false;
+    var isStreaming = false;
+    var lastLoadedOp;
+    
+    var startListening = function(){
+        var updateOp = function(){
+            $.ajax({
+                type: 'POST',
+                url: baseUrl+'opqueue/getop',
+                data: {
+                    fid: currFileId,
+                    last: lastLoadedOp
+                },
+                success: function(data){
+                    if( !isListening )
+                        return;
+                    if( data ){
+                        data = JSON.parse(data);
+                        for(var i = 0; i < data.ops.length; ++i){
+                            module.performOp(data.ops[i].op)
+                        }
+                        lastLoadedOp = data.lastOp;
+                    }
+                    updateOp();
+                }
+            });
+        }
+        if( currFileId ) {
+            $.ajax({
+                type: 'POST',
+                url: baseUrl+'opqueue/lastop',
+                data: {
+                    fid: currFileId,
+                },
+                success: function(data){
+                    lastLoadedOp = data;
+                    updateOp();
+                }
+            });
+        }
+        else {
+            return false;
+        }
+    }
+    
+    var sendOp = function(op){
+        $.ajax({
+            type: 'POST',
+            url: baseUrl+'opqueue/addop',
+            data: {
+                fid: currFileId,
+                op: op
+            },
+            success: function(data){
+                //Do nothing
+                //TODO: Failiure detection
+            }
+        });
+    }
+    this.listen = function(mode){
+        if( isListening == mode )return;
+        if( mode ){
+            this.stream(false);
+            isListening = true;
+            startListening();
+        }
+        else {
+            isListening = false;
+        }
+    }
+    this.stream = function(mode){
+        if( isStreaming == mode )return;
+        if( mode ){
+            this.listen(false);
+            isStreaming = true;
+        }
+        else {
+            isStreaming = false;
         }
     }
     
