@@ -7,12 +7,12 @@ class Remote extends CI_Controller{
         
     }
     
-    function show($id = "")
+    function show($fid = "")
     {
-        if(is_numeric($id))
+        if(is_numeric($fid))
         {
             $this->load->view('mobile/remoteshow', array(
-               'id' => $id 
+               'fid' => $fid
             ));
         }
         else
