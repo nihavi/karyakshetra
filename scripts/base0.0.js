@@ -80,6 +80,7 @@ Base = new (function(){
     var saveFile = function(filedata, filename){
         var data = {
             file: filedata,
+            module: moduleId,
         }
         var url;
         if( currFileId ){
@@ -134,6 +135,8 @@ Base = new (function(){
         exPointer++;
         exQueue[exPointer] = null;
         newQueue.push(newState);
+        if( isStreaming )
+            sendOp(newState);
     };
     
     this.undo = function(){
@@ -174,6 +177,86 @@ Base = new (function(){
             exPointer++;
             exQueue[exPointer] = null;
             newQueue.push(op.newState);
+        }
+    }
+    var isListening = false;
+    var isStreaming = false;
+    var lastLoadedOp;
+    
+    var startListening = function(){
+        var updateOp = function(){
+            $.ajax({
+                type: 'POST',
+                url: baseUrl+'opqueue/getop',
+                data: {
+                    fid: currFileId,
+                    last: lastLoadedOp
+                },
+                success: function(data){
+                    if( !isListening )
+                        return;
+                    if( data ){
+                        data = JSON.parse(data);
+                        for(var i = 0; i < data.ops.length; ++i){
+                            module.performOp(data.ops[i].op)
+                        }
+                        lastLoadedOp = data.lastOp;
+                    }
+                    updateOp();
+                }
+            });
+        }
+        if( currFileId ) {
+            $.ajax({
+                type: 'POST',
+                url: baseUrl+'opqueue/lastop',
+                data: {
+                    fid: currFileId,
+                },
+                success: function(data){
+                    lastLoadedOp = data;
+                    updateOp();
+                }
+            });
+        }
+        else {
+            return false;
+        }
+    }
+    
+    var sendOp = function(op){
+        $.ajax({
+            type: 'POST',
+            url: baseUrl+'opqueue/addop',
+            data: {
+                fid: currFileId,
+                op: op
+            },
+            success: function(data){
+                //Do nothing
+                //TODO: Failiure detection
+            }
+        });
+    }
+    this.listen = function(mode){
+        if( isListening == mode )return;
+        if( mode ){
+            this.stream(false);
+            isListening = true;
+            startListening();
+        }
+        else {
+            isListening = false;
+        }
+    }
+    this.stream = function(mode){
+        if( isStreaming == mode )return;
+        if( mode ){
+            this.listen(false);
+            isStreaming = true;
+        }
+        else {
+            isStreaming = false;
         }
     }
     
@@ -624,21 +707,91 @@ Base = new (function(){
     
     
     /*
-     * Global response variables
+     * Global variables from response
      */
     
     var baseUrl;
+    
+    /*
+     * Dependency solver
+     */
+    var loadingDep;
+    
+    var loadMathJax = function(){
+        window.MathJax = {
+            root: 'libs/MathJax',
+            extensions: ["tex2jax.js"],
+            jax: ["input/TeX","output/HTML-CSS"],
+            showProcessingMessages: false,
+            messageStyle: 'none',
+            showMathMenu: false,
+            showMathMenuMSIE: false,
+            tex2jax: {
+                inlineMath: [["$","$"],["\\(","\\)"]],
+                preview: ["loading..."]
+            }
+        };
+        path = baseUrl + 'libs/MathJax/MathJax.js';
+        $.ajax({
+            url: path,
+            dataType: "script",
+            cache: true,
+            success: function(){
+                MathJax.Hub.Queue(
+                    ["Typeset",MathJax.Hub,$('<div id="dummyMathJaxdummy" style="position:absolute;top:-100px;left:-1000px;">$\pm sin \left( x \right)$</div>').appendTo('body').get(0)],
+                    function(){
+                        $('#dummyMathJaxdummy').remove();
+                    }
+                )
+                solvedDep();
+            }
+        })
+    };
+    
+    var solveDepend = function(depends){
+        var availLibs = {
+            'MathJax': loadMathJax
+        };
+        loadingDep = 0;
+        for( var i = 0; i < depends.length; ++i ){
+            if( depends[i] in availLibs ){
+                ++loadingDep;
+                availLibs[depends[i]]();
+            }
+        }
+    }
+    
+    var solvedDep = function(){
+        --loadingDep;
+        if(loadingDep < 1)
+            init2();
+    }
     
     this.init = function(){
         /*
          * init function for Base
          * To be called when all js and css are loaded for the first time
          */
-         
-        /*
-         * get response variables
-         */
+        
+        // Get base url from response
         baseUrl = response.baseUrl;
+        moduleId = response.moduleId;
+        
+        /*
+         * Check dependencies and load libraries 
+         */
+        if( 'depends' in module ){
+            solveDepend(module.depends);
+        }
+        else {
+            init2();
+        }
+    }
+    var init2 = function(){
+        /*
+         * Init level 2.
+         * Dependencies are solved by now.
+         */
         
         if( ('fileId' in response) && ('fileData' in response) ){
             //Open file
@@ -650,9 +803,9 @@ Base = new (function(){
                 var file = response.fileData;
             }
         }
-
+        
         //Set default palette
-        this.setPalette(defaultPalette);
+        Base.setPalette(defaultPalette);
         
         //Append interface div that contains everything inside body
         $('<div class="interface" id="interface"></div>').appendTo('body');
@@ -664,18 +817,22 @@ Base = new (function(){
         //Append main to menubar
         var mainMenu = $('<div class="bar bar-super" id="mainMenu"></div>').appendTo('#menubar');
         
+        mainMenu.mousedown(function(ev){
+            ev.preventDefault();
+        });
+        
         //Add main menu items inside this level
         //Items are defined in menus
         menuId = 0;
         menus = new Object();
         menuMeta = new Object();
-        this.updateMenu(module.getMenu());
+        Base.updateMenu(module.getMenu());
         
-        this.focusMenu('file');
+        Base.focusMenu('file');
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
-        this.setEditable();
+        Base.setEditable();
         
         //Call module's init
         module.init(edit.get(0), file);
@@ -799,7 +956,9 @@ Base = new (function(){
         
         //Append submenu to menubar
         var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
-        
+        subMenu.mousedown(function(ev){
+            ev.preventDefault();
+        });
         //Append submenu items to submenu
         var item,i,j;
         var id, group;
@@ -923,6 +1082,10 @@ Base = new (function(){
                                     }
                                 }
                             }
+                            
+                            menuItem.mousedown(function(ev){
+                                ev.preventDefault();
+                            });
                             menuItem.click(handleMenuClick);
                             //Append menu item to submenu object
                             item.parentGroup = group.id;

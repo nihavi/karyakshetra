@@ -44,7 +44,7 @@ class File_model extends CI_Model {
         //Prepare array for insertion
         $data = array(
             'fname'=> $file_name,
-            'ftype'=> 0,
+            'ftype'=> $ftype,
             'pid'=> 0
         );
 
@@ -77,7 +77,7 @@ class File_model extends CI_Model {
         
         $public_id = $query->row()->gid;
         
-        $this->db->insert('filePermissions', array(
+        $this->db->insert('filepermissions', array(
                 'gid'       => $public_id,
                 'fid'       => $file_id,
                 'rights'    => 7
@@ -109,10 +109,15 @@ class File_model extends CI_Model {
         }
     }
 
-    function get_files_of_user($user)
+    function get_files_of_user($group_id)
     {
-        //Query database and return array of PHP object
-        //called, for now, from karyakshetra/dash, which is the controllers/dash.php controller.
+		$this->db->select('files.*');
+		$this->db->from('files, filepermissions');
+		$this->db->where('files.fid = filepermissions.fid');
+		$this->db->where("filepermissions.gid = $group_id");
+        $this->db->order_by('modified', 'asc');
+		$result = $this->db->get();
+		return $result;
     }
     
 }

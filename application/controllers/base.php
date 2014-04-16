@@ -32,6 +32,14 @@ class Base extends CI_Controller
         /*
          * Assumes that /scripts contains '<module>.js' file for each module
          */
+        $module_id = array(
+            'dash' => '0',
+            'akruti' => '1',
+            'show' => '2',
+            'submit' => '3',
+            'aalekhan' => '4',
+            'aksharam' => '5'
+        );
         $module_scripts_repo = array(
             'base' => 'base0.0.js',
             'dash' => 'dash0.0.js',
@@ -58,7 +66,8 @@ class Base extends CI_Controller
             'module' => $module,
             'base_script' => $module_scripts_repo['base'],
             'module_script' => $module_scripts_repo[$module],
-            'module_style' => $module_style_repo[$module]
+            'module_style' => $module_style_repo[$module],
+            'module_id' => $module_id[$module],
         );
         
         if( $file_id ){

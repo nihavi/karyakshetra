@@ -9,6 +9,7 @@
             // A global variable for baseUrl
             response = {
                 baseUrl: '<?php echo base_url(); ?>',
+                moduleId: '<?php echo $module_id; ?>',
                 <?php 
                     if( isset($file_id) ){
                         echo "fileId: '".$file_id."',";

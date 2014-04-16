@@ -17,3 +17,7 @@
 .rotate-pivot {
     cursor:crosshair;
 }
+
+.eS, .vS {
+    display:block;
+}

@@ -1,41 +1,44 @@
 Submit = new(function(){
-
-	//var listOfPages = [];
-	//var listOfContainers = [];
-	//var listOfControls = [];
 	
-    this.newForm = function(){
+    var newForm = function(){
         return new Form();
     }
     
-    this.newPage = function(){
+    var newPage = function(){
         return new Page();
     }
     
-    this.newContainer = function(){
+    var newContainer = function(){
         return new Container();
     }
     
-    this.newControl = function(){
+    var newControl = function(){
         return new Control();
     }
     
     var Form = function(){
-        this.id = 1;
+        this.id = 'form' + formCount;
         this.children = [];
     };
 
-//add code for new page and 'addPage' this new page
-
+	var formCount = 0;
+	var pageCount = 0;
+	var containerCount = 0;
+	var controlCount = 0;
+	
     Form.prototype = {
-        
-        addPage : function(page){
-            this.children.push(page);
-            return this;
+		
+        addPage : function(){
+			newestPage = new Page();
+			pageCount++;
+            this.children.push(newestPage);
+            return newestPage;
         },
         
-        addPageToIndex : function(page, moveToIndex){
-            this.children.splice(moveToIndex, 0, page);
+        addPageToIndex : function(moveToIndex){
+			newestPage = new Page();
+			pageCount++;
+            this.children.splice(moveToIndex, 0, newestPage);
         },
         
         movePageToIndex : function(page, moveToIndex){
@@ -49,9 +52,11 @@ Submit = new(function(){
             }
         },
 
-        addPageAtStart : function(page){
-            this.children.unshift(page);
-            return this;
+        addPageAtStart : function(){
+			newestPage = new Page();
+			pageCount++;
+            this.children.unshift(newestPage);
+            return newestPage;
         },
 
         movePageToEnd : function(page){
@@ -60,7 +65,6 @@ Submit = new(function(){
                 var moveToEnd = this.children.splice(index, 1);
                 this.addPagesAtEnd(moveToEnd);
             }
-            return this;
         },
 
         movePageToStart : function(page){
@@ -69,32 +73,36 @@ Submit = new(function(){
                 var moveToStart = this.children.splice(index, 1);
                 this.addPagesAtStart(moveToStart);
             }
-            return this;
         },
 
         removePages : function(pages){
             for (var currentPage in pages){
                 if (currentPage in this.children){
                     var index = this.children.indexOf(currentPage);
-                    this.children.splice(index, 1);
+                    del = this.children.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
     var Page = function(){
+		this.id = 'page' + pageCount;
         this.containers = [];
     };
 
     Page.prototype = {
         
-        addContainer : function(containerList){
-            this.containers.push(containerList);
-            return this;
+        addContainer : function(){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.push(newestContainer);
+            return newestContainer;
         },
         
-        addContainerToIndex : function(container, moveToIndex){
-            this.containers.splice(moveToIndex, 0, container);
+        addContainerToIndex : function(moveToIndex){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.splice(moveToIndex, 0, newestContainer);
         },
         
         moveContainerToIndex : function(container, moveToIndex){
@@ -108,9 +116,11 @@ Submit = new(function(){
             }
         },
         
-        addContainerAtStart : function(containerList){
-            this.containers.unshift(containerList);
-            return this;
+        addContainerAtStart : function(){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.unshift(newestContainer);
+            return newestContainer;
         },
         
         moveContainerToEnd : function(singleContainer){
@@ -119,7 +129,6 @@ Submit = new(function(){
                 var moveToEnd = this.containers.splice(index, 1);
                 this.addContainersAtEnd(moveToEnd);
             }
-            return this;
         },
         
         moveContainerToStart : function(singleContainer){
@@ -128,33 +137,37 @@ Submit = new(function(){
                 var moveToStart = this.containers.splice(index, 1);
                 this.addContainersAtStart(moveToStart);
             }
-            return this;
         },
         
         removeContainers : function(containerList){
             for (var singleContainer in containerList){
                 if (singleContainer in this.containers){
                     var index = this.containers.indexOf(singleContainer);
-                    this.children.splice(index, 1);
+                    del = this.children.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
     
     var Container = function(){
+		this.id = 'container' + containerCount;
         this.controls = [];
     };
     
     Container.prototype = {
         
-        addControl : function(controlList){
-            this.controls.push(controlList);
-            return this;
+        addControl : function(type, args){
+			newestControl = Control(type, args);
+			controlCount++;
+            this.controls.push(newestControl);
+            return newestControl;
         },
         
-        addControlToIndex : function(control, moveToIndex){
-            this.controls.splice(moveToIndex, 0, control);
+        addControlToIndex : function(moveToIndex){
+			newestControl = Control(type, args);
+			controlCount++;
+            this.controls.splice(moveToIndex, 0, newestControl);
         },
         
         moveControlToIndex : function(control, moveToIndex){
@@ -168,9 +181,11 @@ Submit = new(function(){
             }
         },
         
-        addControlAtStart : function(controlList){
-            this.controls.unshift(controlList);
-            return this;
+        addControlAtStart : function(){
+			newestControl = Control(type, args);
+			controlCount++;
+            this.controls.unshift(newestControl);
+            return newestControl;
         },
         
         moveControlToEnd : function(singleControl){
@@ -179,7 +194,6 @@ Submit = new(function(){
                 var moveToEnd = this.controls.splice(index, 1);
                 this.addControlsAtEnd(moveToEnd);
             }
-            return this;
         },
         
         moveControlToStart : function(singleControl){
@@ -188,43 +202,22 @@ Submit = new(function(){
                 var moveToStart = this.controls.splice(index, 1);
                 this.addControlsAtStart(moveToStart);
             }
-            return this;
         },
         
         removeControls: function (controlList){
             for (var singleControl in controlList){
                 if (singleControl in this.controls){
                     var index = this.controls.indexOf(singleControl);
-                    this.controls.splice(index, 1);
+                    del = this.controls.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
 
 	var Control = function(controlType, options) {
-        
+        this.id = 'control' + controlCount;
         this.type = controlType;
-        
-        if (this.type == "text") {
-			var textBoxObject = new TextBox(options);
-        }
-        
-        else if (this.type == "radioButtonGroup") {
-            var radioButtonObject = new RadioButtonGroup(options);
-        }
-        
-        else if (this.type == "checkboxGroup"){
-            checkboxObject = new CheckboxGroup(options);
-        }
-        
-        else if (this.type == "dropdown"){
-            dropdownObject = new Dropdown(options);
-        }
-        
-        else if (this.type == "datetime"){
-            dateTimeObject = new Datetime(options);
-        }
         
         var TextBox = function(options){
 			if('label' in options ){
@@ -246,9 +239,50 @@ Submit = new(function(){
 				this.value = options.value;
 			}
 		}
-		TextBox.prototype = {
+		
+		TextBox.prototype = {	
             isEmpty : function() {
                 return !(this.value.length);
+			},
+			
+			isRequired : function() {
+				return this.required;
+			},
+			
+			getLabel : function() {
+				return this.label;
+			},
+			
+			getName : function() {
+				return this.name;
+			},
+			
+			getMinLength : function() {
+				return this.minLength;
+			},
+			
+			getMaxLength : function() {
+				return this.maxLength;
+			},
+			
+			getValue : function() {
+				return this.value;
+			},
+			
+			setMinLength : function(length) {
+				this.minLength = length;
+			},
+			
+			setMaxLength : function(length) {
+				this.maxLength = length;
+			},
+			
+			setRequired : function(required) {
+				this.required = required;
+			},
+			
+			setValue : function(value) {
+				this.value = value;
 			},
 		}
         
@@ -259,11 +293,8 @@ Submit = new(function(){
 			if('value' in options){
 				this.value = options.value;
 			}
-			if('checked' in options){
-				this.checked = options.checked;
-			}
-			if('defaultCheck' in options){
-				this.defaultCheck = options.defaultCheck;
+			if('label' in options){
+				this.label = options.label;
 			}
         }
         
@@ -320,20 +351,53 @@ Submit = new(function(){
 				this.minute = options.minute;
 			}
         }
+        
+        if (this.type == "text") {
+			var textBoxObject = new TextBox(options);
+			return textBoxObject;
+        }
+        
+        else if (this.type == "radioButtonGroup") {
+            var radioButtonObject = new RadioButtonGroup(options);
+            return radioButtonObject;
+        }
+        
+        else if (this.type == "checkboxGroup"){
+            checkboxObject = new CheckboxGroup(options);
+            return checkboxObject;
+        }
+        
+        else if (this.type == "dropdown"){
+            dropdownObject = new Dropdown(options);
+            return dropdownObject;
+        }
+        
+        else if (this.type == "datetime"){
+            dateTimeObject = new Datetime(options);
+            return dateTimeObject;
+        }
     }
     
     /*
      * DOM manipulation
      */
-    
+    var activePage;
+    var activeContainer;
     var DOM = {
         addPage : function() {
             var page = $('<div class="page"></div>').appendTo($('#form'));
-            
+            if (activePage) {
+                activePage.removeClass('focus');
+            }
+            activePage = page; 
+            activePage.addClass('focus');
+            DOM.addContainer();
             var titleElem = {
                 type: 'heading',
                 value: 'Page title'
             };
+            
+            DOM.addControl(activeContainer, titleElem);
             
             /*
             var pElem = {
@@ -342,16 +406,47 @@ Submit = new(function(){
                 block: true
             };
             */
-            var inputElem = {
+            /*var inputElem = {
                 type: 'textbox',
                 value: 'Some text',
                 label: 'Label:',
             }
+            */
             
-            
-            DOM.addControl(page, titleElem);
             //DOM.addControl(page, pElem);
-            DOM.addControl(page, inputElem);
+            //DOM.addControl(page, inputElem);
+        },
+        addContainer : function() {
+            var container = $('<div class="container"></div>').appendTo(activePage);
+            if (activeContainer) {
+                activeContainer.removeClass('focus');
+            }
+            activeContainer = container;
+            activeContainer.addClass('focus');
+        },
+        addTextbox: function() {
+            var input = {
+                type: 'textbox',
+                val: 'Enter Text Here',
+                label: 'Label:',
+            }
+            DOM.addControl(activeContainer, input);
+        },
+        addHeading: function() { 
+            var titleElem = {
+                type: 'heading',
+                value: 'Page title'
+            };
+            
+            DOM.addControl(activeContainer, titleElem);
+        },
+        addParagraph: function() {
+            var pElem = {
+                type: 'paragraph',
+                value: 'This is a sample paragraph.',
+                block: true
+            };
+            DOM.addControl(activeContainer, pElem);
         },
         addControl: function(page, elem) {
             
@@ -362,10 +457,13 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
                         $(this).closest('.control').removeClass('focus');
-                        $(this).closest('.page').removeClass('focus');
+                        $(this).closest('.container').removeClass('focus');
                     });
                     
                     
@@ -382,7 +480,10 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
                         $(this).closest('.control').removeClass('focus');
                         $(this).closest('.page').removeClass('focus');
@@ -397,20 +498,37 @@ Submit = new(function(){
                     break;
                 
                 case 'textbox':
-                    var control = $('<span style="display:inline-block" class="textbox control"><input style="margin-left: 5px;" type="text"></span>');
-                    
-                    var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
+                    var control = $('<span style="display:inline-block" class="textbox control"></span>');
+
+                    var textbox = $('<input style="margin-left: 5px" class="textbox"></input>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activePage.addClass('focus');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
                         }).on('blur', function() {
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
                         });
                     
+                    var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
+                            $(this).closest('.control').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
+                        }).on('blur', function() {
+                            $(this).closest('.control').removeClass('focus');
+                            $(this).closest('.page').removeClass('focus');
+                        });
+                     
                     if ('label' in elem) {
                         inner.text(elem.label);
                     }
+                    if ('value' in elem ) {
+                        textbox.val(elem.value);
+                    }
                     control.prepend(inner);
+                    control.append(textbox);
                     page.append(control);
                     
                     break;
@@ -457,6 +575,30 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title:'New page',
                             callback: DOM.addPage
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New Container',
+                            callback: DOM.addContainer
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New textbox',
+                            callback: DOM.addTextbox
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New heading',
+                            callback: DOM.addHeading
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New paragraph',
+                            callback: DOM.addParagraph
                         }
                     ]
                 }
@@ -467,7 +609,19 @@ Submit = new(function(){
     var menu = defaultMenus;
     
     this.init = function() {
+		var jsonObject = {
+			minLength : 10,
+		};
         var form = $('<div id="form"></div>').appendTo($('#editable'));
+        DOM.addPage();
+        /*
+        var jForm = new Form();
+        var jPage1 = jForm.addPage();
+        var jPage2 = jForm.addPage();
+        var jContainer0101 = jPage1.addContainer();
+        var control1 = jContainer0101.addControl("text", jsonObject);
+        console.log(jForm, jPage1, jPage2, jContainer0101, control1);
+        */
     };
 
     this.getMenu = function(){

@@ -20,19 +20,33 @@
 
 .page:focus,
 .page.focus {
-    outline: 2px solid #057cb8;
+   outline: 2px solid #057cb8;
+}
+.page > .container {
+    background-color: white;
+    max-width: 960px;
+    padding: 5px;
+    margin: 0.5em auto;
+    border: 1px solid #ccc;
+    outline: 1px solid transparent;
+    transition: outline 0.3s; 
+}
+.container.focus {
+    outline: 1px solid #057cb8;
 }
 
-.page > .control {
+.page > .container > .control {
     border-radius: 2px;
     transition: background-color 0.3s;
 }
 
-.page > .control:hover {
+
+
+.page > .container > .control:hover {
     background-color: #f5f5f5;
     transition: background-color 0.3s;
 }
-.page > .control.focus {
+.page > .container > .control.focus {
     background-color: #eee;
     transition: background-color 0.3s;
 }

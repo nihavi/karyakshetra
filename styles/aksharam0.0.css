@@ -6,14 +6,14 @@
     background-color:white;
     margin-left:auto;
     margin-right:auto;
-    //box-shadow: 4px 10px 1px #e6e6e6;
     overflow: visible;
+    border: 1px solid black;
 }
 #bd {
 	position: absolute;
 	top: 0;
 	z-index: 2; 
-	background-color: blue;
+	background-color: #EEEEEE;
 	height: 100%;
 	width: 100%;
 	overflow: auto;
