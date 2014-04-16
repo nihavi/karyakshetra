@@ -817,6 +817,10 @@ Base = new (function(){
         //Append main to menubar
         var mainMenu = $('<div class="bar bar-super" id="mainMenu"></div>').appendTo('#menubar');
         
+        mainMenu.mousedown(function(ev){
+            ev.preventDefault();
+        });
+        
         //Add main menu items inside this level
         //Items are defined in menus
         menuId = 0;
@@ -952,7 +956,9 @@ Base = new (function(){
         
         //Append submenu to menubar
         var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
-        
+        subMenu.mousedown(function(ev){
+            ev.preventDefault();
+        });
         //Append submenu items to submenu
         var item,i,j;
         var id, group;
@@ -1076,6 +1082,10 @@ Base = new (function(){
                                     }
                                 }
                             }
+                            
+                            menuItem.mousedown(function(ev){
+                                ev.preventDefault();
+                            });
                             menuItem.click(handleMenuClick);
                             //Append menu item to submenu object
                             item.parentGroup = group.id;
