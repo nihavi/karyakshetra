@@ -2799,6 +2799,14 @@ var Aalekhan = new (function(){
         var id=expression.length;
         var sno=$('<div class="expr-no">'+(parseInt(id)+1)+'</div>').appendTo(expr);
         var input=$('<input class="expr-in" id="expr'+id+'">').appendTo(expr);
+        var display=$('<div class="expr-dis" id="exprDis'+id+'"></div>').appendTo(expr).hide();
+        display.mousedown(function(ev){
+            var id=$(this).attr('id').substr(7);
+            $(this).hide();
+            $('#expr'+id).show();
+            $('#expr'+id).focus();
+            ev.preventDefault();
+        });
         expression[id]={};
         expression[id].color=fColorList[getBestColor()];
         wholeHumanFunctionControll('',id);
@@ -2822,11 +2830,24 @@ var Aalekhan = new (function(){
         
         input.focus(function(ev){
             var id=$(this).attr('id').substr(4);
+            
+            $('#exprDis'+id).hide();
+            $(this).show();
+            
             $('.expr.active').removeClass('active');
             $(this).closest('.expr').addClass('active');
             Base.updateMenu(defaultMenu.concat(formatMenu(id)));
             Base.focusMenu('expr');
-            ev.preventDefault();
+        });
+        
+        input.blur(function(ev){
+            var id=$(this).attr('id').substr(4);
+            if( expression[id] && expression[id].humanF ){
+                $(this).hide();
+                $('#exprDis'+id).html('<span class="math">$'+expression[id].humanF+'$</span>');
+                $('#exprDis'+id).show();
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,$('#exprDis'+id).get(0)]);
+            }
         });
         
         input.focus();
@@ -2871,6 +2892,8 @@ var Aalekhan = new (function(){
     }
     var graphParent;
     var editable;
+    
+    this.depends = ['MathJax'];
     this.init=function(parent){
         //Using jQuery
         var side = $('<div class="sidebar" id="sidebar"></div>').appendTo(parent);
@@ -2884,7 +2907,42 @@ var Aalekhan = new (function(){
         graphParent.bind('click',function(){
             Base.updateMenu(defaultMenu);
             Base.focusMenu('settings');
-            $('.expr.active').removeClass('active');
+            //$('.expr.active').removeClass('active');
+        });
+        
+        $(window).bind('keydown', function(ev){
+            if((ev.keyCode==9 && event.shiftKey) || ev.keyCode==38){
+                var focus = $('.expr.active').index() - 1;
+                if(focus >= 0){
+                    $('.expr-in').eq(focus).show().focus();
+                }
+                else {
+                    $('.expr-in').last().show().focus();
+                }
+                ev.preventDefault();
+            }
+            else if(ev.keyCode==9 || ev.keyCode==40 || ev.keyCode==13){
+                var focus = $('.expr.active').index() + 1;
+                if(focus < $('.expr').length){
+                    $('.expr-in').eq(focus).show().focus();
+                }
+                else {
+                    if((focus == $('.expr').length) && ($('.expr-in').last().val()!=''))
+                        addF();
+                }
+                ev.preventDefault();
+            }
+            else if(ev.keyCode==13){
+                var focus = $('.expr.active').index() + 1;
+                if(focus < $('.expr').length){
+                    $('.expr-in').eq(focus).show().focus();
+                }
+                else {
+                    if((focus == $('.expr').length) && ($('.expr-in').last().val()!=''))
+                        addF();
+                }
+                ev.preventDefault();
+            }
         });
         
         editable=$(parent);
