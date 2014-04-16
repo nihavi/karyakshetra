@@ -70,7 +70,7 @@ Akruti = new (function() {
 
         /* Setting ID */
         this.pid = parent.id;
-        this.id = 's'+svgId++;
+        this.id = (arg.id)?arg.id:'s'+svgId++;
         this.element.setAttribute( 'id', this.id );
 
         /* Setting class  and type*/
@@ -753,17 +753,21 @@ Akruti = new (function() {
     Rectangle.prototype.delete = deleteSelf;
     FreeHandDrawing.prototype.delete = deleteSelf;
     
-    this.init = function(parent) {
+    this.init = function(parent, fileData) {
         if ( !initialized ) {
             initialized = true;
-            var dim = parent.getBoundingClientRect();
-            var arg = {
-                h:550,
-                w:1000
-            };
-            var svgObject = new Svg(arg, parent, true);
-            allSvg[svgObject.id] = svgObject;
-            currentSvg = svgObject;
+            if (fileData) {
+                Akruti.openFile(fileData)
+            }
+            else {
+                    var arg = {
+                    h:550,
+                    w:1000
+                };
+                var svgObject = new Svg(arg, parent, true);
+                allSvg[svgObject.id] = svgObject;
+                currentSvg = svgObject;    
+            }
             this.resize();
             editor.setMode('createFreeMode', true);
             Base.focusMenu('tools');
@@ -824,7 +828,7 @@ Akruti = new (function() {
         return ret;
     };
     
-    var myPerformOp = function (data) {
+    var myPerformOp = function (data, dontReturnAnyValue) {
         var returnValue = new Object();
         
         if (data.op == 'm') {
@@ -872,8 +876,11 @@ Akruti = new (function() {
             allSvg[data.pid].children.push(myObject);
             
             editor.makeEditable(myObject.g);
-            returnValue.pastState = myObject.getOp('d');
-            returnValue.newState = data;
+            if (!dontReturnAnyValue) {
+                returnValue.pastState = myObject.getOp('d');
+                returnValue.newState = data;
+            }
+            
         }
         else
         if (data.op == 'd') {
@@ -896,28 +903,38 @@ Akruti = new (function() {
     };
     
     
-    this.getFileData = function(svg) {
-        if (!svg) {
-            svg = (currentSvg)?(currentSvg):(allSvg['s1']);
-        }
+    this.getFileData = function() {
+        
+        var svg = (currentSvg)?(currentSvg):(allSvg['s1']);
         var data = new Object();
         data.op = 'file';
+        data.pageDimension = {
+            h:svg.pageH,
+            w:svg.pageW
+        }
+        data.svgId = svg.id;
         data.ar = new Array();
         var element = $('#'+svg.id).data('myObject');
         for (var i=0; i<element.children.length; i++) {
-            data.ar[i] = new Object();
-            data.ar[i]['id'] = element.children[i]['id'];
-            data.ar[i]['pid'] = element.children[i]['pid'];
-            data.ar[i]['t'] = element.children[i]['t'];
-            for (var j in allAA[element.children[i]['t']]) {
-                data.ar[i][j] = element.children[i][j];
-            }
+            data.ar[i] = element.children[i].getOp('cr');
         }
         return JSON.stringify(data);
     };
     
-    this.openFile = function(fileDataString) {
+    this.openFile = function(parent, fileDataString) {
         var data = JSON.parse(fileDataString);
+        $(allSvg.s1.element).remove();
+        delete allSvg.s1;
+        var arg = data.pageDimension;
+        arg.id = data.svgId;
+        var svgObject = new Svg(arg, parent, true);
+        console.log(svgObject);
+        currentSvg = allSvg[svgObject.id] = svgObject;
+        this.resize();
+        for(var i=0; i<data.ar.length; i++) {
+            myPerformOp(data.ar[i], true)
+        }
+        return svgObject;
     }
     
     /*******************************   Editor Module   *******************************/
@@ -1030,7 +1047,7 @@ Akruti = new (function() {
                 var pastState = new Array();
                 var newState = new Array();                
                 for (var i=0; i<actives.list.length; i++) {
-                    var states = actives.list[i].changeAttributes({'o':opacity}, true);
+                    var states = actives.list[i].changeAttributes({'o':opacity}, true, true);
                     if ( states.pastState.o != states.newState.o ) {
                         pastState[i] = states.pastState;
                         newState[i] = states.newState;
@@ -2003,6 +2020,7 @@ Akruti = new (function() {
                 },
                 mousemove : function(e) {
                     var element = e.data;
+                    element.dArray = element.d.split(' ');
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
@@ -2025,6 +2043,7 @@ Akruti = new (function() {
                 },
                 mouseup : function(e) {
                     var element = e.data;
+                    element.dArray = element.d.split(' ');
                     var mySvgObject = allSvg[element.pid];
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left)/mySvgObject.zoomFactor;
