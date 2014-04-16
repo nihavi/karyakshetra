@@ -6,24 +6,36 @@ class Dash extends CI_Controller {
     {
         $this->load->model('File_model', 'file');
         
-        //passing the gid, assumed that public has gid = 1
-       //$some_id = 1;
-        //$files = $this->file->get_files_of_user($some_id);
-       
-       $files = $this->file->get_files_of_user('1');
+        $files = $this->file->get_files_of_user('1');
         //var_dump($files->result());
         
-        foreach ($files->result() as $fi){
-			
-			echo "  <div>
-						<span>".$fi->fname."</span>
-						<span>".$fi->created."</span>
-						<span>".$fi->modified."</span>
-					</div>
-					";
-		}
-		
-   
+        $module = array(
+            '0' =>'dash',
+            '1' =>'akruti',
+            '2' => 'show',
+            '3' => 'submit',
+            '4' => 'aalekhan',
+            '5' =>'aksharam',
+        );
+        
+        $file_list = array();
+        //var_dump($files->result());
+        foreach ($files->result() as $f) {
+        
+            $file = array(
+                'name'     => $f->fname,
+                'module'   => $module[$f->ftype],
+                'id'      => $f->fid,
+                'modified' => $f->modified,
+            );
+            
+            $file_list[] = $file;
+        }
+        $data = array(
+            'files' => $file_list
+        );
+        
+        $this->load->view('dash_view', $data);
     }
     
 }

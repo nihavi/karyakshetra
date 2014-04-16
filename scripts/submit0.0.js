@@ -381,15 +381,23 @@ Submit = new(function(){
     /*
      * DOM manipulation
      */
-    
+    var activePage;
+    var activeContainer;
     var DOM = {
         addPage : function() {
             var page = $('<div class="page"></div>').appendTo($('#form'));
-            
+            if (activePage) {
+                activePage.removeClass('focus');
+            }
+            activePage = page; 
+            activePage.addClass('focus');
+            DOM.addContainer();
             var titleElem = {
                 type: 'heading',
                 value: 'Page title'
             };
+            
+            DOM.addControl(activeContainer, titleElem);
             
             /*
             var pElem = {
@@ -398,16 +406,47 @@ Submit = new(function(){
                 block: true
             };
             */
-            var inputElem = {
+            /*var inputElem = {
                 type: 'textbox',
                 value: 'Some text',
                 label: 'Label:',
             }
+            */
             
-            
-            DOM.addControl(page, titleElem);
             //DOM.addControl(page, pElem);
-            DOM.addControl(page, inputElem);
+            //DOM.addControl(page, inputElem);
+        },
+        addContainer : function() {
+            var container = $('<div class="container"></div>').appendTo(activePage);
+            if (activeContainer) {
+                activeContainer.removeClass('focus');
+            }
+            activeContainer = container;
+            activeContainer.addClass('focus');
+        },
+        addTextbox: function() {
+            var input = {
+                type: 'textbox',
+                val: 'Enter Text Here',
+                label: 'Label:',
+            }
+            DOM.addControl(activeContainer, input);
+        },
+        addHeading: function() { 
+            var titleElem = {
+                type: 'heading',
+                value: 'Page title'
+            };
+            
+            DOM.addControl(activeContainer, titleElem);
+        },
+        addParagraph: function() {
+            var pElem = {
+                type: 'paragraph',
+                value: 'This is a sample paragraph.',
+                block: true
+            };
+            DOM.addControl(activeContainer, pElem);
         },
         addControl: function(page, elem) {
             
@@ -418,10 +457,13 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
                         $(this).closest('.control').removeClass('focus');
-                        $(this).closest('.page').removeClass('focus');
+                        $(this).closest('.container').removeClass('focus');
                     });
                     
                     
@@ -438,7 +480,10 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
                         $(this).closest('.control').removeClass('focus');
                         $(this).closest('.page').removeClass('focus');
@@ -453,20 +498,37 @@ Submit = new(function(){
                     break;
                 
                 case 'textbox':
-                    var control = $('<span style="display:inline-block" class="textbox control"><input style="margin-left: 5px;" type="text"></span>');
-                    
-                    var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
+                    var control = $('<span style="display:inline-block" class="textbox control"></span>');
+
+                    var textbox = $('<input style="margin-left: 5px" class="textbox"></input>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activePage.addClass('focus');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
                         }).on('blur', function() {
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
                         });
                     
+                    var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
+                            $(this).closest('.control').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
+                        }).on('blur', function() {
+                            $(this).closest('.control').removeClass('focus');
+                            $(this).closest('.page').removeClass('focus');
+                        });
+                     
                     if ('label' in elem) {
                         inner.text(elem.label);
                     }
+                    if ('value' in elem ) {
+                        textbox.val(elem.value);
+                    }
                     control.prepend(inner);
+                    control.append(textbox);
                     page.append(control);
                     
                     break;
@@ -513,6 +575,30 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title:'New page',
                             callback: DOM.addPage
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New Container',
+                            callback: DOM.addContainer
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New textbox',
+                            callback: DOM.addTextbox
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New heading',
+                            callback: DOM.addHeading
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New paragraph',
+                            callback: DOM.addParagraph
                         }
                     ]
                 }
@@ -527,12 +613,15 @@ Submit = new(function(){
 			minLength : 10,
 		};
         var form = $('<div id="form"></div>').appendTo($('#editable'));
+        DOM.addPage();
+        /*
         var jForm = new Form();
         var jPage1 = jForm.addPage();
         var jPage2 = jForm.addPage();
         var jContainer0101 = jPage1.addContainer();
         var control1 = jContainer0101.addControl("text", jsonObject);
         console.log(jForm, jPage1, jPage2, jContainer0101, control1);
+        */
     };
 
     this.getMenu = function(){
