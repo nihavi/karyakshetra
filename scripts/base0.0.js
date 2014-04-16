@@ -691,6 +691,9 @@ Base = new (function(){
         if( 'depends' in module ){
             solveDepend(module.depends);
         }
+        else {
+            init2();
+        }
     }
     var init2 = function(){
         /*
