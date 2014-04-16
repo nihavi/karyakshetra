@@ -13,34 +13,68 @@ var Aksharam = new(function(){
     
     var docProto = MyDoc.prototype;
     
-    docProto.render = function() {
+    docProto.render = function(parent) {
 		var backDrop = document.createElement("div"),
-		    docStyle = this.docBody.style,
-		    parentDiv = document.getElementById("editable");
+		    docStyle = this.docBody.style;
 		backDrop["id"] = "bd";
 		docStyle.width = this.docWidth + "vw";
 		docStyle.paddingTop = this.padding[0] + "%";
 		docStyle.paddingLeft = this.padding[1] + "%";
 		docStyle.paddingRight = this.padding[2] + "%";
 		docStyle.minHeight = "100%";
-		parentDiv.appendChild(backDrop);
+		parent.appendChild(backDrop);
 		backDrop.appendChild(this.docBody);
 	};
     
-    this.init = function() {
+    this.getFile = function() {
+		return this.docBody.innerHTML;
+	};
+	
+	this.openFile = function(file) {
+		this.docBody.innerHTML = file;
+	}
+	
+    this.init = function(parent, file) {
 		this.newDoc = new MyDoc();
 		doc = this.newDoc;
-		doc.render();		
+		doc.render(parent);
+		if(file) 
+			doc.openFile(file);		
     };
 
     this.getMenu = function(){
-        return [
-			{
+        return [ {
 				type: 'main',
-				id: 'lorem ipsum',
+				id: 'ipsum lorem',
 				title: 'Tools',
-				icon: 'fa-usd',
+				icon: 'fa-wrench',
 				groups: [
+					{
+						type: 'group',
+						id: 'group2',
+						multiple: true,
+						required: false,
+						items: [
+							{
+								type: 'button',
+								id: 'undo',
+								title: 'Undo',
+								icon: 'fa-undo',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'redo',
+								title: 'Redo',
+								icon: 'fa-repeat',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							}
+						]
+					},
 					{
 						type: 'group',
 						id: 'group1',
@@ -110,6 +144,41 @@ var Aksharam = new(function(){
 								callback: changeText
 							}
 						]
+					},
+					{
+						type: 'group',
+						id: 'group3',
+						multiple: true,
+						required: false,
+						items: [
+							{
+								type: 'button',
+								id: 'justifyRight',
+								title: 'Right',
+								icon: 'fa-align-right',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'justifyCentre',
+								title: 'Centre',
+								icon: 'fa-align-center',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'justifyLeft',
+								title: 'Left',
+								icon: 'fa-align-left',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							}
+						]
 					}
 				]
 			}
@@ -133,16 +202,25 @@ var Aksharam = new(function(){
 		else {
 			var	arr = new Array();
 			for(var i = 0; i < sel.rangeCount; ++i) 
-				arr.push(sel.getRangeAt(i));
+				arr.push(sel.getRangeAt(i).cloneRange());
 			for(var i = 0; i < arr.length; ++i) {
 				sel.removeAllRanges();
 				sel.addRange(arr[i]);
 				document.execCommand(e);
 			}
 			sel.removeAllRanges();
+			for(var i = 0; i < arr.length; ++i)
+				sel.addRange(arr[i]);
 		}
 	}
 
+	function cutCopyPaste() {
+		var ev = jQuery.Event("keypress");
+		ev.ctrlKey = false;
+		ev.which = 40;
+		doc.docBody.trigger(ev);
+		console.log(ev);
+	}
 })();
 
 module = Aksharam;
