@@ -386,14 +386,18 @@ Submit = new(function(){
     var DOM = {
         addPage : function() {
             var page = $('<div class="page"></div>').appendTo($('#form'));
+            if (activePage) {
+                activePage.removeClass('focus');
+            }
             activePage = page; 
+            activePage.addClass('focus');
+            DOM.addContainer();
             var titleElem = {
                 type: 'heading',
                 value: 'Page title'
             };
             
-            DOM.addControl(page, titleElem);
-            DOM.addContainer();
+            DOM.addControl(activeContainer, titleElem);
             
             /*
             var pElem = {
@@ -414,13 +418,11 @@ Submit = new(function(){
         },
         addContainer : function() {
             var container = $('<div class="container"></div>').appendTo(activePage);
+            if (activeContainer) {
+                activeContainer.removeClass('focus');
+            }
             activeContainer = container;
-            var pElem = {
-                type: 'paragraph',
-                value: 'Container Title',
-                block: true,
-            };
-            DOM.addControl(activeContainer, pElem);
+            activeContainer.addClass('focus');
         },
         addTextbox: function() {
             var input = {
