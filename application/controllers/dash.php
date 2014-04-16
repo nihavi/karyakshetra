@@ -35,7 +35,6 @@ class Dash extends CI_Controller {
             'files' => $file_list
         );
         
-        $this->load->view('dash_view', $data);
+        echo json_encode($data);
     }
-    
 }
