@@ -1,0 +1,81 @@
+.sidebar{
+    float: left;
+    height: 100%;
+    width:350px;
+    overflow-y:scroll;
+    -moz-box-sizing:border-box;
+    box-sizing:border-box;
+    background-color:#fff;
+    border-right: 1px solid black;
+}
+#graphContain{
+    float:left;
+    height:100%;
+    overflow:hidden;
+    background-color: #ddd;
+    position: relative;
+}
+#ugraph{
+    text-align:center;
+    background:white;
+    /*-moz-transform:scale(0.5,0.5);
+    -ms-transform:scale(0.5,0.5);
+    -webkit-transform:scale(0.5,0.5);
+    -o-transform:scale(0.5,0.5);
+    transform:scale(0.5,0.5);*/
+}
+#ugraphHelp{
+    text-align:center;
+    box-shadow:0px 0px 5px black inset;
+    background:transparent;
+}
+.expr{
+    margin: 5px 0;
+    border: none;
+    border-bottom: 1px solid #888;
+    -moz-box-sizing:border-box;
+    box-sizing: border-box;
+    position: relative;
+    text-align: center;
+}
+.expr:after{
+    content:'';
+    display:block;
+    width:100%;
+    clear:both;
+}
+.expr.active{
+    background-color: #ddd;
+}
+.expr-no{
+    float:left;
+    width: 10%;
+}
+.expr-in{
+    display:block;
+    float:left;
+    font-size:25px;
+    text-align:center;
+    -moz-box-sizing:border-box;
+    box-sizing: border-box;
+    border:none;
+    border-left: 1px solid #888;
+    width:90%;
+    height:55px;
+    background-color:transparent;
+    z-index:1;
+}
+.expr-dis{
+    display:inline-block;
+    text-align:center;
+    font-size: 130%;
+    -moz-box-sizing:border-box;
+    box-sizing: border-box;
+    border:none;
+    border-left: 1px solid #888;
+    min-height:55px;
+    line-height: 55px;
+    width:90%;
+    background-color:transparent;
+    z-index:1;
+}

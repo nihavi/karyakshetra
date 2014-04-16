@@ -162,6 +162,17 @@ Show = new (function(){
             $('.side-parent#parent'+slideId).remove();
             Sidebar.updateNo();
         },
+        moveSlide: function(slideId, newIndex){
+            //newIndex is 1 based
+            var slide = $('.side-parent#parent'+slideId).detach();
+            
+            var insertBefore = $('.side-parent').eq(newIndex - 1);
+            if( insertBefore.length )
+                insertBefore.before(slide);
+            else 
+                $('#sidebar').append(slide);
+            Sidebar.updateNo();
+        },
         updateNo: function(){
             $('.side-no').each(function(index){
                 $(this).text((index+1)+'.');
@@ -190,7 +201,7 @@ Show = new (function(){
             fontSize: 6,
             text: 'Text',
         });
-        newSlide.renderSlide();
+        newSlide.activate();
         Sidebar.addSlide(newSlide);
     }
     var removeSlide = function(id){
@@ -198,6 +209,14 @@ Show = new (function(){
         if( !allSlides.length ){
             insertSlide();
         }
+    }
+    var moveSlide = function(btnId){
+        activeSlide.moveTo(btnId);
+    }
+    var slideColor = function(btnId, color){
+        activeSlide.bgColor = color;
+        activeSlide.renderSlide();
+        activeSlide.renderSlideSide();
     }
     
     var clone = function(obj){
@@ -315,6 +334,8 @@ Show = new (function(){
         activate: function(){
             this.renderSlide();
             Sidebar.activate(this.id);
+            defaultMenus[1].groups[0].items[0].currState = this.bgColor;
+            Base.updateMenu(defaultMenus);
         },
         remove: function(){
             var index = allSlides.indexOf(this);
@@ -329,6 +350,10 @@ Show = new (function(){
         },
         renderSlideSide: function(){
             var slide = this;
+            var slideSide = $('#side'+slide.id);
+            slideSide.css({
+                'backgroundColor': slide.bgColor,
+            });
             if('elems' in slide){
                 var i;
                 for(i in slide.elems){
@@ -348,6 +373,24 @@ Show = new (function(){
             this.elems[elem.id] = elem;
             elem.parent = this;
             return elem;
+        },
+        moveTo: function(newIndex){
+            //newIndex is 1 based
+            var index = allSlides.indexOf(this);
+            if( newIndex == 'up' )
+                newIndex = index;
+            else if( newIndex == 'down' )
+                newIndex = index + 2;
+            else 
+                newIndex = parseInt(newIndex);
+            if( newIndex < 1 ) newIndex = 1;
+            if( newIndex > allSlides.length ) newIndex = allSlides.length;
+            
+            allSlides.splice(index, 1);
+            
+            console.log(index, newIndex);
+            allSlides.splice(newIndex - 1, 0, this);
+            Sidebar.moveSlide(this.id, newIndex);
         },
         purify: function(){
             var obj = {};
@@ -1940,6 +1983,55 @@ Show = new (function(){
                             title: 'Slide',
                             callback: insertSlide
                         },
+                    ]
+                }
+            ]
+        },
+        {
+            type: 'main',
+            id: 'slide',
+            title: 'Slide', //Name of menu
+            icon: 'fa-list-alt', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'slideformat',
+                    items: [
+                        {
+                            type: 'color',
+                            icon: 'fa-circle',
+                            id: 'backgroundColor',
+                            title: 'Background color',
+                            currState: '#ffffff',
+                            text: 'B',
+                            callback: slideColor
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'slideorder',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-chevron-down',
+                            id: 'down',
+                            title: 'Move Down',
+                            callback: moveSlide
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-chevron-up',
+                            id: 'up',
+                            title: 'Move Up',
+                            callback: moveSlide
+                        },
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'removeslide',
+                    items: [
                         {
                             type: 'button',
                             icon: 'fa-times',
