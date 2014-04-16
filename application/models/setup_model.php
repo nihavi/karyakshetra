@@ -169,6 +169,30 @@ class Setup_model extends CI_Model {
         {
             echo "\t\t[Done]\n";
         }
+        
+        //OpQueue Table
+        $this->dbforge->drop_table('opqueue');
+        echo "Table 'opqueue' dropped\n";
+        
+        $fields=array(
+            'id' => array(
+                'type' => 'INT',
+                'constraint' => 9,
+                'auto_increment' => TRUE
+            ),
+            'fid'=>array(
+                'type'=>'INT'
+            ),
+            'op'=>array(
+                'type'=>'SMALLINT'
+            ),
+            'time TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+        );
+
+        $this->dbforge->add_field($fields);
+        $this->dbforge->add_key('id', TRUE);
+        $this->dbforge->create_table('opqueue');
+        echo "Table 'opqueue' created\n";
     }
 
 }

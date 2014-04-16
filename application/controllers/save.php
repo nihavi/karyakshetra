@@ -12,13 +12,14 @@ class Save extends CI_Controller {
         $this->load->model('File_model', 'file');
         
         $fname = $this->input->post('filename', TRUE);
+        $ftype = $this->input->post('module', TRUE);
         
         if(!$fname) {
             $fname = 'Untitled file';
         }
         $data = $this->input->post('file');
         
-        $file_id = $this->file->save_as($fname, $data);
+        $file_id = $this->file->save_as($fname, $data, $ftype);
         
         echo $file_id;
     }

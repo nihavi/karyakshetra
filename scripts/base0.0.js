@@ -80,6 +80,7 @@ Base = new (function(){
     var saveFile = function(filedata, filename){
         var data = {
             file: filedata,
+            module: moduleId,
         }
         var url;
         if( currFileId ){
@@ -653,7 +654,15 @@ Base = new (function(){
             url: path,
             dataType: "script",
             cache: true,
-            success: solvedDep
+            success: function(){
+                MathJax.Hub.Queue(
+                    ["Typeset",MathJax.Hub,$('<div id="dummyMathJaxdummy" style="position:absolute;top:-100px;left:-1000px;">$\pm sin \left( x \right)$</div>').appendTo('body').get(0)],
+                    function(){
+                        $('#dummyMathJaxdummy').remove();
+                    }
+                )
+                solvedDep();
+            }
         })
     };
     
@@ -684,6 +693,7 @@ Base = new (function(){
         
         // Get base url from response
         baseUrl = response.baseUrl;
+        moduleId = response.moduleId;
         
         /*
          * Check dependencies and load libraries 

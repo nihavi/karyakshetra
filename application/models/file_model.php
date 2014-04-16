@@ -44,7 +44,7 @@ class File_model extends CI_Model {
         //Prepare array for insertion
         $data = array(
             'fname'=> $file_name,
-            'ftype'=> 0,
+            'ftype'=> $ftype,
             'pid'=> 0
         );
 
