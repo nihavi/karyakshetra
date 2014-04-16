@@ -382,6 +382,7 @@ Submit = new(function(){
      * DOM manipulation
      */
     var activePage;
+    var activeContainer;
     var DOM = {
         addPage : function() {
             var page = $('<div class="page"></div>').appendTo($('#form'));
@@ -390,6 +391,9 @@ Submit = new(function(){
                 type: 'heading',
                 value: 'Page title'
             };
+            
+            DOM.addControl(page, titleElem);
+            DOM.addContainer();
             
             /*
             var pElem = {
@@ -405,9 +409,18 @@ Submit = new(function(){
             }
             */
             
-            DOM.addControl(page, titleElem);
             //DOM.addControl(page, pElem);
             //DOM.addControl(page, inputElem);
+        },
+        addContainer : function() {
+            var container = $('<div class="container"></div>').appendTo(activePage);
+            activeContainer = container;
+            var pElem = {
+                type: 'paragraph',
+                value: 'Container Title',
+                block: true,
+            };
+            DOM.addControl(activeContainer, pElem);
         },
         addTextbox: function() {
             var input = {
@@ -415,7 +428,7 @@ Submit = new(function(){
                 val: 'Enter Text Here',
                 label: 'Label:',
             }
-            DOM.addControl(activePage, input);
+            DOM.addControl(activeContainer, input);
         },
         addControl: function(page, elem) {
             
@@ -428,9 +441,11 @@ Submit = new(function(){
                         $(this).closest('.control').addClass('focus');
                         activePage = $(this).closest('.page');
                         activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
-                            
-                        $(this).closest('.page').removeClass('focus');
+                        $(this).closest('.control').removeClass('focus');
+                        $(this).closest('.container').removeClass('focus');
                     });
                     
                     
@@ -447,7 +462,10 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
+                        activeContainer = $(this).closest('.container');
+                        activeContainer.addClass('focus');
                     }).on('blur', function() {
                         $(this).closest('.control').removeClass('focus');
                         $(this).closest('.page').removeClass('focus');
@@ -468,6 +486,8 @@ Submit = new(function(){
                             $(this).closest('.control').addClass('focus');
                             activePage = $(this).closest('.page');
                             activePage.addClass('focus');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
                         }).on('blur', function() {
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
@@ -476,7 +496,8 @@ Submit = new(function(){
                     var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
                             activePage = $(this).closest('.page');
-                            activePage.addClass('focus');
+                            activeContainer = $(this).closest('.container');
+                            activeContainer.addClass('focus');
                         }).on('blur', function() {
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
@@ -536,6 +557,12 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title:'New page',
                             callback: DOM.addPage
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New Container',
+                            callback: DOM.addContainer
                         },
                         {
                             type: 'button',
