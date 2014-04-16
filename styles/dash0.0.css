@@ -1,0 +1,30 @@
+.column {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    float: left;
+}
+.explorer {
+    width: 20%;
+}
+
+.file-list {
+    background-color: #fafafa;
+    width: 80%;
+    border: 1px solid #ccc;
+    border-bottom: none;
+}
+
+.file {
+    padding: 0.5em;
+    border-bottom: 1px solid #ccc;
+    color: #057cb8;
+    display: block;
+    text-decoration: none;
+    transition: 0.3s background-color;
+}
+
+.file:hover {
+    background-color: #eee;
+    transition: 0.3s background-color;
+}
