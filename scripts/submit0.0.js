@@ -1,18 +1,18 @@
 Submit = new(function(){
 	
-    this.newForm = function(){
+    var newForm = function(){
         return new Form();
     }
     
-    this.newPage = function(){
+    var newPage = function(){
         return new Page();
     }
     
-    this.newContainer = function(){
+    var newContainer = function(){
         return new Container();
     }
     
-    this.newControl = function(){
+    var newControl = function(){
         return new Control();
     }
     
@@ -32,7 +32,7 @@ Submit = new(function(){
 			newestPage = new Page();
 			pageCount++;
             this.children.push(newestPage);
-            return this;
+            return newestPage;
         },
         
         addPageToIndex : function(moveToIndex){
@@ -56,7 +56,7 @@ Submit = new(function(){
 			newestPage = new Page();
 			pageCount++;
             this.children.unshift(newestPage);
-            return this;
+            return newestPage;
         },
 
         movePageToEnd : function(page){
@@ -65,7 +65,6 @@ Submit = new(function(){
                 var moveToEnd = this.children.splice(index, 1);
                 this.addPagesAtEnd(moveToEnd);
             }
-            return this;
         },
 
         movePageToStart : function(page){
@@ -74,17 +73,16 @@ Submit = new(function(){
                 var moveToStart = this.children.splice(index, 1);
                 this.addPagesAtStart(moveToStart);
             }
-            return this;
         },
 
         removePages : function(pages){
             for (var currentPage in pages){
                 if (currentPage in this.children){
                     var index = this.children.indexOf(currentPage);
-                    this.children.splice(index, 1);
+                    del = this.children.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
     var Page = function(){
@@ -98,7 +96,7 @@ Submit = new(function(){
 			newestContainer = new Container();
 			containerCount++;
             this.containers.push(newestContainer);
-            return this;
+            return newestContainer;
         },
         
         addContainerToIndex : function(moveToIndex){
@@ -122,7 +120,7 @@ Submit = new(function(){
 			newestContainer = new Container();
 			containerCount++;
             this.containers.unshift(newestContainer);
-            return this;
+            return newestContainer;
         },
         
         moveContainerToEnd : function(singleContainer){
@@ -131,7 +129,6 @@ Submit = new(function(){
                 var moveToEnd = this.containers.splice(index, 1);
                 this.addContainersAtEnd(moveToEnd);
             }
-            return this;
         },
         
         moveContainerToStart : function(singleContainer){
@@ -140,17 +137,16 @@ Submit = new(function(){
                 var moveToStart = this.containers.splice(index, 1);
                 this.addContainersAtStart(moveToStart);
             }
-            return this;
         },
         
         removeContainers : function(containerList){
             for (var singleContainer in containerList){
                 if (singleContainer in this.containers){
                     var index = this.containers.indexOf(singleContainer);
-                    this.children.splice(index, 1);
+                    del = this.children.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
     
@@ -161,15 +157,15 @@ Submit = new(function(){
     
     Container.prototype = {
         
-        addControl : function(){
-			newestControl = new Control();
+        addControl : function(type, args){
+			newestControl = Control(type, args);
 			controlCount++;
             this.controls.push(newestControl);
-            return this;
+            return newestControl;
         },
         
         addControlToIndex : function(moveToIndex){
-			newestControl = new Control();
+			newestControl = Control(type, args);
 			controlCount++;
             this.controls.splice(moveToIndex, 0, newestControl);
         },
@@ -186,10 +182,10 @@ Submit = new(function(){
         },
         
         addControlAtStart : function(){
-			newestControl = new Control();
+			newestControl = Control(type, args);
 			controlCount++;
             this.controls.unshift(newestControl);
-            return this;
+            return newestControl;
         },
         
         moveControlToEnd : function(singleControl){
@@ -198,7 +194,6 @@ Submit = new(function(){
                 var moveToEnd = this.controls.splice(index, 1);
                 this.addControlsAtEnd(moveToEnd);
             }
-            return this;
         },
         
         moveControlToStart : function(singleControl){
@@ -207,44 +202,22 @@ Submit = new(function(){
                 var moveToStart = this.controls.splice(index, 1);
                 this.addControlsAtStart(moveToStart);
             }
-            return this;
         },
         
         removeControls: function (controlList){
             for (var singleControl in controlList){
                 if (singleControl in this.controls){
                     var index = this.controls.indexOf(singleControl);
-                    this.controls.splice(index, 1);
+                    del = this.controls.splice(index, 1);
                 }
             }
-            return this;
+            return del;
         }
     }
 
 	var Control = function(controlType, options) {
-        
         this.id = 'control' + controlCount;
         this.type = controlType;
-        
-        if (this.type == "text") {
-			var textBoxObject = new TextBox(options);
-        }
-        
-        else if (this.type == "radioButtonGroup") {
-            var radioButtonObject = new RadioButtonGroup(options);
-        }
-        
-        else if (this.type == "checkboxGroup"){
-            checkboxObject = new CheckboxGroup(options);
-        }
-        
-        else if (this.type == "dropdown"){
-            dropdownObject = new Dropdown(options);
-        }
-        
-        else if (this.type == "datetime"){
-            dateTimeObject = new Datetime(options);
-        }
         
         var TextBox = function(options){
 			if('label' in options ){
@@ -266,9 +239,50 @@ Submit = new(function(){
 				this.value = options.value;
 			}
 		}
-		TextBox.prototype = {
+		
+		TextBox.prototype = {	
             isEmpty : function() {
                 return !(this.value.length);
+			},
+			
+			isRequired : function() {
+				return this.required;
+			},
+			
+			getLabel : function() {
+				return this.label;
+			},
+			
+			getName : function() {
+				return this.name;
+			},
+			
+			getMinLength : function() {
+				return this.minLength;
+			},
+			
+			getMaxLength : function() {
+				return this.maxLength;
+			},
+			
+			getValue : function() {
+				return this.value;
+			},
+			
+			setMinLength : function(length) {
+				this.minLength = length;
+			},
+			
+			setMaxLength : function(length) {
+				this.maxLength = length;
+			},
+			
+			setRequired : function(required) {
+				this.required = required;
+			},
+			
+			setValue : function(value) {
+				this.value = value;
 			},
 		}
         
@@ -279,11 +293,8 @@ Submit = new(function(){
 			if('value' in options){
 				this.value = options.value;
 			}
-			if('checked' in options){
-				this.checked = options.checked;
-			}
-			if('defaultCheck' in options){
-				this.defaultCheck = options.defaultCheck;
+			if('label' in options){
+				this.label = options.label;
 			}
         }
         
@@ -339,6 +350,31 @@ Submit = new(function(){
             if('minute' in options){
 				this.minute = options.minute;
 			}
+        }
+        
+        if (this.type == "text") {
+			var textBoxObject = new TextBox(options);
+			return textBoxObject;
+        }
+        
+        else if (this.type == "radioButtonGroup") {
+            var radioButtonObject = new RadioButtonGroup(options);
+            return radioButtonObject;
+        }
+        
+        else if (this.type == "checkboxGroup"){
+            checkboxObject = new CheckboxGroup(options);
+            return checkboxObject;
+        }
+        
+        else if (this.type == "dropdown"){
+            dropdownObject = new Dropdown(options);
+            return dropdownObject;
+        }
+        
+        else if (this.type == "datetime"){
+            dateTimeObject = new Datetime(options);
+            return dateTimeObject;
         }
     }
     
@@ -487,7 +523,16 @@ Submit = new(function(){
     var menu = defaultMenus;
     
     this.init = function() {
+		var jsonObject = {
+			minLength : 10,
+		};
         var form = $('<div id="form"></div>').appendTo($('#editable'));
+        var jForm = new Form();
+        var jPage1 = jForm.addPage();
+        var jPage2 = jForm.addPage();
+        var jContainer0101 = jPage1.addContainer();
+        var control1 = jContainer0101.addControl("text", jsonObject);
+        console.log(jForm, jPage1, jPage2, jContainer0101, control1);
     };
 
     this.getMenu = function(){

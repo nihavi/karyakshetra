@@ -109,10 +109,14 @@ class File_model extends CI_Model {
         }
     }
 
-    function get_files_of_user($user)
+    function get_files_of_user($group_id)
     {
-        //Query database and return array of PHP object
-        //called, for now, from karyakshetra/dash, which is the controllers/dash.php controller.
+		$this->db->select('files.*');
+		$this->db->from('files, filepermissions');
+		$this->db->where('files.fid = filepermissions.fid');
+		$this->db->where("filepermissions.gid = $group_id");
+		$sql = $this->db->get();
+		return $sql;
     }
     
 }

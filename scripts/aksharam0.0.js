@@ -9,7 +9,6 @@ var Aksharam = new(function(){
         this.docBody.contentEditable = "true";
         this.docWidth = 80;
         this.padding = [5, 2, 3];
-        this.render();
     }
     
     var docProto = MyDoc.prototype;
@@ -28,9 +27,10 @@ var Aksharam = new(function(){
 		backDrop.appendChild(this.docBody);
 	};
     
-    this.init = function(){
+    this.init = function() {
 		this.newDoc = new MyDoc();
-		doc = this.newDoc;		
+		doc = this.newDoc;
+		doc.render();		
     };
 
     this.getMenu = function(){
@@ -38,7 +38,7 @@ var Aksharam = new(function(){
 			{
 				type: 'main',
 				id: 'lorem ipsum',
-				title: 'lorem ipsum',
+				title: 'Tools',
 				icon: 'fa-usd',
 				groups: [
 					{
@@ -49,30 +49,65 @@ var Aksharam = new(function(){
 						items: [
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'bold',
 								title: 'Bold',
 								icon: 'fa-bold',
 								onoff: false,
 								currState: false,
-								callback: makeBold
+								callback: changeText
 							},
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'italic',
 								title: 'Italic',
 								icon: 'fa-italic',
 								onoff: false,
 								currState: false,
-								callback: makeItalic
+								callback: changeText
 							},
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'underline',
 								title: 'Underline',
 								icon: 'fa-underline',
 								onoff: false,
 								currState: false,
-								callback: makeUnderline
+								callback: changeText
+							}
+						]
+					},
+					{
+						type: 'group',
+						id: 'group2',
+						multiple: true,
+						required: false,
+						items: [
+							{
+								type: 'button',
+								id: 'subscript',
+								title: 'Subscript',
+								icon: 'fa-subscript',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'superscript',
+								title: 'Superscript',
+								icon: 'fa-superscript',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'strikeThrough',
+								title: 'Strike Through',
+								icon: 'fa-strikethrough',
+								onoff: false,
+								currState: false,
+								callback: changeText
 							}
 						]
 					}
@@ -85,22 +120,27 @@ var Aksharam = new(function(){
     
     };
     
-    function makeBold() {
+    function changeText(e) {
 		var sel = document.getSelection();
-		for(var i = 0; i < sel.rangeCount; ++i)
-			console.log(sel.getRangeAt(i));
-		document.execCommand("bold");
-		console.log("bold");
-	}
-	
-	function makeItalic() {
-		document.execCommand("italic");
-		console.log("italic");
-	}
-	
-	function makeUnderline() {
-		document.execCommand("underline");
-		console.log("underline");
+		if(sel.rangeCount == 1) {
+			var range = document.createRange();
+			range = sel.getRangeAt(0).cloneRange();
+			doc.docBody.focus();
+			sel.removeAllRanges();
+			sel.addRange(range);
+			document.execCommand(e);
+		}
+		else {
+			var	arr = new Array();
+			for(var i = 0; i < sel.rangeCount; ++i) 
+				arr.push(sel.getRangeAt(i));
+			for(var i = 0; i < arr.length; ++i) {
+				sel.removeAllRanges();
+				sel.addRange(arr[i]);
+				document.execCommand(e);
+			}
+			sel.removeAllRanges();
+		}
 	}
 
 })();
