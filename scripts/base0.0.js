@@ -624,21 +624,79 @@ Base = new (function(){
     
     
     /*
-     * Global response variables
+     * Global variables from response
      */
     
     var baseUrl;
+    
+    /*
+     * Dependency solver
+     */
+    var loadingDep;
+    
+    var loadMathJax = function(){
+        window.MathJax = {
+            root: 'libs/MathJax',
+            extensions: ["tex2jax.js"],
+            jax: ["input/TeX","output/HTML-CSS"],
+            showProcessingMessages: false,
+            messageStyle: 'none',
+            showMathMenu: false,
+            showMathMenuMSIE: false,
+            tex2jax: {
+                inlineMath: [["$","$"],["\\(","\\)"]],
+                preview: ["loading..."]
+            }
+        };
+        path = baseUrl + 'libs/MathJax/MathJax.js';
+        $.ajax({
+            url: path,
+            dataType: "script",
+            cache: true,
+            success: solvedDep
+        })
+    };
+    
+    var solveDepend = function(depends){
+        var availLibs = {
+            'MathJax': loadMathJax
+        };
+        loadingDep = 0;
+        for( var i = 0; i < depends.length; ++i ){
+            if( depends[i] in availLibs ){
+                ++loadingDep;
+                availLibs[depends[i]]();
+            }
+        }
+    }
+    
+    var solvedDep = function(){
+        --loadingDep;
+        if(loadingDep < 1)
+            init2();
+    }
     
     this.init = function(){
         /*
          * init function for Base
          * To be called when all js and css are loaded for the first time
          */
-         
-        /*
-         * get response variables
-         */
+        
+        // Get base url from response
         baseUrl = response.baseUrl;
+        
+        /*
+         * Check dependencies and load libraries 
+         */
+        if( 'depends' in module ){
+            solveDepend(module.depends);
+        }
+    }
+    var init2 = function(){
+        /*
+         * Init level 2.
+         * Dependencies are solved by now.
+         */
         
         if( ('fileId' in response) && ('fileData' in response) ){
             //Open file
@@ -650,9 +708,9 @@ Base = new (function(){
                 var file = response.fileData;
             }
         }
-
+        
         //Set default palette
-        this.setPalette(defaultPalette);
+        Base.setPalette(defaultPalette);
         
         //Append interface div that contains everything inside body
         $('<div class="interface" id="interface"></div>').appendTo('body');
@@ -669,13 +727,13 @@ Base = new (function(){
         menuId = 0;
         menus = new Object();
         menuMeta = new Object();
-        this.updateMenu(module.getMenu());
+        Base.updateMenu(module.getMenu());
         
-        this.focusMenu('file');
+        Base.focusMenu('file');
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
-        this.setEditable();
+        Base.setEditable();
         
         //Call module's init
         module.init(edit.get(0), file);
