@@ -32,7 +32,7 @@ Submit = new(function(){
 			newestPage = new Page();
 			pageCount++;
             this.children.push(newestPage);
-            return this;
+            return newestPage;
         },
         
         addPageToIndex : function(moveToIndex){
@@ -165,7 +165,7 @@ Submit = new(function(){
 			newestControl = new Control();
 			controlCount++;
             this.controls.push(newestControl);
-            return this;
+            return newestControl;
         },
         
         addControlToIndex : function(moveToIndex){
@@ -345,11 +345,11 @@ Submit = new(function(){
     /*
      * DOM manipulation
      */
-    
+    var activePage;
     var DOM = {
         addPage : function() {
             var page = $('<div class="page"></div>').appendTo($('#form'));
-            
+            activePage = page; 
             var titleElem = {
                 type: 'heading',
                 value: 'Page title'
@@ -362,16 +362,24 @@ Submit = new(function(){
                 block: true
             };
             */
-            var inputElem = {
+            /*var inputElem = {
                 type: 'textbox',
                 value: 'Some text',
                 label: 'Label:',
             }
-            
+            */
             
             DOM.addControl(page, titleElem);
             //DOM.addControl(page, pElem);
-            DOM.addControl(page, inputElem);
+            //DOM.addControl(page, inputElem);
+        },
+        addTextbox: function() {
+            var input = {
+                type: 'textbox',
+                value: 'Enter Text Here',
+                label: 'Label:',
+            }
+            DOM.addControl(activePage, input);
         },
         addControl: function(page, elem) {
             
@@ -382,9 +390,10 @@ Submit = new(function(){
                     
                     var inner = $('<div contenteditable="true" class="in"></div>').on('focus', function() {
                         $(this).closest('.control').addClass('focus');
-                        $(this).closest('.page').addClass('focus');
+                        activePage = $(this).closest('.page');
+                        activePage.addClass('focus');
                     }).on('blur', function() {
-                        $(this).closest('.control').removeClass('focus');
+                            
                         $(this).closest('.page').removeClass('focus');
                     });
                     
@@ -421,7 +430,8 @@ Submit = new(function(){
                     
                     var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
-                            $(this).closest('.page').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activePage.addClass('focus');
                         }).on('blur', function() {
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
@@ -477,6 +487,12 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title:'New page',
                             callback: DOM.addPage
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New textbox',
+                            callback: DOM.addTextbox
                         }
                     ]
                 }
