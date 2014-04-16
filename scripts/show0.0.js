@@ -684,6 +684,8 @@ Show = new (function(){
      */
     /*
      * opCodes ( separated by -;- )
+     * ne   - Next in Slideshow
+     * pr   - Previous in Slideshow
      * sw|sh|st|sl [slideId] [elemId] [width]    - set width|height|top|left
      * de [slideId] [elemId]    - Delete element
      * cr [slideId] [elemJSON]  - Create element
@@ -696,7 +698,8 @@ Show = new (function(){
     }
     var endOp = function(state){
         currOp.end = state;
-        Base.addOp(currOp.init, currOp.end);
+        //TODO: Add all op first, then uncomment following line
+        //Base.addOp(currOp.init, currOp.end);
     }
     var getSlide = function(slideId){
         for( var i = 0; i<allSlides.length; i++ ){
@@ -727,6 +730,12 @@ Show = new (function(){
             }
             op = ops[i].split(' ');
             switch( op[0] ){
+                case 'ne':
+                    SlideShow.next();
+                    break;
+                case 'pr':
+                    Slideshow.previous();
+                    break;
                 case 'sw':
                     var elem = getElem(op[1], op[2]);
                     pastState += 'sw '+ op[1] +' '+ op[2] +' '+ elem.width;
@@ -1895,6 +1904,10 @@ Show = new (function(){
             else {
                 SlideShow.nextSlide(ev);
             }
+        }
+        
+        this.previous = function(){
+            //TODO
         }
         
         this.nextSlide = function(ev){
