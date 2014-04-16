@@ -653,7 +653,15 @@ Base = new (function(){
             url: path,
             dataType: "script",
             cache: true,
-            success: solvedDep
+            success: function(){
+                MathJax.Hub.Queue(
+                    ["Typeset",MathJax.Hub,$('<div id="dummyMathJaxdummy" style="position:absolute;top:-100px;left:-1000px;">$\pm sin \left( x \right)$</div>').appendTo('body').get(0)],
+                    function(){
+                        $('#dummyMathJaxdummy').remove();
+                    }
+                )
+                solvedDep();
+            }
         })
     };
     
