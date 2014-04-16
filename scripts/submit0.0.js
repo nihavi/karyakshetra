@@ -440,6 +440,14 @@ Submit = new(function(){
             
             DOM.addControl(activeContainer, titleElem);
         },
+        addParagraph: function() {
+            var pElem = {
+                type: 'paragraph',
+                value: 'This is a sample paragraph.',
+                block: true
+            };
+            DOM.addControl(activeContainer, pElem);
+        },
         addControl: function(page, elem) {
             
             var control, innerText;
@@ -585,6 +593,12 @@ Submit = new(function(){
                             icon: 'fa-square-o',
                             title: 'New heading',
                             callback: DOM.addHeading
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            title: 'New paragraph',
+                            callback: DOM.addParagraph
                         }
                     ]
                 }
