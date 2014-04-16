@@ -22,13 +22,13 @@ Akruti = new (function() {
             'sc':'stroke',
             'sw':'stroke-width',
             //'sd': 'stroke-dasharray',
-            //'so':'stroke-opacity',
+            'o':'opacity',
         },
         sA:{
             'x':'x',
             'y':'y',
             'h':'height',
-            'w':'width'
+            'w':'width',
         },
         e:{
             'cx':'cx',
@@ -39,8 +39,7 @@ Akruti = new (function() {
             'sw':'stroke-width',
             'f' :'fill',
             //'sd': 'stroke-dasharray',
-            //'so':'stroke-opacity',
-            //'fo':'fill-opacity',
+            'o':'opacity',
         },
         r:{
             'x': 'x',
@@ -53,15 +52,14 @@ Akruti = new (function() {
             'sc': 'stroke',
             'sw': 'stroke-width',
             'sd' : 'stroke-dasharray',
-            //'so':'stroke-opacity',
-            //'fo':'fill-opacity',
+            'o':'opacity',
         },
         fd: {
             'd': 'd',
             'sc': 'stroke',
             'sw': 'stroke-width',
             //'sd': 'stroke-dasharray',
-            //'so': 'stroke-opacity',
+            'o': 'opacity',
         },
     };
     
@@ -650,7 +648,7 @@ Akruti = new (function() {
     };
     
     FreeHandDrawing.prototype.getPivots = function() {
-        if (!this.minX) {
+        if (true) {
             this.dArray = this.d.split(' ');
             this.minX = this.dArray[1];
             this.minY = this.dArray[2];
@@ -662,6 +660,7 @@ Akruti = new (function() {
                 this.minY = Math.min(this.minY, this.dArray[i]);
                 this.maxY = Math.max(this.maxY, this.dArray[i++]);
             }
+            delete this.dArray;
         }
         return {
             x:[this.minX, this.maxX],
@@ -713,7 +712,8 @@ Akruti = new (function() {
             this.g.appendChild(this.p[i]);
         }
         
-        this.setPivots(x,y,h,w)
+        this.setPivots(x,y,h,w);
+        /*
         this.p[8] = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         this.p[8].id = SelectRef[8];
         this.p[8].setAttribute('r',radius);
@@ -729,7 +729,7 @@ Akruti = new (function() {
         path.setAttribute('stroke-width',1/mySvgObject.zoomFactor);
         path.setAttribute('d','M '+(x+w/2)+' '+(y-20)+' v 20');
         this.g.appendChild(path);
-        
+        */      
     };
     
     SelectArea.prototype.setPivots = function (x,y,h,w) {
@@ -896,6 +896,7 @@ Akruti = new (function() {
         this.strokeWidth = 2;
         this.strokeColor = 'rgb(0,0,0)';
         this.fillColor   = 'none';
+        this.opacity     = 1;
         
         actives = new Object();
         actives.list = new Array();
@@ -986,6 +987,32 @@ Akruti = new (function() {
             }
         };
         
+        this.setOpacity = function(id,opacity){
+            if (actives.list.length == 0) {
+                editor.opacity = opacity;
+            }
+            else {
+                var pastState = new Array();
+                var newState = new Array();                
+                for (var i=0; i<actives.list.length; i++) {
+                    var states = actives.list[i].changeAttributes({'o':opacity}, true);
+                    if ( states.pastState.o != states.newState.o ) {
+                        pastState[i] = states.pastState;
+                        newState[i] = states.newState;
+                    }
+                }
+                if ( pastState.length != 0) {
+                    Base.addOp({
+                        op:'m',
+                        ar:pastState
+                    },{
+                        op:'m',
+                        ar:newState
+                    })
+                }
+            }
+        };
+        
         this.setFillColor = function(id, color){
             if (actives.list.length == 0) {
                 editor.fillColor = color;
@@ -1026,6 +1053,9 @@ Akruti = new (function() {
             return editor.fillColor;
         }
         
+        var getOpacity = function(){
+            return editor.opacity;
+        }
         var eq = function (arg1, arg2) {
             if (arg1.length != arg2.length) {
                 return false;
@@ -1073,7 +1103,7 @@ Akruti = new (function() {
                 $(pivots[i]).on('mousedown', pivotsOn.mousedown).css('cursor',resizeCursorRef[i]);
             }
             
-            $(pivots[8]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
+           // $(pivots[8]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
             $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
             Base.focusMenu('edit');
         };
@@ -1326,7 +1356,7 @@ Akruti = new (function() {
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
                         'f' :getFillColor(),
-                        //'op':getOpacity(),
+                        'o':getOpacity(),
                         //'sd':getStrokeDashArray(),
                     };
                     var element = new Ellipse(attributes,mySvgObject);
@@ -1407,6 +1437,7 @@ Akruti = new (function() {
                         'y2':y,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
+                        'o' :getOpacity()
                     };
                     
                     var element = new Line(attributes,mySvgObject);
@@ -1494,7 +1525,8 @@ Akruti = new (function() {
                         'w' :0,
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
-                        'f' : getFillColor()
+                        'f' : getFillColor(),
+                        'o' : getOpacity(),
                     };
                     
                     var element = new Rectangle(attributes,mySvgObject);
@@ -1571,19 +1603,17 @@ Akruti = new (function() {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
-                    
-                    var dArray = new Array('M', x, y);
                     var attributes = {
-                        'd': dArray.join(' '),
+                        'd':  'M ' + x + ' ' + y,
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
+                        'o' : getOpacity(),
                     }
                     var element = new FreeHandDrawing(attributes, mySvgObject);
                     element.minX = x;
                     element.minY = y;
                     element.maxX = x;
                     element.maxY = y;
-                    element.dArray = dArray;
                     return element;
                 },
 
@@ -1594,7 +1624,6 @@ Akruti = new (function() {
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
-                    element.dArray.push('L', x, y);
                     element.minX = Math.min(x,element.minX);
                     element.minY = Math.min(y,element.minY);
                     element.maxX = Math.max(x,element.maxX);
@@ -1609,11 +1638,9 @@ Akruti = new (function() {
                     
                     var element = e.data;
                     var mySvgObject = allSvg[element.pid];
-                    
                     var offset = mySvgObject.page.getBoundingClientRect();
                     var x = (e.clientX - offset.left) / mySvgObject.zoomFactor;
                     var y = (e.clientY - offset.top) / mySvgObject.zoomFactor;
-                    element.dArray.push('L', x, y);
                     element.minX = Math.min(x,element.minX);
                     element.minY = Math.min(y,element.minY);
                     element.maxX = Math.max(x,element.maxX);
@@ -1624,6 +1651,7 @@ Akruti = new (function() {
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
                     Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    
                 },
             },
         
@@ -1935,6 +1963,7 @@ Akruti = new (function() {
                     var y = (e.clientY - offset.top)/mySvgObject.zoomFactor;
                     element.initX = x;
                     element.initY = y;
+                    element.dArray = element.d.split(' ');
                     return element.getOp('ch', ['d']);
                     
                 },
@@ -1980,7 +2009,8 @@ Akruti = new (function() {
                         'd':element.dArray.join(' ')
                     });
                     element.initX = x;
-                    element.initY = y;  
+                    element.initY = y;
+                    delete element.dArray;
                     return state.newState;
                 }   
                             
@@ -2160,6 +2190,7 @@ Akruti = new (function() {
             },
             fd:{
                 mousedown:function(element, rect) {
+                    element.dArray = element.d.split(' ');
                     element.ratio = new Array();
                     element.minX.ratio = Math.abs(element.minX - rect.x)/rect.w;
                     element.maxX.ratio = Math.abs(element.maxX - rect.x)/rect.w;
@@ -2184,8 +2215,6 @@ Akruti = new (function() {
                         'd':element.dArray.join(' ')
                     }
                     var state = element.changeAttributes(changes);
-                    
-                    
                 },
                 mouseup:function(element, rect) {
                     for(var i=1; i<element.dArray.length; i++) {
@@ -2199,7 +2228,9 @@ Akruti = new (function() {
                     var changes = {
                         'd':element.dArray.join(' ')
                     }
+                    
                     var state = element.changeAttributes(changes);
+                    delete element.dArray;
                     return state.newState; 
                 }, 
             },
@@ -2369,7 +2400,7 @@ Akruti = new (function() {
             type: 'main',
             id: 'tools',
             title: 'Tools', //Name of menu
-            icon: 'fa-star-half-empty', //Font awesome icon name
+            icon: 'fa-star-half-empty fa-spin', //Font awesome icon name
             groups: [
                 {
                     type: 'group',
@@ -2500,13 +2531,34 @@ Akruti = new (function() {
                             currState:2,
                             list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
                             callback:editor.setStrokeWidth
+                        },
+                        {
+                            type:'list',
+                            id:'opacity',
+                            title:'Opacity',
+                            icon:'fa-th-list',
+                            currState:1,
+                            list:[{"id":0,"value":"0"},{"id":0.1,"value":"0.1"},{"id":0.2,"value":"0.2"},{"id":0.3,"value":"0.3"},{"id":0.4,"value":"0.4"},{"id":0.5,"value":"0.5"},{"id":0.6,"value":"0.6"},{"id":0.7,"value":"0.7"},{"id":0.8,"value":"0.8"},{"id":0.9,"value":"0.9"},
+                                  {"id":1,"value":"1"}],
+                            callback:editor.setOpacity
+                        },
+                        {
+                            type:'list',
+                            id:'stroke-dasharray',
+                            title:'Stroke Style',
+                            icon:'fa-th-list',
+                            currState:'5 5',
+                            list:[
+                                  {"id":'5 5',"value":"<svg height='3' width='60'><line x1='1' y1='1' x2='60' y2='1' stroke-dasharray='5 5' stroke='black'><svg>"}
+                                ],
+                            callback:editor.setOpacity
                         }
                     ]
                 }
             ]  
         },
     ];
-    
+   
     this.getMenu = function (){
         return defaultMenu;
     };
