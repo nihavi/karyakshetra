@@ -38,7 +38,7 @@ var Aksharam = new(function(){
 			{
 				type: 'main',
 				id: 'lorem ipsum',
-				title: 'lorem ipsum',
+				title: 'Tools',
 				icon: 'fa-usd',
 				groups: [
 					{
@@ -49,30 +49,65 @@ var Aksharam = new(function(){
 						items: [
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'bold',
 								title: 'Bold',
 								icon: 'fa-bold',
 								onoff: false,
 								currState: false,
-								callback: makeBold
+								callback: changeText
 							},
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'italic',
 								title: 'Italic',
 								icon: 'fa-italic',
 								onoff: false,
 								currState: false,
-								callback: makeItalic
+								callback: changeText
 							},
 							{
 								type: 'button',
-								id: 'boldbutton',
+								id: 'underline',
 								title: 'Underline',
 								icon: 'fa-underline',
 								onoff: false,
 								currState: false,
-								callback: makeUnderline
+								callback: changeText
+							}
+						]
+					},
+					{
+						type: 'group',
+						id: 'group2',
+						multiple: true,
+						required: false,
+						items: [
+							{
+								type: 'button',
+								id: 'subscript',
+								title: 'Subscript',
+								icon: 'fa-subscript',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'superscript',
+								title: 'Superscript',
+								icon: 'fa-superscript',
+								onoff: false,
+								currState: false,
+								callback: changeText
+							},
+							{
+								type: 'button',
+								id: 'strikeThrough',
+								title: 'Strike Through',
+								icon: 'fa-strikethrough',
+								onoff: false,
+								currState: false,
+								callback: changeText
 							}
 						]
 					}
@@ -85,22 +120,16 @@ var Aksharam = new(function(){
     
     };
     
-    function makeBold() {
-		var sel = document.getSelection();
-		for(var i = 0; i < sel.rangeCount; ++i)
-			console.log(sel.getRangeAt(i));
-		document.execCommand("bold");
-		console.log("bold");
-	}
-	
-	function makeItalic() {
-		document.execCommand("italic");
-		console.log("italic");
-	}
-	
-	function makeUnderline() {
-		document.execCommand("underline");
-		console.log("underline");
+    function changeText(e) {
+		var sel = document.getSelection(),
+			arr = new Array();
+		for(var i = 0; i < sel.rangeCount; ++i) 
+			arr.push(sel.getRangeAt(i));
+		for(var i = 0; i < arr.length; ++i) {
+			sel.removeAllRanges();
+			sel.addRange(arr[i]);
+			document.execCommand(e);
+		}
 	}
 
 })();
