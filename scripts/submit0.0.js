@@ -1,8 +1,4 @@
 Submit = new(function(){
-
-	//var listOfPages = [];
-	//var listOfContainers = [];
-	//var listOfControls = [];
 	
     this.newForm = function(){
         return new Form();
@@ -21,21 +17,28 @@ Submit = new(function(){
     }
     
     var Form = function(){
-        this.id = 1;
+        this.id = 'form' + formCount;
         this.children = [];
     };
 
-//add code for new page and 'addPage' this new page
-
+	var formCount = 0;
+	var pageCount = 0;
+	var containerCount = 0;
+	var controlCount = 0;
+	
     Form.prototype = {
-        
-        addPage : function(page){
-            this.children.push(page);
+		
+        addPage : function(){
+			newestPage = new Page();
+			pageCount++;
+            this.children.push(newestPage);
             return this;
         },
         
-        addPageToIndex : function(page, moveToIndex){
-            this.children.splice(moveToIndex, 0, page);
+        addPageToIndex : function(moveToIndex){
+			newestPage = new Page();
+			pageCount++;
+            this.children.splice(moveToIndex, 0, newestPage);
         },
         
         movePageToIndex : function(page, moveToIndex){
@@ -49,8 +52,10 @@ Submit = new(function(){
             }
         },
 
-        addPageAtStart : function(page){
-            this.children.unshift(page);
+        addPageAtStart : function(){
+			newestPage = new Page();
+			pageCount++;
+            this.children.unshift(newestPage);
             return this;
         },
 
@@ -83,18 +88,23 @@ Submit = new(function(){
         }
     }
     var Page = function(){
+		this.id = 'page' + pageCount;
         this.containers = [];
     };
 
     Page.prototype = {
         
-        addContainer : function(containerList){
-            this.containers.push(containerList);
+        addContainer : function(){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.push(newestContainer);
             return this;
         },
         
-        addContainerToIndex : function(container, moveToIndex){
-            this.containers.splice(moveToIndex, 0, container);
+        addContainerToIndex : function(moveToIndex){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.splice(moveToIndex, 0, newestContainer);
         },
         
         moveContainerToIndex : function(container, moveToIndex){
@@ -108,8 +118,10 @@ Submit = new(function(){
             }
         },
         
-        addContainerAtStart : function(containerList){
-            this.containers.unshift(containerList);
+        addContainerAtStart : function(){
+			newestContainer = new Container();
+			containerCount++;
+            this.containers.unshift(newestContainer);
             return this;
         },
         
@@ -143,18 +155,23 @@ Submit = new(function(){
     }
     
     var Container = function(){
+		this.id = 'container' + containerCount;
         this.controls = [];
     };
     
     Container.prototype = {
         
-        addControl : function(controlList){
-            this.controls.push(controlList);
+        addControl : function(){
+			newestControl = new Control();
+			controlCount++;
+            this.controls.push(newestControl);
             return this;
         },
         
-        addControlToIndex : function(control, moveToIndex){
-            this.controls.splice(moveToIndex, 0, control);
+        addControlToIndex : function(moveToIndex){
+			newestControl = new Control();
+			controlCount++;
+            this.controls.splice(moveToIndex, 0, newestControl);
         },
         
         moveControlToIndex : function(control, moveToIndex){
@@ -168,8 +185,10 @@ Submit = new(function(){
             }
         },
         
-        addControlAtStart : function(controlList){
-            this.controls.unshift(controlList);
+        addControlAtStart : function(){
+			newestControl = new Control();
+			controlCount++;
+            this.controls.unshift(newestControl);
             return this;
         },
         
@@ -204,6 +223,7 @@ Submit = new(function(){
 
 	var Control = function(controlType, options) {
         
+        this.id = 'control' + controlCount;
         this.type = controlType;
         
         if (this.type == "text") {
