@@ -376,7 +376,7 @@ Submit = new(function(){
         addTextbox: function() {
             var input = {
                 type: 'textbox',
-                value: 'Enter Text Here',
+                val: 'Enter Text Here',
                 label: 'Label:',
             }
             DOM.addControl(activePage, input);
@@ -426,7 +426,16 @@ Submit = new(function(){
                     break;
                 
                 case 'textbox':
-                    var control = $('<span style="display:inline-block" class="textbox control"><input style="margin-left: 5px;" type="text"></span>');
+                    var control = $('<span style="display:inline-block" class="textbox control"></span>');
+
+                    var textbox = $('<input style="margin-left: 5px" class="textbox"></input>').on('focus', function() {
+                            $(this).closest('.control').addClass('focus');
+                            activePage = $(this).closest('.page');
+                            activePage.addClass('focus');
+                        }).on('blur', function() {
+                            $(this).closest('.control').removeClass('focus');
+                            $(this).closest('.page').removeClass('focus');
+                        });
                     
                     var inner = $('<span contenteditable="true" class="in"></span>').on('focus', function() {
                             $(this).closest('.control').addClass('focus');
@@ -436,11 +445,15 @@ Submit = new(function(){
                             $(this).closest('.control').removeClass('focus');
                             $(this).closest('.page').removeClass('focus');
                         });
-                    
+                     
                     if ('label' in elem) {
                         inner.text(elem.label);
                     }
+                    if ('value' in elem ) {
+                        textbox.val(elem.value);
+                    }
                     control.prepend(inner);
+                    control.append(textbox);
                     page.append(control);
                     
                     break;
@@ -504,6 +517,7 @@ Submit = new(function(){
     
     this.init = function() {
         var form = $('<div id="form"></div>').appendTo($('#editable'));
+        DOM.addPage();
     };
 
     this.getMenu = function(){
