@@ -44,7 +44,7 @@ class File_model extends CI_Model {
         //Prepare array for insertion
         $data = array(
             'fname'=> $file_name,
-            'ftype'=> 0,
+            'ftype'=> $ftype,
             'pid'=> 0
         );
 
@@ -77,7 +77,7 @@ class File_model extends CI_Model {
         
         $public_id = $query->row()->gid;
         
-        $this->db->insert('filePermissions', array(
+        $this->db->insert('filepermissions', array(
                 'gid'       => $public_id,
                 'fid'       => $file_id,
                 'rights'    => 7

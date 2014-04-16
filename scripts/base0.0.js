@@ -80,6 +80,7 @@ Base = new (function(){
     var saveFile = function(filedata, filename){
         var data = {
             file: filedata,
+            module: moduleId,
         }
         var url;
         if( currFileId ){
@@ -692,6 +693,7 @@ Base = new (function(){
         
         // Get base url from response
         baseUrl = response.baseUrl;
+        moduleId = response.moduleId;
         
         /*
          * Check dependencies and load libraries 
