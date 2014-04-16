@@ -38,7 +38,7 @@
 |
 */
 
-$route['default_controller'] = "base";
+$route['default_controller'] = "dash";
 $route['404_override'] = '';
 $route['(show(/.*)?|submit(/.*)?|akruti(/.*)?|aalekhan(/.*)?|aksharam(/.*)?)'] = "base/$1";
 
