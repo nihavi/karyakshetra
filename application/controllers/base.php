@@ -18,6 +18,10 @@ class Base extends CI_Controller
     {
         $this->index('submit', $file_id);
     }
+    function aalekhan($file_id = null)
+    {
+        $this->index('aalekhan', $file_id);
+    }
     function aksharam($file_id = null)
     {
         $this->index('aksharam', $file_id);
@@ -34,6 +38,7 @@ class Base extends CI_Controller
             'akruti' => 'akruti0.0.js',
             'show' => 'show0.0.js',
             'submit' => 'submit0.0.js',
+            'aalekhan' => 'aalekhan0.0.js',
             'aksharam' => 'aksharam0.0.js'
         );
         $module_style_repo = array(
@@ -41,6 +46,7 @@ class Base extends CI_Controller
             'akruti' => 'akruti0.0.css',
             'show' => 'show0.0.css',
             'submit' => 'submit0.0.css',
+            'aalekhan' => 'aalekhan0.0.css',
             'aksharam' => 'aksharam0.0.css'
         );
         if( !array_key_exists($module, $module_scripts_repo) )
