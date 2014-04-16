@@ -4,6 +4,49 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>Karyakshetra | Doordarshan</title>
+        <style>
+            html, body {
+                height: 100%;
+            }
+            body {
+                background-color: #eee;
+                font-size: 22px;
+                font-family: sans-serif;
+            }
+            
+            #next {
+                width: 50%;
+                max-width: 100px;
+                background-color: orange;
+                text-align: center;
+                margin: auto;
+                padding: 0.5em;
+                border-radius: 2px;
+                display: inline-block;
+                vertical-align: middle;
+            }
+            
+            #next:hover,
+            #next:focus,
+            #next:active {
+                background-color: darkorange;
+                cursor: pointer;
+            }
+            
+            .btn-container {
+                text-align: center;
+                height: 100%;
+            }
+            
+            /* The ghost, nudged to maintain perfect centering */
+            .btn-container:before {
+                content: '';
+                display: inline-block;
+                height: 100%;
+                vertical-align: middle;
+                margin-right: -0.25em; /* Adjusts for spacing */
+            }
+        </style>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
@@ -11,6 +54,8 @@
         <!--[if lt IE 8]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        <button onclick="next()" id="next">Next</button>
+        <div class="btn-container">
+            <div onclick="next()" id="next">Next</div>
+        </div>
     </body>
 </html>
