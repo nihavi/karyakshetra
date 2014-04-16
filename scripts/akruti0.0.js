@@ -268,21 +268,31 @@ Akruti = new (function() {
         }
     };
 
-    var changeAttributes = function(arg, pastAlso) {
+    var changeAttributes = function(arg, getPast, getNew) {
         var opObject = new Object();
-        opObject.newState = this.getOp('ch',[]);
-        if (pastAlso) {
-            opObject.pastState = Object.create(opObject.newState);
+        if (getPast) {
+            opObject.pastState = this.getOp('ch',[]);
         }
+        if (getNew) {
+            opObject.newState = this.getOp('ch',[]);
+        }
+        
         var j;
-        var ele = (this.element)?this.element:document.getElementById(this.id);
+        var ele = this.element;
+        
         for(j in arg) {
             if (j in allAA[this.t]) {
-                if (pastAlso) {
+                
+                if (getPast) {
                     opObject.pastState[j] = this[j];
                 }
+                
                 ele.setAttribute(allAA[this.t][j],arg[j]);
-                opObject.newState[j] = this[j] = arg[j];
+                this[j] = arg[j];
+                
+                if (getNew) {
+                    opObject.newState[j] = arg[j];
+                }
             }
         }
         
@@ -597,37 +607,6 @@ Akruti = new (function() {
     Rectangle.prototype.changeAttributes = changeAttributes;
     FreeHandDrawing.prototype.changeAttributes = changeAttributes;
     
-    var getOp = function(op, changeArr) {
-        var opObject = new Object();
-        opObject.op = op;
-        opObject.t = this.t;
-        opObject.id = this.id;
-        opObject.pid = this.pid;
-        
-        switch (op) {
-            case 'cr':
-                for (var i in allAA[this.t]) {
-                    opObject[i] = this[i];
-                }
-                opObject.pos = allSvg[this.pid].children.indexOf(this);
-                break;
-            case 'd':
-                
-                break;
-            case 'ch':
-                for (var i=0; i<changeArr.length; i++) {
-                    opObject[changeArr[i]] = this[changeArr[i]];
-                }
-                break;
-        }
-        return opObject;
-    }
-    
-    Line.prototype.getOp = getOp;
-    Ellipse.prototype.getOp = getOp;
-    Rectangle.prototype.getOp = getOp;
-    FreeHandDrawing.prototype.getOp = getOp;
-    
     Line.prototype.getPivots = function(){
         return {
             x:[this.x1,this.x2],
@@ -800,10 +779,53 @@ Akruti = new (function() {
         this.splice(index, 0, item);
     };
     
-    this.performOp = function (data) {
-        var returnValue = new Object();
+    var getOp = function(op, changeArr) {
+        var opObject = new Object();
+        opObject.op = op;
+        opObject.t = this.t;
+        opObject.id = this.id;
+        opObject.pid = this.pid;
         
-    //{console.log('perOp', data.op, data.t);d=data;if (data instanceof Array || !data.op ) {alert(data);}}
+        switch (op) {
+            case 'cr':
+                for (var i in allAA[this.t]) {
+                    opObject[i] = this[i];
+                }
+                opObject.pos = allSvg[this.pid].children.indexOf(this);
+                break;
+            case 'd':
+                
+                break;
+            case 'ch':
+                for (var i=0; i<changeArr.length; i++) {
+                    opObject[changeArr[i]] = this[changeArr[i]];
+                }
+                break;
+        }
+        return opObject;
+    }
+    
+    Line.prototype.getOp = getOp;
+    Ellipse.prototype.getOp = getOp;
+    Rectangle.prototype.getOp = getOp;
+    FreeHandDrawing.prototype.getOp = getOp;
+    
+    var sendOp = function(pastState, newState) {
+        Base.addOp(
+            JSON.stringify(pastState),
+            JSON.stringify(newState)
+        );
+    };
+    
+    this.performOp = function (data) {
+        var ret = myPerformOp( JSON.parse(data) );
+        ret.pastState = JSON.stringify( ret.pastState );
+        ret.newState = JSON.stringify( ret.newState );
+        return ret;
+    };
+    
+    var myPerformOp = function (data) {
+        var returnValue = new Object();
         
         if (data.op == 'm') {
             var i;
@@ -813,7 +835,8 @@ Akruti = new (function() {
             returnValue.pastState.ar = new Array();
             returnValue.newState.ar = data;
             for(i=data.ar.length-1;i>=0;i--) {
-                returnValue.pastState.ar[data.ar.length-i-1] = this.performOp(data.ar[i]).pastState;
+                var tmp = myPerformOp(data.ar[i]);
+                returnValue.pastState.ar[data.ar.length-i-1] = tmp.pastState;
             }
         }
         else
@@ -833,6 +856,7 @@ Akruti = new (function() {
                     myObject = new FreeHandDrawing(data);
                     break;
             }
+            
             /*
             if (allSvg[data.pid].children.length != data.pos) {
                 if (data.pos != 0) {
@@ -842,8 +866,9 @@ Akruti = new (function() {
                     $(myObject.g).detach().insertBefore( $(allSvg[data.pid].children[data.pos]) );
                 }
             }
-            allSvg[data.pid].children.insertAt(data.pos, myObject);
+            insertAt.call(allSvg[data.pid].children, data.pos, myObject);
             */
+            
             allSvg[data.pid].children.push(myObject);
             
             editor.makeEditable(myObject.g);
@@ -858,12 +883,18 @@ Akruti = new (function() {
         else
         if (data.op == 'ch') {
             var myObject = $('#' + data.id + 'g').data('myObject');
-            returnValue = myObject.changeAttributes(data, true);
+            returnValue = myObject.changeAttributes(data, true, true);
+        }
+        else {
+            alert('Error, performOp')
+            console.log('performOp', 'Error', data);
+            d=data;
         }
         editor.completeOp(data);
         
         return returnValue;
     };
+    
     
     this.getFileData = function(svg) {
         if (!svg) {
@@ -882,8 +913,12 @@ Akruti = new (function() {
                 data.ar[i][j] = element.children[i][j];
             }
         }
-        return data;
+        return JSON.stringify(data);
     };
+    
+    this.openFile = function(fileDataString) {
+        var data = JSON.parse(fileDataString);
+    }
     
     /*******************************   Editor Module   *******************************/
     var editor = new (function() {
@@ -942,14 +977,14 @@ Akruti = new (function() {
                 var pastState = new Array();
                 var newState = new Array();                
                 for (var i=0; i<actives.list.length; i++) {
-                    var states = actives.list[i].changeAttributes({'sw':value}, true);
+                    var states = actives.list[i].changeAttributes({'sw':value}, true, true);
                     if ( states.pastState.sw != states.newState.sw ) {
                         pastState[i] = states.pastState;
                         newState[i] = states.newState;
                     }
                 }
                 if ( pastState.length != 0) {
-                    Base.addOp({
+                    sendOp({
                         op:'m',
                         ar:pastState
                     },{
@@ -968,14 +1003,14 @@ Akruti = new (function() {
                 var pastState = new Array();
                 var newState = new Array();                
                 for (var i=0; i<actives.list.length; i++) {
-                    var states = actives.list[i].changeAttributes({'sc':color}, true);
+                    var states = actives.list[i].changeAttributes({'sc':color}, true, true);
                     if ( states.pastState.sc != states.newState.sc ) {
                         pastState[i] = states.pastState;
                         newState[i] = states.newState;
                     }
                 }
                 if ( pastState.length != 0) {
-                    Base.addOp({
+                    sendOp({
                         op:'m',
                         ar:pastState
                     },{
@@ -995,7 +1030,7 @@ Akruti = new (function() {
                 var newState = new Array();                
                 for (var i=0; i<actives.list.length; i++) {
                     if ('f' in allAA[actives.list[i].t]) {
-                        var states = actives.list[i].changeAttributes({'f':color}, true);
+                        var states = actives.list[i].changeAttributes({'f':color}, true, true);
                         if ( states.pastState.f != states.newState.f ) {
                             pastState[i] = states.pastState;
                             newState[i] = states.newState;
@@ -1003,7 +1038,7 @@ Akruti = new (function() {
                     }
                 }
                 if ( pastState.length != 0) {
-                    Base.addOp({
+                    sendOp({
                         op:'m',
                         ar:pastState
                     },{
@@ -1375,7 +1410,7 @@ Akruti = new (function() {
                     else {
                         $(element.g).on('mousedown', elementOn.mousedown);
                         mySvgObject.children.push(element);
-                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                        sendOp(element.getOp('d'),element.getOp('cr'));
                     }
                 },
                 
@@ -1448,7 +1483,7 @@ Akruti = new (function() {
                     else {
                         $(element.g).on('mousedown', elementOn.mousedown);
                         mySvgObject.children.push(element);
-                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                        sendOp(element.getOp('d'),element.getOp('cr'));
                     }
                 },
                 
@@ -1542,7 +1577,7 @@ Akruti = new (function() {
                     else {
                         $(element.g).on('mousedown', elementOn.mousedown);
                         mySvgObject.children.push(element);
-                        Base.addOp(element.getOp('d'),element.getOp('cr'));
+                        sendOp(element.getOp('d'),element.getOp('cr'));
                     }
                 },
                 
@@ -1623,7 +1658,7 @@ Akruti = new (function() {
                     });
                     $(element.g).on('mousedown', elementOn.mousedown);
                     mySvgObject.children.push(element);
-                    Base.addOp(element.getOp('d'),element.getOp('cr'));
+                    sendOp(element.getOp('d'),element.getOp('cr'));
                 },
             },
         
@@ -1777,7 +1812,7 @@ Akruti = new (function() {
                 makeSelectRect(actives.select.pid);
                 $(superParent).off('mousemove',elementOn.mousemove).off('mouseup',elementOn.mouseup);
                 if ( !( eq( actives.pastState, actives.newState )) ) {
-                    Base.addOp({
+                    sendOp({
                         'op':'m',
                         'ar':actives.pastState
                     },{
@@ -1837,7 +1872,7 @@ Akruti = new (function() {
                         'x2':element.dx2+x,
                         'y2':element.dy2+y,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                 },
 
@@ -1879,7 +1914,7 @@ Akruti = new (function() {
                         'cx':element.diff.cx+x,
                         'cy':element.diff.cy+y,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                 }
             },
@@ -1920,7 +1955,7 @@ Akruti = new (function() {
                         'x':element.diff.x+x,
                         'y':element.diff.y+y,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                     
                 },
@@ -1978,7 +2013,7 @@ Akruti = new (function() {
                     }
                     var state = element.changeAttributes({
                         'd':element.dArray.join(' ')
-                    });
+                    }, false, true);
                     element.initX = x;
                     element.initY = y;  
                     return state.newState;
@@ -2040,7 +2075,7 @@ Akruti = new (function() {
                 $(superParent).off('mousemove', pivotsOn.mousemove).off('mouseup',pivotsOn.mouseup);
                 
                 if ( !( eq( actives.pastState, actives.newState )) ) {
-                    Base.addOp({
+                    sendOp({
                         'op':'m',
                         'ar':actives.pastState
                     },{
@@ -2093,7 +2128,7 @@ Akruti = new (function() {
                         'y1':rect.y+element.ratioY1*rect.h,
                         'y2':rect.y+element.ratioY2*rect.h,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                 },
             },
@@ -2123,7 +2158,7 @@ Akruti = new (function() {
                         'rx':element.ratioRX*rect.w,
                         'ry':element.ratioRY*rect.h,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                 },
             },
@@ -2154,7 +2189,7 @@ Akruti = new (function() {
                         'h':element.ratioH*rect.h,
                         'w':element.ratioW*rect.w,
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState;
                 },
             },
@@ -2183,7 +2218,7 @@ Akruti = new (function() {
                     var changes = {
                         'd':element.dArray.join(' ')
                     }
-                    var state = element.changeAttributes(changes);
+                    element.changeAttributes(changes);
                     
                     
                 },
@@ -2199,7 +2234,7 @@ Akruti = new (function() {
                     var changes = {
                         'd':element.dArray.join(' ')
                     }
-                    var state = element.changeAttributes(changes);
+                    var state = element.changeAttributes(changes, false, true);
                     return state.newState; 
                 }, 
             },
@@ -2279,7 +2314,7 @@ Akruti = new (function() {
                 pastState[i] = states.pastState;
                 newState[i] = states.newState;
             }
-            Base.addOp({
+            sendOp({
                 'op':'m',
                 'ar':pastState
             },{
@@ -2512,7 +2547,9 @@ Akruti = new (function() {
     };
     
 })();
+
 module = Akruti;
+
 /*
 {
             type: 'main',
