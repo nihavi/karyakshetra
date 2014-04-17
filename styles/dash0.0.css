@@ -13,11 +13,21 @@
     width: 80%;
     border: 1px solid #ccc;
     border-bottom: none;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    -o-user-select: none;
+    user-select: none;   
 }
 .file a {
     color: #057cb8;
     text-decoration: none;
 }
+
+.file a:hover {
+    text-decoration: underline;
+}
+
 .file {
     padding: 0.5em;
     border-bottom: 1px solid #ccc;
@@ -33,15 +43,11 @@
     transition: 0.3s background-color;
 }
 
-.file:active,
-.file:focus,
 .file.focus {
     background-color: darkorange;
     color: white;
 }
 
-.file:active a,
-.file:focus a,
 .file.focus a {
     color: white;
 }
@@ -56,6 +62,6 @@ input[type=checkbox].file-selector {
     visibility: visible;
 }
 
-input[type=checkbox]:checked {
+.file input[type=checkbox]:checked {
     visibility: visible;
 }

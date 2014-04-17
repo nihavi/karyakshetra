@@ -34,11 +34,11 @@ Dash = new(function(){
                         var file = $(this);
                         if (file.hasClass('focus')) {
                             file.removeClass('focus');
-                            file.find('input.file-selector').attr('checked', 'false');
+                            file.find('input.file-selector').prop('checked', false);
                         }
                         else {
                             file.addClass('focus');
-                            file.find('input.file-selector').attr('checked', 'true');
+                            file.find('input.file-selector').prop('checked', true);
                         }
                     });
                     
