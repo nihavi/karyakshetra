@@ -735,6 +735,12 @@ Show = new (function(){
                 case 'pr':
                     SlideShow.previous();
                     break;
+                case 'ns':
+                    SlideShow.nextSlide();
+                    break;
+                case 'ps':
+                    SlideShow.prevSlide();
+                    break;
                 case 'sw':
                     var elem = getElem(op[1], op[2]);
                     pastState += 'sw '+ op[1] +' '+ op[2] +' '+ elem.width;
