@@ -1370,19 +1370,21 @@ Akruti = new (function() {
                         sd:true
                     };
                     for (var i=1; i<actives.list.length; i++) {
-                        if (actives.list[0].f != actives.list[i].f) {
+                        var type = actives.list[i].t;
+                        var t = actives.list[0].t;
+                        if ((f in allAA.t) && (f in allAA.type) && (actives.list[0].f != actives.list[i].f))  {
                             flag.f = false;
                         }
-                        if (actives.list[0].sc != actives.list[i].sc) {
+                        if ((sc in allAA.t) && (sc in allAA.type)&& (actives.list[0].sc != actives.list[i].sc)) {
                             flag.sc = false;
                         }
-                        if (actives.list[0].sw != actives.list[i].sw) {
+                        if ((sw in allAA.t) && (sw in allAA.type) && (actives.list[0].sw != actives.list[i].sw)) {
                             flag.sw = false;
                         }
-                        if (actives.list[0].o != actives.list[i].o) {
+                        if ((o in allAA.t) && (o in allAA.type) && (actives.list[0].o != actives.list[i].o)) {
                             flag.o = false;
                         }
-                        if (actives.list[0].sd != actives.list[i].sd) {
+                        if ((sd in allAA.t) && (sd in allAA.type) && (actives.list[0].sd != actives.list[i].sd)) {
                             flag.sd = false;
                         }
                     }
@@ -1442,7 +1444,6 @@ Akruti = new (function() {
                 }
                 {
                     Base.updateMenu( editor.getMenu({}) );
-                    Base.focusMenu('tools');
                 }
             }
         };
