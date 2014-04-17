@@ -761,6 +761,7 @@ Akruti = new (function() {
         svgParent = parent;
         if( mode == 'edit' ){
             isEditable = true;
+            Base.updateMenu(editor.menu);
             Base.stream(true);
         }
         else if( mode == 'view' ){
@@ -962,7 +963,7 @@ Akruti = new (function() {
         
         var allModes = ['createLineMode', 'createEllipseMode', 'createRectangleMode', 'createFreeMode', 'magicMode', 'LightningMode', 'selectMode', ]
 
-        this.currentMode = 'createLineMode';
+        this.currentMode = 'createFreeMode';
         this.strokeWidth = 2;
         this.strokeColor = 'rgb(0,0,0)';
         this.fillColor   = 'none';
@@ -1126,6 +1127,171 @@ Akruti = new (function() {
         var getOpacity = function(){
             return editor.opacity;
         }
+     
+        this.menu = [
+        {
+            type: 'main',
+            id: 'tools',
+            title: 'Tools', //Name of menu
+            icon: 'fa-star-half-empty fa-spin', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'modeSelectorGroup',
+                    multiple: false,
+                    required: true,
+                    items: [
+                        {
+                            type:'button',
+                            icon: 'fa-hand-o-up',
+                            id: 'selectMode',
+                            title:'Select',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-minus',
+                            id:'createLineMode',
+                            title:'Line',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-pencil',
+                            id: 'createFreeMode',
+                            title:'Free Hand Drawing',
+                            onoff: true,
+                            currState:true,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-square-o',
+                            id: 'createRectangleMode',
+                            title:'Rectangle',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-circle-o',
+                            id: 'createEllipseMode',
+                            title:'Ellipse',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-magic',
+                            id: 'magicMode',
+                            title:'Magic',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-bolt',
+                            id: 'lightningMode',
+                            title:'Lightning',
+                            onoff: true,
+                            currState:false,
+                            callback: this.setMode
+                        }
+                    ]
+                }
+            ]   //Groups inside this menu
+        },
+        {
+            type: 'main',
+            id: 'edit',
+            title: 'Edit', //Name of menu
+            icon: 'fa-edit', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'colorGroup',
+                    items: [
+                        {
+                            type: 'color',
+                            id: 'fillColor',
+                            title:'Fill',
+                            text: 'Fill Color',
+                            currState: this.fillColor,
+                            icon: 'fa-tint',
+                            callback: this.setFillColor,
+                        },
+                        {
+                            type: 'color',
+                            id: 'strokeColor',
+                            title:'Stroke Color',
+                            currState: this.strokeColor,
+                            icon: 'fa-tint', 
+                            text: 'Stroke',
+                            callback: this.setStrokeColor,
+                        },
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'delete',
+                    items: [
+                        {
+                            type: 'button',
+                            id: 'delete',
+                            title: 'Delete',
+                            icon: 'fa-eraser', //Font awesome icon name
+                            onoff: false,  //Is a on/off button
+                            callback: this.deleteAllSelected
+                        },
+                    ],
+                },
+                {
+                    type: 'group',
+                    id: 'strokeProperties',
+                    items: [
+                        {
+                            type:'list',
+                            id:'stroke-width',
+                            title:'Stroke Weight',
+                            icon:'fa-th-list',
+                            currState:this.strokeWidth,
+                            list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
+                            callback:this.setStrokeWidth
+                        },
+                        {
+                            type:'list',
+                            id:'opacity',
+                            title:'Opacity',
+                            icon:'fa-th-list',
+                            currState:this.opacity,
+                            list:[{"id":0,"value":"0"},{"id":0.1,"value":"0.1"},{"id":0.2,"value":"0.2"},{"id":0.3,"value":"0.3"},{"id":0.4,"value":"0.4"},{"id":0.5,"value":"0.5"},{"id":0.6,"value":"0.6"},{"id":0.7,"value":"0.7"},{"id":0.8,"value":"0.8"},{"id":0.9,"value":"0.9"},
+                                  {"id":1,"value":"1"}],
+                            callback:this.setOpacity
+                        },
+                        {
+                            type:'list',
+                            id:'stroke-dasharray',
+                            title:'Stroke Style',
+                            icon:'fa-th-list',
+                            currState:'5 5',
+                            list:[
+                                  {"id":'5 5',"value":"<svg height='3' width='60'><line x1='1' y1='1' x2='60' y2='1' stroke-dasharray='5 5' stroke='black'><svg>"}
+                                ],
+                            callback:console.log
+                        }
+                    ]
+                }
+            ]  
+        },
+    ];
+        
         var eq = function (arg1, arg2) {
             if (arg1.length != arg2.length) {
                 return false;
@@ -1139,7 +1305,6 @@ Akruti = new (function() {
             }
             return true;
         };
-        
         
         var makeSelectRect = function(pid) {            //pid is the id of the svg where elements are to be selected
             
@@ -2427,8 +2592,7 @@ Akruti = new (function() {
                     break;
             }
         };
-        
-        
+         
         /*
         var lineMoveWithArrowKeys = function(type, ctrlKey, shiftKey) {
             var d;
@@ -2465,169 +2629,7 @@ Akruti = new (function() {
     })();
     /******************************* Editor Module End *******************************/
         
-    var defaultMenu = [
-        {
-            type: 'main',
-            id: 'tools',
-            title: 'Tools', //Name of menu
-            icon: 'fa-star-half-empty fa-spin', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'modeSelectorGroup',
-                    multiple: false,
-                    required: true,
-                    items: [
-                        {
-                            type:'button',
-                            icon: 'fa-hand-o-up',
-                            id: 'selectMode',
-                            title:'Select',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-minus',
-                            id:'createLineMode',
-                            title:'Line',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            id: 'createFreeMode',
-                            title:'Free Hand Drawing',
-                            onoff: true,
-                            currState:true,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-square-o',
-                            id: 'createRectangleMode',
-                            title:'Rectangle',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-circle-o',
-                            id: 'createEllipseMode',
-                            title:'Ellipse',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-magic',
-                            id: 'magicMode',
-                            title:'Magic',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-bolt',
-                            id: 'lightningMode',
-                            title:'Lightning',
-                            onoff: true,
-                            currState:false,
-                            callback: editor.setMode
-                        }
-                    ]
-                }
-            ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'colorGroup',
-                    items: [
-                        {
-                            type: 'color',
-                            id: 'fillColor',
-                            title:'Fill',
-                            text: 'Fill Color',
-                            currState: 'none',
-                            icon: 'fa-tint',
-                            callback: editor.setFillColor,
-                        },
-                        {
-                            type: 'color',
-                            id: 'strokeColor',
-                            title:'Stroke Color',
-                            currState: '#000',
-                            icon: 'fa-tint', 
-                            text: 'Stroke',
-                            callback: editor.setStrokeColor,
-                        },
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'delete',
-                    items: [
-                        {
-                            type: 'button',
-                            id: 'delete',
-                            title: 'Delete',
-                            icon: 'fa-eraser', //Font awesome icon name
-                            onoff: false,  //Is a on/off button
-                            callback: editor.deleteAllSelected
-                        },
-                    ],
-                },
-                {
-                    type: 'group',
-                    id: 'strokeProperties',
-                    items: [
-                        {
-                            type:'list',
-                            id:'stroke-width',
-                            title:'Stroke Weight',
-                            icon:'fa-th-list',
-                            currState:2,
-                            list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
-                            callback:editor.setStrokeWidth
-                        },
-                        {
-                            type:'list',
-                            id:'opacity',
-                            title:'Opacity',
-                            icon:'fa-th-list',
-                            currState:1,
-                            list:[{"id":0,"value":"0"},{"id":0.1,"value":"0.1"},{"id":0.2,"value":"0.2"},{"id":0.3,"value":"0.3"},{"id":0.4,"value":"0.4"},{"id":0.5,"value":"0.5"},{"id":0.6,"value":"0.6"},{"id":0.7,"value":"0.7"},{"id":0.8,"value":"0.8"},{"id":0.9,"value":"0.9"},
-                                  {"id":1,"value":"1"}],
-                            callback:editor.setOpacity
-                        },
-                        {
-                            type:'list',
-                            id:'stroke-dasharray',
-                            title:'Stroke Style',
-                            icon:'fa-th-list',
-                            currState:'5 5',
-                            list:[
-                                  {"id":'5 5',"value":"<svg height='3' width='60'><line x1='1' y1='1' x2='60' y2='1' stroke-dasharray='5 5' stroke='black'><svg>"}
-                                ],
-                            callback:editor.setOpacity
-                        }
-                    ]
-                }
-            ]  
-        },
-    ];
+    
    
     this.getMenu = function (){
         return [];
