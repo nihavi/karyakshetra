@@ -1,8 +1,8 @@
 <?php
 
-class Dash extends CI_Controller {
+class Storage extends CI_Controller {
     
-    function index()
+    function dash()
     {
         $this->load->model('File_model', 'file');
         
