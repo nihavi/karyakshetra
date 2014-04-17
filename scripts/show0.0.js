@@ -1909,9 +1909,25 @@ Show = new (function(){
                 SlideShow.end(true);
             });
             Base.listen(true);
+            
             $('#slides').bind('click', SlideShow.next);
-            $(window).bind('keydown', SlideShow.next);
+            $(window).bind('keydown', showKeyBindings);
         };
+        
+        var showKeyBindings = function(ev){
+            var nextKeys = [13, 39, 32];
+            var prevKeys = [8, 37]
+            if( nextKeys.indexOf(ev.keyCode) > -1 ){
+                SlideShow.next();
+            }
+            else if( prevKeys.indexOf(ev.keyCode) > -1 ){
+                SlideShow.previous();
+            }
+            else if( ev.keyCode == 27 ){
+                SlideShow.end(true);
+            }
+        }
+        
         
         var runnigAnims;
         var runnigAnimList;
@@ -1999,7 +2015,6 @@ Show = new (function(){
             else {
                 SlideShow.prevSlide();
             }
-            //TODO
         }
         
         this.nextSlide = function(){
@@ -2017,11 +2032,6 @@ Show = new (function(){
         };
         
         this.prevSlide = function(){
-            /*if( currSlideShowIndex >= allSlides.length ){
-                endSlide = 0;
-                currSlideShowIndex = allSlides.length - 1;
-            }
-            else {*/
             if( endSlide ){
                 endSlide = 0;
                 $('.pres-end-mes').remove();
@@ -2054,7 +2064,7 @@ Show = new (function(){
             Base.showMenu();
             Base.exitFullscreen();
             $('#slides').unbind('click', SlideShow.next);
-            $(window).unbind('keydown', SlideShow.next);
+            $(window).unbind('keydown', showKeyBindings);
             $('#slides').css({
                 'width': '80%',
                 'backgroundColor': ''
@@ -2066,9 +2076,9 @@ Show = new (function(){
     })();
     
     var slideshow = function(mode){
-        Show.resize = SlideShow.resize;
         Base.hideMenu(true);
         Base.fullscreen();
+        Show.resize = SlideShow.resize;
         if( mode == 'begin' ){
             activeSlide = allSlides[0];
         }
