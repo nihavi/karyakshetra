@@ -14,7 +14,10 @@
     border: 1px solid #ccc;
     border-bottom: none;
 }
-
+.file a {
+    color: #057cb8;
+    text-decoration: none;
+}
 .file {
     padding: 0.5em;
     border-bottom: 1px solid #ccc;
@@ -22,9 +25,37 @@
     display: block;
     text-decoration: none;
     transition: 0.3s background-color;
+    cursor: pointer;
 }
 
 .file:hover {
     background-color: #eee;
     transition: 0.3s background-color;
+}
+
+.file:active,
+.file:focus,
+.file.focus {
+    background-color: darkorange;
+    color: white;
+}
+
+.file:active a,
+.file:focus a,
+.file.focus a {
+    color: white;
+}
+
+input[type=checkbox].file-selector {
+    margin-top: 1px;
+    margin-right: 5px;
+    visibility: hidden;
+}
+
+.file:hover input[type=checkbox].file-selector {
+    visibility: visible;
+}
+
+input[type=checkbox]:checked {
+    visibility: visible;
 }
