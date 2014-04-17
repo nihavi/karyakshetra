@@ -7,6 +7,10 @@ Akruti = new (function() {
     
     currentSvg = null,
     
+    svgParent = null,
+    
+    isEditable = false,
+    
     initialized = false,
     
     zoomState = 'auto',
@@ -753,25 +757,38 @@ Akruti = new (function() {
     Rectangle.prototype.delete = deleteSelf;
     FreeHandDrawing.prototype.delete = deleteSelf;
     
-    this.init = function(parent, fileData) {
+    this.init = function(parent, fileData, mode) {
+        svgParent = parent;
+        if( mode == 'edit' ){
+            isEditable = true;
+            Base.stream(true);
+        }
+        else if( mode == 'view' ){
+            isEditable = false;
+            Base.listen(true);
+            Base.hideMenu(true);
+            Akruti.zoom('fit');
+        }
         if ( !initialized ) {
             initialized = true;
             if (fileData) {
-                Akruti.openFile(fileData)
+                Akruti.openFile(fileData);
             }
             else {
-                    var arg = {
+                var arg = {
                     h:550,
                     w:1000
                 };
-                var svgObject = new Svg(arg, parent, true);
+                var svgObject = new Svg(arg, parent, isEditable);
                 allSvg[svgObject.id] = svgObject;
-                currentSvg = svgObject;    
+                currentSvg = svgObject;
             }
             this.resize();
-            editor.setMode('createFreeMode', true);
-            Base.focusMenu('tools');
-            editor.init();
+            if (isEditable) {
+                editor.setMode('createFreeMode', true);
+                Base.focusMenu('tools');
+                editor.init();
+            }
         }
     };
 
@@ -874,8 +891,9 @@ Akruti = new (function() {
             */
             
             allSvg[data.pid].children.push(myObject);
-            
-            editor.makeEditable(myObject.g);
+            if (isEditable) {
+                editor.makeEditable(myObject.g);
+            }
             if (!dontReturnAnyValue) {
                 returnValue.pastState = myObject.getOp('d');
                 returnValue.newState = data;
@@ -902,8 +920,7 @@ Akruti = new (function() {
         return returnValue;
     };
     
-    
-    this.getFileData = function() {
+    this.getFile = function() {
         
         var svg = (currentSvg)?(currentSvg):(allSvg['s1']);
         var data = new Object();
@@ -921,20 +938,21 @@ Akruti = new (function() {
         return JSON.stringify(data);
     };
     
-    this.openFile = function(parent, fileDataString) {
+    this.openFile = function(fileDataString) {
         var data = JSON.parse(fileDataString);
-        $(allSvg.s1.element).remove();
-        delete allSvg.s1;
+        if (allSvg.s1) {
+            $(allSvg.s1.element).remove();
+            delete allSvg.s1;
+        }
         var arg = data.pageDimension;
         arg.id = data.svgId;
-        var svgObject = new Svg(arg, parent, true);
-        console.log(svgObject);
+        var svgObject = new Svg(arg, svgParent, isEditable);
         currentSvg = allSvg[svgObject.id] = svgObject;
-        this.resize();
+        Akruti.resize();
         for(var i=0; i<data.ar.length; i++) {
             myPerformOp(data.ar[i], true)
         }
-        return svgObject;
+        //return svgObject;
     }
     
     /*******************************   Editor Module   *******************************/
@@ -2612,7 +2630,7 @@ Akruti = new (function() {
     ];
    
     this.getMenu = function (){
-        return defaultMenu;
+        return [];
     };
     
 })();
