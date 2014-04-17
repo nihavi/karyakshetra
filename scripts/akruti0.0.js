@@ -766,6 +766,8 @@ Akruti = new (function() {
         else if( mode == 'view' ){
             isEditable = false;
             Base.listen(true);
+            Base.hideMenu(true);
+            Akruti.zoom('fit');
         }
         if ( !initialized ) {
             initialized = true;
@@ -917,7 +919,6 @@ Akruti = new (function() {
         
         return returnValue;
     };
-    
     
     this.getFile = function() {
         
@@ -2629,7 +2630,7 @@ Akruti = new (function() {
     ];
    
     this.getMenu = function (){
-        return defaultMenu;
+        return [];
     };
     
 })();
