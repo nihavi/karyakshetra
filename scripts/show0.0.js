@@ -388,7 +388,6 @@ Show = new (function(){
             
             allSlides.splice(index, 1);
             
-            console.log(index, newIndex);
             allSlides.splice(newIndex - 1, 0, this);
             Sidebar.moveSlide(this.id, newIndex);
         },
@@ -1724,25 +1723,34 @@ Show = new (function(){
             duration: false,
             execute: function(object){
                 object.elem.elemDOM.show();
-                SlideShow.finishAnim();
+                SlideShow.finishAnim(object);
             }
         },
         'ease': {
             name: 'Ease',
             execute: function(object){
-                object.elem.elemDOM.show(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.show(object.duration, finish);
             }
         },
         'fade': {
             name: 'Fade',
             execute: function(object){
-                object.elem.elemDOM.fadeIn(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.fadeIn(object.duration, finish);
             }
         },
         'slidedown': {
             name: 'Slide Down',
             execute: function(object){
-                object.elem.elemDOM.slideDown(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.slideDown(object.duration, finish);
             }
         },
     }
@@ -1844,8 +1852,10 @@ Show = new (function(){
         var currSlideShowIndex;
         var endSlide;
         this.animQueue;
+        var animCount;
         this.init = function(){
             endSlide = 0;
+            animCount = 0;
             
             $('#sidebar').hide();
             $('#slides').css({
@@ -1871,23 +1881,31 @@ Show = new (function(){
         };
         
         var runnigAnims;
-        this.finishAnim = function(){
+        var runnigAnimList;
+        
+        this.finishAnim = function(anim){
             --runnigAnims;
             if( runnigAnims < 0 )
                 runnigAnims = 0;
-            if( !runnigAnims && SlideShow.animQueue.length
-                && (SlideShow.animQueue[0].timing == 'wait' || SlideShow.animQueue[0].timing == 'do' ) ) {
+            var index;
+            if( (index = runnigAnimList.indexOf(anim)) > -1 ){
+                runnigAnimList.splice(index, 1);
+            }
+            if( !runnigAnims && (animCount < SlideShow.animQueue.length)
+                && (SlideShow.animQueue[animCount].timing == 'wait' || SlideShow.animQueue[animCount].timing == 'do' ) ) {
                 SlideShow.next();
             }
         }
         
         this.next = function(ev){
-            if( SlideShow.animQueue.length ){
+            if( animCount < SlideShow.animQueue.length ){
                 runnigAnims = 0;
+                runnigAnimList = [];
                 var anim;
                 do{
                     ++runnigAnims;
-                    anim = SlideShow.animQueue.shift();
+                    anim = SlideShow.animQueue[animCount++];
+                    runnigAnimList.push(anim);
                     switch( anim.type ){
                         case 'entry':
                             if( anim.delay ){
@@ -1900,7 +1918,7 @@ Show = new (function(){
                             }
                             break;
                     }
-                }while( SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'do' );
+                }while( (animCount < SlideShow.animQueue.length) && (SlideShow.animQueue[animCount].timing == 'do') );
             }
             else {
                 SlideShow.nextSlide(ev);
@@ -1914,6 +1932,7 @@ Show = new (function(){
         this.nextSlide = function(ev){
             currSlideShowIndex++;
             if( currSlideShowIndex < allSlides.length ){
+                animCount = 0;
                 allSlides[currSlideShowIndex].renderSlideShow();
                 activeSlide = allSlides[currSlideShowIndex];
             }
