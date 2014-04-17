@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>Karyakshetra | Doordarshan</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             html, body {
                 height: 100%;
@@ -47,8 +49,6 @@
                 margin-right: -0.25em; /* Adjusts for spacing */
             }
         </style>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>
             var currFileId = <?php echo $fid; ?>;
             var baseUrl = '<?php echo base_url(); ?>';
@@ -59,13 +59,6 @@
                 xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
                 xmlhttp.send('fid='+currFileId+'&op='+op);
             }
-            
-            var next = function(){
-                sendOp('ne');
-            }
-            var previous = function(){
-                sendOp('pr');
-            }
         </script>
     </head>
     <body>
@@ -73,8 +66,10 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <div class="btn-container">
-            <div onclick="previous()" class="btn" id="previous">Previous</div>
-            <div onclick="next()" class="btn" id="next">Next</div>
+            <div onclick="sendOp('pr')" class="btn" id="previous">Previous</div>
+            <div onclick="sendOp('ne')" class="btn" id="next">Next</div>
+            <div onclick="sendOp('ps')" class="btn" id="previous">Previous Slide</div>
+            <div onclick="sendOp('ns')" class="btn" id="next">Next Slide</div>
         </div>
     </body>
 </html>
