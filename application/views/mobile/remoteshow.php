@@ -14,7 +14,7 @@
                 font-family: sans-serif;
             }
             
-            #next {
+            .btn {
                 width: 50%;
                 max-width: 100px;
                 background-color: orange;
@@ -26,9 +26,9 @@
                 vertical-align: middle;
             }
             
-            #next:hover,
-            #next:focus,
-            #next:active {
+            .btn:hover,
+            .btn:focus,
+            .btn:active {
                 background-color: darkorange;
                 cursor: pointer;
             }
@@ -58,23 +58,13 @@
                 xmlhttp.open("POST",baseUrl+'opqueue/addop',true);
                 xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
                 xmlhttp.send('fid='+currFileId+'&op='+op);
-                
-                /*$.ajax({
-                    type: 'POST',
-                    url: baseUrl+'opqueue/addop',
-                    data: {
-                        fid: currFileId,
-                        op: op
-                    },
-                    success: function(data){
-                        //Do nothing
-                        //TODO: Failiure detection
-                    }
-                });*/
             }
             
             var next = function(){
                 sendOp('ne');
+            }
+            var previous = function(){
+                sendOp('pr');
             }
         </script>
     </head>
@@ -83,7 +73,9 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
         <div class="btn-container">
-            <div onclick="next()" id="next">Next</div>
+            <div onclick="previous()" class="btn" id="previous">Previous</div>
+            <div onclick="next()" class="btn" id="next">Next</div>
         </div>
     </body>
 </html>
+
