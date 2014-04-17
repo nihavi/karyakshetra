@@ -2,9 +2,9 @@
 
 class Base extends CI_Controller
 {
-    function akruti($file_id = null)
+    function akruti($file_id = null, $mode = 'edit')
     {
-        $this->index('akruti', $file_id);
+        $this->index('akruti', $file_id, $mode);
     }
     function dash($file_id = null)
     {
@@ -27,7 +27,7 @@ class Base extends CI_Controller
         $this->index('aksharam', $file_id);
     }
     
-    function index($module = 'dash', $file_id = null)
+    function index($module = 'dash', $file_id = null, $mode = 'edit')
     {
         /*
          * Assumes that /scripts contains '<module>.js' file for each module
@@ -68,6 +68,7 @@ class Base extends CI_Controller
             'module_script' => $module_scripts_repo[$module],
             'module_style' => $module_style_repo[$module],
             'module_id' => $module_id[$module],
+            'mode' => $mode,
         );
         
         if( $file_id ){

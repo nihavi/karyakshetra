@@ -151,6 +151,8 @@ Base = new (function(){
          * Will not return anything
          */
         if(exPointer > 0){
+            if( isStreaming )
+                sendOp(exQueue[exPointer-1]);
             var op = module.performOp(exQueue[exPointer-1]);
             if(exQueue.length == exPointer+1)
                 exQueue[exPointer+1] = null;
@@ -172,6 +174,8 @@ Base = new (function(){
          * Will not return anything
          */
         if(exQueue[exPointer+1] != null){
+            if( isStreaming )
+                sendOp(exQueue[exPointer+1]);
             var op = module.performOp(exQueue[exPointer+1]);
             exQueue[exPointer] = op.pastState;
             exPointer++;
@@ -711,6 +715,7 @@ Base = new (function(){
      */
     
     var baseUrl;
+    var moduleMode;
     
     /*
      * Dependency solver
@@ -776,6 +781,7 @@ Base = new (function(){
         // Get base url from response
         baseUrl = response.baseUrl;
         moduleId = response.moduleId;
+        moduleMode = response.mode;
         
         /*
          * Check dependencies and load libraries 
@@ -835,7 +841,7 @@ Base = new (function(){
         Base.setEditable();
         
         //Call module's init
-        module.init(edit.get(0), file);
+        module.init(edit.get(0), file, moduleMode);
         module.resize();
     }
 
