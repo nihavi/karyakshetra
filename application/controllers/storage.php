@@ -5,10 +5,16 @@ class Storage extends CI_Controller {
     function dash()
     {
         $this->load->model('File_model', 'file');
+        $uid = $this->session->userdata('uid');
         
-        $files = $this->file->get_files_of_user('1');
-        //var_dump($files->result());
+        $files = array();
         
+        if ($uid)
+        {
+            $user_files = $this->file->get_files_of_user($uid);
+            $files = $user_files;
+        }
+                
         $module = array(
             '0' =>'dash',
             '1' =>'akruti',
@@ -17,8 +23,7 @@ class Storage extends CI_Controller {
             '4' => 'aalekhan',
             '5' =>'aksharam',
         );
-        
-        $file_list = array();
+    
         //var_dump($files->result());
         foreach ($files->result() as $f) {
         
@@ -31,6 +36,7 @@ class Storage extends CI_Controller {
             
             $file_list[] = $file;
         }
+        
         $data = array(
             'files' => $file_list
         );

@@ -84,11 +84,11 @@ Base = new (function(){
         }
         var url;
         if( currFileId ){
-            url = baseUrl + 'save/file';
+            url = baseUrl + 'save/file/';
             data.id = currFileId;
         }
         else {
-            url = baseUrl + 'save/newfile';
+            url = baseUrl + 'save/newfile/';
             if( filename )
                 data.filename = filename;
             else
@@ -191,7 +191,7 @@ Base = new (function(){
         var updateOp = function(){
             $.ajax({
                 type: 'POST',
-                url: baseUrl+'opqueue/getop',
+                url: baseUrl+'opqueue/getop/',
                 data: {
                     fid: currFileId,
                     last: lastLoadedOp
@@ -213,7 +213,7 @@ Base = new (function(){
         if( currFileId ) {
             $.ajax({
                 type: 'POST',
-                url: baseUrl+'opqueue/lastop',
+                url: baseUrl+'opqueue/lastop/',
                 data: {
                     fid: currFileId,
                 },
@@ -231,7 +231,7 @@ Base = new (function(){
     var sendOp = function(op){
         $.ajax({
             type: 'POST',
-            url: baseUrl+'opqueue/addop',
+            url: baseUrl+'opqueue/addop/',
             data: {
                 fid: currFileId,
                 op: op

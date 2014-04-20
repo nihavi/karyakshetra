@@ -2,16 +2,13 @@ Dash = new(function(){
     this.init = function(){
         $('<div class="explorer column"></div>').html('&nbsp;').appendTo('#editable');
         $('<div class="file-list column"></div>').appendTo('#editable');
-        
         $.ajax({
             dataType: "json",
             url: response.baseUrl + 'storage/dash/',
             success: function(data) {
-                
                 var files = data.files;
                 
                 for (var i=0;i<files.length;++i) {
-                
                     var file = files[i];
                 
                     var f = $('<div></div>');
@@ -22,11 +19,7 @@ Dash = new(function(){
                     a.attr('href', file.module + '/' + file.id);
                     a.text(file.name);
             
-                    f.append($('<input class="file-selector" type="checkbox">')
-                        .on('change', function() {
-                            var input = $(this);
-                        }
-                    ));
+                    f.append($('<input class="file-selector" type="checkbox">'));
             
                     f.append(a);
                     
@@ -46,13 +39,15 @@ Dash = new(function(){
                     });
                     
                     $('.file-list').append(f);
-                    
                 }
-                
             }
         });
     };
 
+    function updateList() {
+        
+    }
+    
     this.getMenu = function(){
         return {}
     };
