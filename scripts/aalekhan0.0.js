@@ -136,6 +136,7 @@ var Aalekhan = new (function(){
             expression[fI].evalF='000er000';
         }
         //mainFunctionControll(func,fI);
+        expression[fI].value=func;
     }
     
     
@@ -2755,6 +2756,76 @@ var Aalekhan = new (function(){
         plotFunc();
     }
     
+    this.getFile = function(){
+        var graph={
+            'Settings': {
+                'Created': new Date().toString(),
+                'zoomX': zoomX,
+                'zoomY': zoomY,
+                'showGrid': showGrid,
+                'showLabelIndecator': showLabelIndecator,
+                'showLabel': showLabel,
+                'showAxis': showAxis,
+                'trackBall': trackBall,
+                'coTracker': coTracker,
+                'trigDegree': trigDegree,
+                'cH': cH,
+                'cW': cW,
+                'scaleX': scaleX,
+                'scaleY': scaleY,
+                'origX': origX,
+                'origY': origY
+            },
+            'Expressions': new Array()
+        }
+        var i;
+        for(i=0;i<expression.length;i++){
+            graph.Expressions.push({
+                'val': expression[i].value,
+                'color': expression[i].color,
+            });
+        }
+        return JSON.stringify(graph);
+    }
+    var refreshGraph = function(){
+        expression=new Array();
+        fEvalTmp=new Array();
+        setCan();
+        $('#sidebar').empty();
+    }
+    this.openFile = function(file){
+        var graphJson;
+        try {
+            graphJson=JSON.parse(file);
+        }
+        catch(e){
+            return false;
+        }
+        var error=false,i;
+        var exprs=graphJson.Expressions;
+        if(!exprs)error=true;
+        if(!error){
+            for(i=0;!error && i<exprs.length;i++){
+                if(typeof exprs[i].val == 'undefined'){
+                    exprs[i].val = ''
+                }
+            }
+        }
+        if(error)return false;
+        refreshGraph();
+        for(i=0;!error && i<exprs.length;i++){
+            var id = addF();
+            expression[id]={
+                color:exprs[id].color,
+            }
+            wholeHumanFunctionControll(exprs[id].val,id);
+            $('#expr'+id).val(exprs[i].val).blur();
+        }
+        $('.expr-in').last().show().focus();
+        prepareg();
+        plotFunc();
+        return true;
+    }
     var formatMenu=function(id){
         return [
             {
@@ -2851,6 +2922,7 @@ var Aalekhan = new (function(){
         });
         
         input.focus();
+        return id;
     }
     
     var remF=function(id){
@@ -2899,7 +2971,7 @@ var Aalekhan = new (function(){
     var editable;
     
     this.depends = ['MathJax'];
-    this.init=function(parent){
+    this.init=function(parent, file){
         //Using jQuery
         var side = $('<div class="sidebar" id="sidebar"></div>').appendTo(parent);
         
@@ -2951,8 +3023,12 @@ var Aalekhan = new (function(){
         });
         
         editable=$(parent);
-        
-        addF();
+        if( file && this.openFile(file) ){
+            //File opened
+        }
+        else {
+            addF();
+        }
         
         this.resize();
     }

@@ -724,7 +724,7 @@ Base = new (function(){
     
     var loadMathJax = function(){
         window.MathJax = {
-            root: 'libs/MathJax',
+            root: baseUrl+'libs/MathJax',
             extensions: ["tex2jax.js"],
             jax: ["input/TeX","output/HTML-CSS"],
             showProcessingMessages: false,
@@ -746,9 +746,9 @@ Base = new (function(){
                     ["Typeset",MathJax.Hub,$('<div id="dummyMathJaxdummy" style="position:absolute;top:-100px;left:-1000px;">$\pm sin \left( x \right)$</div>').appendTo('body').get(0)],
                     function(){
                         $('#dummyMathJaxdummy').remove();
-                    }
+                    },
+                    solvedDep
                 )
-                solvedDep();
             }
         })
     };
@@ -809,6 +809,8 @@ Base = new (function(){
                 var file = response.fileData;
             }
         }
+        
+        $( "#wait-message" ).remove();
         
         //Set default palette
         Base.setPalette(defaultPalette);
@@ -894,7 +896,7 @@ Base = new (function(){
     this.focusMenu = function(id){
         //Will be called by module with id of a menu to activate that menu
         if (id && id in menuMeta){
-            activateMenu.bind($('#'+menuMeta[id]))();
+            activateMenu.call($('#'+menuMeta[id]));
             return true;
         }
         else {
@@ -963,7 +965,8 @@ Base = new (function(){
         //Append submenu to menubar
         var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
         subMenu.mousedown(function(ev){
-            ev.preventDefault();
+            if( !$(ev.target).closest('.input-text').length )
+                ev.preventDefault();
         });
         //Append submenu items to submenu
         var item,i,j;
@@ -1090,7 +1093,8 @@ Base = new (function(){
                             }
                             
                             menuItem.mousedown(function(ev){
-                                ev.preventDefault();
+                                if( !$(ev.target).closest('.input-text').length )
+                                    ev.preventDefault();
                             });
                             menuItem.click(handleMenuClick);
                             //Append menu item to submenu object
