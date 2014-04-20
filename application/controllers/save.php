@@ -9,19 +9,30 @@ class Save extends CI_Controller {
     
     function newfile()
     {
-        $this->load->model('File_model', 'file');
+        $user_id = $this->session->userdata('uid');
         
-        $fname = $this->input->post('filename', TRUE);
-        $ftype = $this->input->post('module', TRUE);
-        
-        if(!$fname) {
-            $fname = 'Untitled file';
+        if ($user_id)
+        {
+            $this->load->model('File_model', 'file');
+            
+            $fname = $this->input->post('filename', TRUE);
+            $ftype = $this->input->post('module', TRUE);
+            
+            if(!$fname)
+            {
+                $fname = 'Untitled file';
+            }
+            
+            $data = $this->input->post('file');
+            
+            $file_id = $this->file->save_as($fname, $data, $ftype, $user_id);
+            
+            echo $file_id;
         }
-        $data = $this->input->post('file');
-        
-        $file_id = $this->file->save_as($fname, $data, $ftype);
-        
-        echo $file_id;
+        else
+        {
+            echo 'User not logged in.';//TODO
+        }
     }
     
     function file()

@@ -83,7 +83,6 @@
                                     function(){
                                         //Scripts loaded
                                         linkCss('<?php echo base_url(); ?>styles/font-awesome.min.css').load(function(){
-                                            $( "#wait-message" ).remove();
                                             Base.init();
                                         }).error(function(){
                                             //Error: font-awesome error

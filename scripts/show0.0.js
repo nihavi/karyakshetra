@@ -388,7 +388,6 @@ Show = new (function(){
             
             allSlides.splice(index, 1);
             
-            console.log(index, newIndex);
             allSlides.splice(newIndex - 1, 0, this);
             Sidebar.moveSlide(this.id, newIndex);
         },
@@ -734,7 +733,13 @@ Show = new (function(){
                     SlideShow.next();
                     break;
                 case 'pr':
-                    Slideshow.previous();
+                    SlideShow.previous();
+                    break;
+                case 'ns':
+                    SlideShow.nextSlide();
+                    break;
+                case 'ps':
+                    SlideShow.prevSlide();
                     break;
                 case 'sw':
                     var elem = getElem(op[1], op[2]);
@@ -1724,32 +1729,73 @@ Show = new (function(){
             duration: false,
             execute: function(object){
                 object.elem.elemDOM.show();
-                SlideShow.finishAnim();
+                SlideShow.finishAnim(object);
+            },
+            finish: function(object){
+                //It is already finished
+            },
+            cancel: function(object){
             }
         },
         'ease': {
             name: 'Ease',
             execute: function(object){
-                object.elem.elemDOM.show(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.show(object.duration, finish);
+            },
+            finish: function(object){
+                object.elem.elemDOM.finish();
+                SlideShow.finishAnim(object);
+            },
+            cancel: function(object){
+                //Because it is entry animation
+                object.elem.elemDOM.stop();
+                object.elem.elemDOM.hide();
             }
         },
         'fade': {
             name: 'Fade',
             execute: function(object){
-                object.elem.elemDOM.fadeIn(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.fadeIn(object.duration, finish);
+            },
+            finish: function(object){
+                object.elem.elemDOM.finish();
+                SlideShow.finishAnim(object);
+            },
+            cancel: function(object){
+                //Because it is entry animation
+                object.elem.elemDOM.stop();
+                object.elem.elemDOM.hide();
             }
         },
         'slidedown': {
             name: 'Slide Down',
             execute: function(object){
-                object.elem.elemDOM.slideDown(object.duration, SlideShow.finishAnim);
+                var finish = function(){
+                    SlideShow.finishAnim(object);
+                }
+                object.elem.elemDOM.slideDown(object.duration, finish);
+            },
+            finish: function(object){
+                object.elem.elemDOM.finish();
+                SlideShow.finishAnim(object);
+            },
+            cancel: function(object){
+                //Because it is entry animation
+                object.elem.elemDOM.stop();
+                object.elem.elemDOM.hide();
             }
         },
     }
     /*
      * for slideshow
      */
-    Slide.prototype.renderSlideShow = function(){
+    Slide.prototype.renderSlideShow = function(reverse){
         var slide = this;
         
         if(!slide || !slide.id){
@@ -1792,14 +1838,15 @@ Show = new (function(){
                     var anim = Object.create( slide.elems[i].animations[0] );
                     anim.elem = slide.elems[i];
                     SlideShow.animQueue.push(anim);
-                    
-                    slide.elems[i].elemDOM.hide();
+                    if( !reverse )
+                        slide.elems[i].elemDOM.hide();
                 }
             }
         }
         
         activeSlide = slide;
-        SlideShow.finishAnim();
+        if( !reverse )
+            SlideShow.finishAnim();
     }
     Elem.prototype.renderElemShow = function(){
         /* 
@@ -1844,8 +1891,10 @@ Show = new (function(){
         var currSlideShowIndex;
         var endSlide;
         this.animQueue;
+        var animCount;
         this.init = function(){
             endSlide = 0;
+            animCount = 0;
             
             $('#sidebar').hide();
             $('#slides').css({
@@ -1866,32 +1915,68 @@ Show = new (function(){
                 SlideShow.end(true);
             });
             Base.listen(true);
+            
             $('#slides').bind('click', SlideShow.next);
-            $(window).bind('keydown', SlideShow.next);
+            $(window).bind('keydown', showKeyBindings);
         };
         
+        var showKeyBindings = function(ev){
+            var nextKeys = [13, 39, 32];
+            var prevKeys = [8, 37]
+            if( nextKeys.indexOf(ev.keyCode) > -1 ){
+                SlideShow.next();
+            }
+            else if( prevKeys.indexOf(ev.keyCode) > -1 ){
+                SlideShow.previous();
+            }
+            else if( ev.keyCode == 27 ){
+                SlideShow.end(true);
+            }
+        }
+        
+        
         var runnigAnims;
-        this.finishAnim = function(){
+        var runnigAnimList;
+        
+        this.finishAnim = function(anim){
             --runnigAnims;
             if( runnigAnims < 0 )
                 runnigAnims = 0;
-            if( !runnigAnims && SlideShow.animQueue.length
-                && (SlideShow.animQueue[0].timing == 'wait' || SlideShow.animQueue[0].timing == 'do' ) ) {
+            var index;
+            if( runnigAnimList &&  (index = runnigAnimList.indexOf(anim)) > -1 ){
+                runnigAnimList.splice(index, 1);
+            }
+            if( !runnigAnims && (animCount < SlideShow.animQueue.length)
+                && (SlideShow.animQueue[animCount].timing == 'wait' || SlideShow.animQueue[animCount].timing == 'do' ) ) {
                 SlideShow.next();
             }
         }
         
-        this.next = function(ev){
-            if( SlideShow.animQueue.length ){
+        this.next = function(){
+            if( runnigAnimList && runnigAnimList.length ){
+                for( var i = 0; i < runnigAnimList.length; i++ ){
+                    anim = runnigAnimList[i];
+                    if( anim.timeout ){
+                        clearTimeout(anim.timeout);
+                        delete anim.timeout;
+                        allAnims[anim.name].execute(anim);
+                    }
+                    allAnims[anim.name].finish(anim);
+                }
+            }
+            else if( animCount < SlideShow.animQueue.length ){
                 runnigAnims = 0;
+                runnigAnimList = [];
                 var anim;
                 do{
                     ++runnigAnims;
-                    anim = SlideShow.animQueue.shift();
+                    anim = SlideShow.animQueue[animCount++];
+                    runnigAnimList.push(anim);
                     switch( anim.type ){
                         case 'entry':
                             if( anim.delay ){
-                                setTimeout( function(){
+                                anim.timeout = setTimeout( function(){
+                                    delete anim.timeout;
                                     allAnims[anim.name].execute(anim);
                                 }, anim.delay );
                             }
@@ -1900,27 +1985,73 @@ Show = new (function(){
                             }
                             break;
                     }
-                }while( SlideShow.animQueue.length && SlideShow.animQueue[0].timing == 'do' );
+                }while( (animCount < SlideShow.animQueue.length) && (SlideShow.animQueue[animCount].timing == 'do') );
             }
             else {
-                SlideShow.nextSlide(ev);
+                SlideShow.nextSlide();
             }
         }
         
         this.previous = function(){
-            //TODO
+            if( runnigAnimList && runnigAnimList.length ){
+                for( var i = 0; i < runnigAnimList.length; i++ ){
+                    anim = runnigAnimList[i];
+                    if( anim.timeout ){
+                        clearTimeout(anim.timeout);
+                        delete anim.timeout;
+                    }
+                    else {
+                        allAnims[anim.name].cancel(anim);
+                    }
+                    --animCount;
+                    runnigAnimList.splice(i, 1);
+                }
+                runnigAnims = 0;
+            }
+            if( animCount > 0){
+                do{
+                    anim = SlideShow.animQueue[--animCount];
+                    switch( anim.type ){
+                        case 'entry':
+                            allAnims[anim.name].cancel(anim);
+                            break;
+                    }
+                }while( (animCount > 0) && (SlideShow.animQueue[animCount].timing == 'do') );
+            }
+            else {
+                SlideShow.prevSlide();
+            }
         }
         
-        this.nextSlide = function(ev){
+        this.nextSlide = function(){
             currSlideShowIndex++;
             if( currSlideShowIndex < allSlides.length ){
+                animCount = 0;
                 allSlides[currSlideShowIndex].renderSlideShow();
                 activeSlide = allSlides[currSlideShowIndex];
             }
             else {
+                animCount = 0;
+                SlideShow.animQueue = [];
                 SlideShow.end();
             }
         };
+        
+        this.prevSlide = function(){
+            if( endSlide ){
+                endSlide = 0;
+                $('.pres-end-mes').remove();
+            }
+            currSlideShowIndex--;
+            if( currSlideShowIndex >= 0 ){
+                allSlides[currSlideShowIndex].renderSlideShow(true);
+                animCount = SlideShow.animQueue.length;
+                activeSlide = allSlides[currSlideShowIndex];
+            }
+            else {
+                currSlideShowIndex = 0;
+            }
+        }
         
         this.resize = function(){
             if(activeSlide)
@@ -1939,7 +2070,7 @@ Show = new (function(){
             Base.showMenu();
             Base.exitFullscreen();
             $('#slides').unbind('click', SlideShow.next);
-            $(window).unbind('keydown', SlideShow.next);
+            $(window).unbind('keydown', showKeyBindings);
             $('#slides').css({
                 'width': '80%',
                 'backgroundColor': ''
@@ -1951,9 +2082,9 @@ Show = new (function(){
     })();
     
     var slideshow = function(mode){
-        Show.resize = SlideShow.resize;
         Base.hideMenu(true);
         Base.fullscreen();
+        Show.resize = SlideShow.resize;
         if( mode == 'begin' ){
             activeSlide = allSlides[0];
         }

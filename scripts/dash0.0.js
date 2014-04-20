@@ -2,53 +2,52 @@ Dash = new(function(){
     this.init = function(){
         $('<div class="explorer column"></div>').html('&nbsp;').appendTo('#editable');
         $('<div class="file-list column"></div>').appendTo('#editable');
-        
         $.ajax({
             dataType: "json",
             url: response.baseUrl + 'storage/dash/',
             success: function(data) {
                 var files = data.files;
+                
                 for (var i=0;i<files.length;++i) {
                     var file = files[i];
-                    var a = $('<div></div>');
-                    var b = $('<a></a>')
-                    b.attr('target', '_blank');
-                    b.attr('href', file.module + '/' + file.id);
-                    a.addClass('file');
-                    b.text(file.name);
-                    a.append(b);
-                    a.prepend($('<input class="file-selector" type="checkbox">')
-                        .on('change', function() {
-                            var input = $(this);
-                            /*
-                            if(input.is(':checked')) {
-                                input.closest('.file').addClass('focus');
+                
+                    var f = $('<div></div>');
+                    f.addClass('file');
+                    
+                    var a = $('<a></a>')
+                    a.attr('target', '_blank');
+                    a.attr('href', file.module + '/' + file.id);
+                    a.text(file.name);
+            
+                    f.append($('<input class="file-selector" type="checkbox">'));
+            
+                    f.append(a);
+                    
+                    f.on('click', function(e) {
+                        
+                        if (!$(e.target).is('a')) {
+                            var file = $(this);
+                            if (file.hasClass('focus')) {
+                                file.removeClass('focus');
+                                file.find('input.file-selector').prop('checked', false);
                             }
                             else {
-                                input.closest('.file').removeClass('focus');
+                                file.addClass('focus');
+                                file.find('input.file-selector').prop('checked', true);
                             }
-                            */
-                        }
-                    ));
-                    a.on('click', function() {
-                        var file = $(this);
-                        if (file.hasClass('focus')) {
-                            file.removeClass('focus');
-                            file.find('input.file-selector').attr('checked', 'false');
-                        }
-                        else {
-                            file.addClass('focus');
-                            file.find('input.file-selector').attr('checked', 'true');
                         }
                     });
                     
-                    $('.file-list').append(a);
+                    $('.file-list').append(f);
                 }
-                
             }
         });
     };
 
+    function updateList() {
+        
+    }
+    
     this.getMenu = function(){
         return {}
     };

@@ -37,7 +37,7 @@ class File_model extends CI_Model {
         return $file_id;
     }
     
-    function save_as($file_name, $file_data, $ftype = 0)
+    function save_as($file_name, $file_data, $ftype = 0, $user_id = -1)
     {
         $this->db->trans_start();
         
@@ -75,10 +75,13 @@ class File_model extends CI_Model {
         $this->db->where('gname', 'public');
         $query = $this->db->get('groups');
         
-        $public_id = $query->row()->gid;
+        if ($user_id == -1)
+        {
+            $user_id = $query->row()->gid;
+        }
         
         $this->db->insert('filepermissions', array(
-                'gid'       => $public_id,
+                'gid'       => $user_id,
                 'fid'       => $file_id,
                 'rights'    => 7
             )
@@ -93,8 +96,11 @@ class File_model extends CI_Model {
     }
     
     function open($file_id){
+        
         $this->db->where('fid', $file_id);
+        
         $query = $this->db->get('files');
+        
         if ($query->num_rows() > 0){
             $file_path = $query->row()->path;
             
