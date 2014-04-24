@@ -930,6 +930,7 @@ Akruti = new (function() {
             h:svg.pageH,
             w:svg.pageW
         }
+        data.childrenId = svg.childrenId;
         data.svgId = svg.id;
         data.ar = new Array();
         var element = $('#'+svg.id).data('myObject');
@@ -948,6 +949,7 @@ Akruti = new (function() {
         var arg = data.pageDimension;
         arg.id = data.svgId;
         var svgObject = new Svg(arg, svgParent, isEditable);
+        svgObject.childrenId = data.childrenId;
         currentSvg = allSvg[svgObject.id] = svgObject;
         Akruti.resize();
         for(var i=0; i<data.ar.length; i++) {
