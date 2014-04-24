@@ -1718,8 +1718,10 @@ Show = new (function(){
      * Available animations
         id: {
             name: String,   //Human readable name for animation
-            execute: Function(object),  //Accepts object and do animation. On completion call SlideShow.finishAnim
             duration: Boolean,  //Is duration applicable for animation, default true
+            execute: Function(object),  //Accepts object and do animation. On completion call SlideShow.finishAnim
+            finish: Function(object),   //Accepts animation object and ends animation.
+            cancel: Function(object),   //Accepts animation object and rollbacks animation.
         }
     */
     
@@ -1735,6 +1737,7 @@ Show = new (function(){
                 //It is already finished
             },
             cancel: function(object){
+                object.elem.elemDOM.hide();
             }
         },
         'ease': {
