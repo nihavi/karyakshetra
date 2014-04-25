@@ -13,15 +13,12 @@ class Remote extends CI_Controller{
     function show($fid = "")
     {
         //TODO authenticate
+        
         if(is_numeric($fid))
         {
             $this->load->view('mobile/remoteshow', array(
                'fid' => $fid
             ));
-        }
-        else
-        {
-            
         }
     }
     

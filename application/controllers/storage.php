@@ -4,6 +4,8 @@ class Storage extends CI_Controller {
     
     function dash()
     {
+        $this->auth->require_authentication(true);
+        
         $this->load->model('File_model', 'file');
         $uid = $this->session->userdata('uid');
         
@@ -24,7 +26,8 @@ class Storage extends CI_Controller {
             '5' =>'aksharam',
         );
     
-        //var_dump($files->result());
+        $file_list = array();
+        
         foreach ($files->result() as $f) {
         
             $file = array(

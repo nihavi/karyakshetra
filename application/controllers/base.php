@@ -6,22 +6,27 @@ class Base extends CI_Controller
     {
         $this->index('akruti', $file_id, $mode);
     }
+    
     function dash($file_id = null)
     {
         $this->index('dash', $file_id);
     }
+    
     function show($file_id = null)
     {
         $this->index('show', $file_id);
     }
+    
     function submit($file_id = null)
     {
         $this->index('submit', $file_id);
     }
+    
     function aalekhan($file_id = null)
     {
         $this->index('aalekhan', $file_id);
     }
+    
     function aksharam($file_id = null)
     {
         $this->index('aksharam', $file_id);
@@ -29,10 +34,8 @@ class Base extends CI_Controller
     
     function index($module = 'dash', $file_id = null, $mode = 'edit')
     {
-        if (!$this->session->userdata('uname'))
-        {
-            redirect(base_url() . 'account/login/');
-        }
+        $this->session->set_userdata('redirectTo', uri_string());
+        $this->auth->require_authentication();
         
         /*
          * Assumes that /scripts contains '<module>.js' file for each module

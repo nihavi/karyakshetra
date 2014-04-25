@@ -2,22 +2,9 @@
 
 class Account extends CI_Controller{
     
-    public function __construct()
-    {
-        parent::__construct();
-        $this->load->library('session');
-    }
-
     function index()
     {
-        if (!$this->session->userdata('uname'))
-        {
-            redirect(base_url() . 'account/login');
-        }
-        else
-        {
-            redirect(base_url());
-        }
+        $this->auth->require_authentication();
     }
     
     function login()
@@ -47,7 +34,7 @@ class Account extends CI_Controller{
             if ($uid)
             {
                 $this->session->set_userdata(array('uname' => $uname, 'uid' => $uid));
-                redirect(base_url());
+                redirect(base_url() . $this->session->userdata('redirectTo'));
             }
             else
             {
