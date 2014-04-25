@@ -429,6 +429,13 @@ Show = new (function(){
             this.style = elem.style;
         else
             this.style = {};
+            
+        if( !('color' in elem.style) ){
+            elem.style.color = '#000000';
+        }
+        if( !('backgroundColor' in elem.style) ){
+            elem.style.backgroundColor = '#ffffff';
+        }
         
         this.top = elem.top;
         this.left = elem.left;
@@ -688,7 +695,11 @@ Show = new (function(){
      * sw|sh|st|sl [slideId] [elemId] [width]    - set width|height|top|left
      * de [slideId] [elemId]    - Delete element
      * cr [slideId] [elemJSON]  - Create element
-     * ct [slideId] [elemId]    - Change text
+     * ct [slideId] [elemId] [newText]  - Change text
+     * ca [slideId] [elemId] [left|center|right|justify]    - Change alignment
+     * cf [slideId] [elemId] [bold|italics|underline] [true|false]  - Change format
+     * ee [slideId] [elemId] [mode] [value] - Edit element with elemEdit
+     * cc [slideId] [elemId] [color|backgroundColor] [value] - Change color
      */
     var currOp;
     var startOp = function(state){
@@ -793,6 +804,49 @@ Show = new (function(){
                     elem.text = op.slice(3).join(' ');
                     elem.renderElem();
                     newState = op.join(' ');
+                    break;
+                case 'ca':
+                    var elem = getElem(op[1], op[2]);
+                    pastState = 'ca '+ elem.parent.slideId +' '+ elem.id +' '+elem.style.textAlign;
+                    elem.editElement({
+                        style: {
+                            textAlign: op[3]
+                        }
+                    });
+                    newState = op.join(' ');
+                    if(elem == activeElement){
+                        Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+                    }
+                    break;
+                case 'cf':
+                    var elem = getElem(op[1], op[2]);
+                    op[4] = eval(op[4]);
+                    pastState = 'cf '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ !op[4];
+                    elemFormat(elem, op[3], op[4]);
+                    newState = op.join(' ');
+                    if(elem == activeElement){
+                        Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+                    }
+                    break;
+                case 'ee':
+                    var elem = getElem(op[1], op[2]);
+                    op[4] = op.slice(4).join(' ');
+                    var pastVal = elemEdit(elem, op[3], op[4]);
+                    pastState = 'ee '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
+                    newState = op.join(' ');
+                    if(elem == activeElement){
+                        Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+                    }
+                    break;
+                case 'cc':
+                    var elem = getElem(op[1], op[2]);
+                    op[4] = op.slice(4).join(' ');
+                    var pastVal = elemColor(elem, op[3], op[4]);
+                    pastState = 'cc '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
+                    newState = op.join(' ');
+                    if(elem == activeElement){
+                        Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
+                    }
                     break;
             }
         }
@@ -1051,14 +1105,26 @@ Show = new (function(){
     var elemAlign = function(mode, onoff){
         if(onoff == false)return;
         if(activeElement){
+            var op = 'ca ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.style.textAlign;
+            startOp(op);
             activeElement.editElement({
                 style: {
                     textAlign: mode
                 }
             });
+            op = 'ca ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ activeElement.style.textAlign;
+            endOp(op);
         }
     }
-    var elemFormat = function(mode, value){
+    var elemFormatForMenu = function(mode, value){
+        if(!activeElement)return;
+        var op = 'cf ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ !value;
+        startOp(op);
+        elemFormat(activeElement, mode, value);
+        var op = 'cf ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ value;
+        endOp(op);
+    }
+    var elemFormat = function(elem, mode, value){
         var style = {}
         switch (mode){
             case 'bold':
@@ -1080,31 +1146,47 @@ Show = new (function(){
                     style.textDecoration = 'none';
                 break;
         }
-        if(activeElement){
-            activeElement.editElement({
-                style: style
-            });
-        }
+        elem.editElement({
+            style: style
+        });
     }
-    var elemEdit = function(mode, value){
+    var elemEditForMenu = function(mode, value){
+        if(!activeElement)return;
+        var pastVal = elemEdit(activeElement, mode, value);
+        var op = 'ee ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ pastVal;
+        startOp(op);
+        var op = 'ee ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ value;
+        endOp(op);
+    }
+    var elemEdit = function(elem, mode, value){
         var changes = {}
+        var oldVal;
         switch ( mode ){
             case 'fontsize':
+                oldVal = elem.fontSize;
                 changes.fontSize = value;
                 break;
         }
-        if(activeElement){
-            activeElement.editElement(changes);
-        }
+        elem.editElement(changes);
+        return oldVal;
     }
-    var elemColor = function(mode, color){
-        if(activeElement){
-            var style = new Object();
-            style[mode] = color;
-            activeElement.editElement({
-                style: style
-            });
-        }
+    var elemColorForMenu = function(mode, value){
+        if(!activeElement)return;
+        var pastVal = elemColor(activeElement, mode, value);
+        var op = 'cc ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ pastVal;
+        startOp(op);
+        var op = 'cc ' + activeElement.parent.slideId +' '+ activeElement.id +' '+ mode +' '+ value;
+        endOp(op);
+    }
+    var elemColor = function(elem, mode, color){
+        var style = new Object();
+        var oldVal = elem.style[mode];
+        console.log(oldVal);
+        style[mode] = color;
+        elem.editElement({
+            style: style
+        });
+        return oldVal;
     }
     var elemAnimation = function(id, name){
         if( activeElement ){
@@ -1246,7 +1328,7 @@ Show = new (function(){
                     id: 'bold',
                     title: 'Bold',
                     onoff: true,
-                    callback: elemFormat
+                    callback: elemFormatForMenu
                 },
                 {
                     type: 'button',
@@ -1254,7 +1336,7 @@ Show = new (function(){
                     id: 'italics',
                     title: 'Italics',
                     onoff: true,
-                    callback: elemFormat
+                    callback: elemFormatForMenu
                 },
                 {
                     type: 'button',
@@ -1262,7 +1344,7 @@ Show = new (function(){
                     id: 'underline',
                     title: 'Underline',
                     onoff: true,
-                    callback: elemFormat
+                    callback: elemFormatForMenu
                 }
             ]
         };
@@ -1332,7 +1414,7 @@ Show = new (function(){
                             value: '20'
                         }
                     ],
-                    callback: elemEdit
+                    callback: elemEditForMenu
                 },
             ]
         }
@@ -1352,7 +1434,7 @@ Show = new (function(){
                     title: 'Font color',
                     currState: '#000000',
                     text: 'F',
-                    callback: elemColor
+                    callback: elemColorForMenu
                 },
                 {
                     type: 'color',
@@ -1361,7 +1443,7 @@ Show = new (function(){
                     title: 'Background color',
                     currState: '#ffffff',
                     text: 'B',
-                    callback: elemColor
+                    callback: elemColorForMenu
                 }
             ]
         }
