@@ -1,4 +1,7 @@
 Dash = new(function(){
+    
+    this.exclude = ['defaultMenu'];
+    
     this.init = function(){
         $('<div class="explorer column"></div>').html('&nbsp;').appendTo('#editable');
         $('<div class="file-list column"></div>').appendTo('#editable');
@@ -49,7 +52,28 @@ Dash = new(function(){
     }
     
     this.getMenu = function(){
-        return {}
+        return [
+            {
+                type: 'main',
+                id: 'file',
+                title: 'File', //Name of menu
+                icon: 'fa-file', //Font awesome icon name
+                groups: [
+                    {
+                        type: 'group',
+                        id: 'g1',
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-coffee',
+                                title: 'Dummy',
+                                callback: console.log
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
     };
     
     this.resize = function(){
