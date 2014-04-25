@@ -29,6 +29,11 @@ class Base extends CI_Controller
     
     function index($module = 'dash', $file_id = null, $mode = 'edit')
     {
+        if (!$this->session->userdata('uname'))
+        {
+            redirect(base_url() . 'account/login/');
+        }
+        
         /*
          * Assumes that /scripts contains '<module>.js' file for each module
          */

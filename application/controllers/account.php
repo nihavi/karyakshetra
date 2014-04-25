@@ -64,7 +64,6 @@ class Account extends CI_Controller{
     
     function signup()
     {
-        
         if ($this->session->userdata('uname'))
         {
             redirect(base_url());
