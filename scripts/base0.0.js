@@ -564,152 +564,12 @@ Base = new (function(){
             ]
         }
     ];
-    /*[
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-plus', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'g1',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-undo',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-repeat',
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'g2',
-                    multiple: false,
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            onoff: true,
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            onoff: true,
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            onoff: true,
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'g3',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            default: '#000',
-                            callback: log,
-                            text: 'F'
-                        }
-                    ]
-                }
-            ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'format',
-            title: 'Format', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'adsf',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-print',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-coffee',
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'gdd',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-print',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-coffee',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            callback: log
-                        }
-                    ] //Items inside this menu
-                }
-            ]
-        }
-    ]*/
     
     var menus;//Keeps track and information of the menus
     var menuMeta;//Mapping of modules id and DOM id
     var groupMeta;//Keeps information about groups in current submenu
     var submenu;//Keeps track and information of the current submenu
     var menuId;
-    
     
     /*
      * Global variables from response
@@ -1277,6 +1137,43 @@ Base = new (function(){
                 item.callback(item.id);
             }
         }
+    }
+    
+    /*
+     * Implementation of modal box
+     */
+    var modalCallback = false;
+    this.openModal = function(height, width, callback){
+        var content;
+        var style = {};
+        if ( height ){
+            style.height = height;
+        }
+        if ( width ){
+            style.width = width;
+        }
+        if ( callback ){
+            modalCallback = callback;
+        }
+        $('<div class="modal-cont"></div>').append(
+            $('<div class="modal"></div>').css(
+                style
+            ).append(
+                $('<div class="modal-close">⨯</div>').bind('click', Base.closeModal)
+            ).append(
+                content = $('<div class="modal-content"></div>')
+            )
+        ).appendTo($('body'));
+        
+        content = content.get(0);
+        return content;
+    }
+    this.closeModal = function(){
+        if( modalCallback ){
+            modalCallback();
+            modalCallback = false;
+        }
+        $('.modal-cont').remove();
     }
     
     this.setEditable = function(){
