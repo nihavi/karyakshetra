@@ -232,6 +232,52 @@ var Aalekhan = new (function(){
             zY=1;
         }
     }
+    
+    var settingsDom = false;
+    var closeSettings = function(){
+        if(settingsDom)
+            settingsDom.detach()
+    }
+    var openSettings = function(){
+        var modal = $(Base.openModal(null, null, closeSettings));
+        $('<div id="setHead" class="setHead">Settings</div>').appendTo(modal);
+        if( settingsDom ){
+            settingsDom.appendTo(modal);
+        }
+        else {
+            settingsDom = $('<div class="setSubTopic">')
+                .append($('<div class="setSubHead" id="label_paper">Graph Paper</div>'))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox" checked>').bind('change', function(){showAxisSet(this.checked);}))
+                    .append($('<span id="label_axis">Show Axis</span>')))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox" checked>').bind('change', function(){showGridSet(this.checked);}))
+                    .append($('<span id="label_grid">Show Grid Lines</span>')))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox" checked>').bind('change', function(){showLabelSet(this.checked);}))
+                    .append($('<span id="label_label">Show Label</span>')))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox">').bind('change', function(){showLabelInSet(this.checked);}))
+                    .append($('<span id="label_indicator">Show Label Position Indicator</span>')))
+                .append($('<div class="setSubHead" id="label_graph">Graph</div>'))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox" checked>').bind('change', function(){showTrackSet(this.checked);}))
+                    .append($('<span id="label_trackball">Show Trackball</span>')))
+                .append($('<span class="setSub">')
+                    .append($('<input type="checkbox" checked>').bind('change', function(){showCoTrackSet(this.checked);}))
+                    .append($('<span id="label_trackball">Show Coordinate Tracker</span>')))
+                .append($('<div class="setSubHead" id="label_trigo">Trigo</div>'))
+                .append($('<span class="setSub">')
+                    .append($('<input type="radio" name="radDeg" checked>').bind('change', function(){trigRadSet(0);}))
+                    .append($('<span id="label_rad">Radian</span>'))
+                    .append($('<input type="radio" name="radDeg">').bind('change', function(){trigRadSet(1);}))
+                    .append($('<span id="label_deg">Degree</span>')))
+                .append($('<div id="setDone">')
+                    .append($('<input type="button" id="setDoneButton" value="Done" class="button" />')).bind('click',Base.closeModal))
+                .appendTo(modal);
+        }
+    }
+    
     var graphParent;
     var editable;
     
@@ -368,13 +414,26 @@ var Aalekhan = new (function(){
                 },
                 {
                     type: 'group',
+                    id: 'settings',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-gear',
+                            id: 'set',
+                            title: 'More settings',
+                            callback: openSettings
+                        },
+                    ]
+                },
+                {
+                    type: 'group',
                     id: 'new',
                     items: [
                         {
                             type: 'button',
                             icon: 'fa-plus',
                             id: 'add',
-                            title: 'Add exss',
+                            title: 'Add expression',
                             callback: addF
                         },
                     ]
