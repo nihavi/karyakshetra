@@ -7,7 +7,7 @@ RewriteCond %{REQUEST_URI} !(.*)/$
 RewriteRule ^(.*)$ $1/ [R=301,L]
 
 #remove index.php and redirect, conditionally
-RewriteCond $1 !^(index\.php|scripts|fonts|styles|images|robots\.txt|user_guide)
+RewriteCond $1 !^(index\.php|libs|scripts|fonts|styles|images|robots\.txt|user_guide)
 RewriteRule ^(.*)$ index.php/$1 [L]
 
 #Prevent caching

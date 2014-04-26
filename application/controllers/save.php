@@ -2,13 +2,10 @@
 
 class Save extends CI_Controller {
     
-    function index()
-    {
-        echo "Sorry, you need to know the predefined internal structure to use file saving.";
-    }
-    
     function newfile()
     {
+        $this->auth->require_authentication(true);    
+        
         $user_id = $this->session->userdata('uid');
         
         if ($user_id)
@@ -33,12 +30,15 @@ class Save extends CI_Controller {
         {
             echo 'User not logged in.';//TODO
         }
+    
     }
     
     function file()
     {
-        $this->load->model('File_model', 'file');
+        $this->auth->require_authentication(true);
         
+        $this->load->model('File_model', 'file');
+            
         $fid = $this->input->post('id', TRUE);
         $data = $this->input->post('file');
         

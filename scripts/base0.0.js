@@ -119,9 +119,9 @@ Base = new (function(){
     /*
      * opQueue implementation
      */
-    var exQueue = new Array();
-    var newQueue = new Array();
-    var exPointer = 0;
+     exQueue = new Array();
+     newQueue = new Array();
+     exPointer = 0;
     
     this.addOp = function(pastState, newState){
         
@@ -134,6 +134,7 @@ Base = new (function(){
         exQueue[exPointer] = pastState;
         exPointer++;
         exQueue[exPointer] = null;
+        exQueue.splice(exPointer + 1);
         newQueue.push(newState);
         if( isStreaming )
             sendOp(newState);
@@ -563,152 +564,12 @@ Base = new (function(){
             ]
         }
     ];
-    /*[
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-plus', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'g1',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-undo',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-repeat',
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'g2',
-                    multiple: false,
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            onoff: true,
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            onoff: true,
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            onoff: true,
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'g3',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'color',
-                            icon: 'fa-circle',
-                            default: '#000',
-                            callback: log,
-                            text: 'F'
-                        }
-                    ]
-                }
-            ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'format',
-            title: 'Format', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'adsf',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-print',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-coffee',
-                            callback: log
-                        }
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'gdd',
-                    items: [
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-print',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-coffee',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-picture-o',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-rss',
-                            callback: log
-                        },
-                        {
-                            type: 'button',
-                            icon: 'fa-pencil',
-                            callback: log
-                        }
-                    ] //Items inside this menu
-                }
-            ]
-        }
-    ]*/
     
     var menus;//Keeps track and information of the menus
     var menuMeta;//Mapping of modules id and DOM id
     var groupMeta;//Keeps information about groups in current submenu
     var submenu;//Keeps track and information of the current submenu
     var menuId;
-    
     
     /*
      * Global variables from response
@@ -784,6 +645,20 @@ Base = new (function(){
         moduleMode = response.mode;
         
         /*
+         * Check excludes and set environment accordingly
+         */
+        
+        if( 'exclude' in module ){
+            for(var i = 0; i < module.exclude.length; ++i){
+                switch( module.exclude[i] ){
+                    case 'defaultMenu':
+                        showDefaultMenu = false;
+                        break;
+                }
+            }
+        }
+        
+        /*
          * Check dependencies and load libraries 
          */
         if( 'depends' in module ){
@@ -835,8 +710,8 @@ Base = new (function(){
         menus = new Object();
         menuMeta = new Object();
         Base.updateMenu(module.getMenu());
+        focusFirstMenu();
         
-        Base.focusMenu('file');
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
@@ -879,19 +754,33 @@ Base = new (function(){
     };
     
     var activeMenu;
-    
+    var showDefaultMenu = true;
     this.updateMenu = function(menuObject){
         //Will be called by module with menuObject
         //Will merge defaultMenus and menuObject and create menu
         var oldActiveMenu = activeMenu;
-        var menu = defaultMenus;
+        var menu;
+        if( showDefaultMenu ){
+            menu = defaultMenus;
+        }
+        else {
+            menu = [];
+        }
         if ( menuObject ){
             menu = menu.concat(menuObject);
         }
         createMenu(menu);
         if( !this.focusMenu(oldActiveMenu) )
-            this.focusMenu('file');
+            focusFirstMenu();
     };
+    
+    var focusFirstMenu = function(){
+        var i;
+        for( i in menuMeta ){
+            Base.focusMenu(i);
+            break;
+        }
+    }
     
     this.focusMenu = function(id){
         //Will be called by module with id of a menu to activate that menu
@@ -1018,7 +907,7 @@ Base = new (function(){
                             }
                             else if( item.type == 'text' ){
                                 menuItem.empty();
-                                menuItem.addClass('input-text btn-text btn-longtext btn-icon');
+                                menuItem.addClass('input-text btn-text btn-intext btn-icon');
                                 var input = $('<input class="menu-input" />').appendTo(menuItem);
                                 if( 'currState' in item ){
                                     input.val(item.currState);
@@ -1035,7 +924,7 @@ Base = new (function(){
                             else if( item.type == 'list' ){
                                 if('list' in item) {
                                     menuItem.empty();
-                                    menuItem.addClass('select btn-text btn-longtext btn-icon');
+                                    menuItem.addClass('select btn-text btn-intext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
                                     for(var i = 0; i<item.list.length; i++) {
                                         
@@ -1051,7 +940,7 @@ Base = new (function(){
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
-                                            elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
+                                            elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
                                             item.currState = selected;
                                         });
@@ -1068,7 +957,7 @@ Base = new (function(){
                                         'min-width': parseInt(menuItem.css('min-width')) + 14
                                     });
                                     
-                                    var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
+                                    var text = $('<span class="btn-intext"></span>').prependTo(menuItem);
                                     
                                     if('currState' in item){
                                         for (var i=0;i<item.list.length;++i) {
@@ -1248,6 +1137,44 @@ Base = new (function(){
                 item.callback(item.id);
             }
         }
+    }
+    
+    /*
+     * Implementation of modal box
+     */
+    var modalCallback = false;
+    this.openModal = function(height, width, callback){
+        Base.closeModal();
+        var content;
+        var style = {};
+        if ( height ){
+            style.height = height;
+        }
+        if ( width ){
+            style.width = width;
+        }
+        if ( callback ){
+            modalCallback = callback;
+        }
+        $('<div class="modal-cont"></div>').append(
+            $('<div class="modal"></div>').css(
+                style
+            ).append(
+                $('<div class="modal-close">⨯</div>').bind('click', Base.closeModal)
+            ).append(
+                content = $('<div class="modal-content"></div>')
+            )
+        ).appendTo($('body'));
+        
+        content = content.get(0);
+        return content;
+    }
+    this.closeModal = function(){
+        if( modalCallback ){
+            modalCallback();
+            modalCallback = false;
+        }
+        $('.modal-cont').remove();
     }
     
     this.setEditable = function(){
