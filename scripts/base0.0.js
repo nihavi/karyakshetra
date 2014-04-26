@@ -806,6 +806,12 @@ Base = new (function(){
         menuMeta = new Array();
         mainMenu.empty();
         $('#subMenu').remove();
+        
+        var homeLink = $('<a class="a-home" target="_blank" href="'+baseUrl+'">')
+            .append($('<div class="btn btn-big btn-home"></div>')
+                .append($('<i class="fa fa-home"></i>')))
+            .appendTo(mainMenu);
+        
         for(var i = 0; i<menuObject.length; ++i){
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){

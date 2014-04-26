@@ -155,6 +155,23 @@ i.fa.fa-cfw {
     text-shadow: none;
 }
 
+.btn-home {
+    padding: 13px 18px 13px 13px;
+    background-color: #c2500f;
+}
+.btn-home i {
+    margin: 0;
+    padding: 0;
+}
+.btn-home:hover {
+    background-color: #dd500f;
+}
+.a-home {
+    display: inline-block;
+    color: inherit;
+    float: left;
+}
+
 .sep {
     float: left;
     color: white;
