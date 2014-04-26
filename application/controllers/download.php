@@ -80,7 +80,7 @@ class Download extends CI_Controller {
             }
             
             $this->load->helper('download');
-            force_download('Karyakshetra files ' . date('Y-m-d') . '.zip' , $this->zip->get_zip());
+            force_download('Karyakshetra ' . date('Y-m-d') . '.zip' , $this->zip->get_zip());
         }
     }
     

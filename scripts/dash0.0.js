@@ -15,12 +15,12 @@ Dash = new(function(){
             
             });
         
-            window.location = 'download/files/' + arg;
+            window.location = response.baseUrl + 'download/files/' + arg;
         
         }
         else
         {
-            window.location = 'download/file/' + selectedFiles.data('fid');
+            window.location = response.baseUrl + 'download/file/' + selectedFiles.data('fid');
         }
     }
     
