@@ -27,16 +27,15 @@ var Aksharam = new(function(){
 	};
     
     this.getFile = function() {
-		return this.docBody.innerHTML;
+		return doc.docBody.innerHTML;
 	};
 	
 	this.openFile = function(file) {
-		this.docBody.innerHTML = file;
+		doc.docBody.innerHTML = file;
 	}
 	
     this.init = function(parent, file) {
-		this.newDoc = new MyDoc();
-		doc = this.newDoc;
+		doc = new MyDoc();
 		doc.render(parent);
 		if(file) 
 			doc.openFile(file);		
@@ -179,6 +178,39 @@ var Aksharam = new(function(){
 								callback: changeText
 							}
 						]
+					},
+					{
+						type: 'group',
+						id: 'group4',
+						multiple: false,
+						required: false,
+						items: [ { 
+								type: 'color',
+							    id: 'color',
+							    title: 'Font Color',
+							    icon: 'fa-tint', 
+							    currState: 'black',
+							    text: 'Text Colour', 
+							    callback: changeColour
+							}
+						]
+					},
+					{
+						type: 'group',
+						id: 'group5',
+						multiple: false,
+						required: false,
+						items: [ { 
+								type: 'size',
+							    id: 'sizewq',
+							    title: 'Font Size',
+							    icon: 'fa-sort-numeric-asc',
+							    currState: '4', 
+							    rangeStart: '1', 
+							    rangeEnd: '7',
+							    callback: changeFontSize
+							}
+						]
 					}
 				]
 			},
@@ -212,7 +244,7 @@ var Aksharam = new(function(){
     
     };
     
-    function changeText(e) {
+    function changeText(e, f) {
 		var sel = document.getSelection();
 		if(sel.rangeCount == 1) {
 			var range = document.createRange();
@@ -229,7 +261,7 @@ var Aksharam = new(function(){
 			for(var i = 0; i < arr.length; ++i) {
 				sel.removeAllRanges();
 				sel.addRange(arr[i]);
-				document.execCommand(e);
+				document.execCommand(e, false, f);
 			}
 			sel.removeAllRanges();
 			for(var i = 0; i < arr.length; ++i)
@@ -240,6 +272,17 @@ var Aksharam = new(function(){
 	function insertImage() {
 		var imgURL = prompt("Please enter the URL of the image: ");
 		document.execCommand("insertImage", false, imgURL);
+	}
+	
+	function changeColour(e, f) {
+		f = JSON.parse('[' + f.split('(')[1].split(')')[0] + ']');
+		var val = "#" + f[0].toString(16) + f[1].toString(16) + f[2].toString(16);
+		document.execCommand('foreColor', false, val);
+	}
+	
+	function changeFontSize(f, e) {
+		console.log('called');
+		document.execCommand('fontSize', false, e);
 	}
 	
 })();
