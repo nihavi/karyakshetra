@@ -1,7 +1,9 @@
 var Aksharam = new(function(){
 	
-	var doc;	
-	
+	var doc,
+	    fonts = ['Arial Black', 'Courier New', 'Georgia', 'Impact', 'Lucida Console', 'Lucida Sans Unicode', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'],
+	    flist = [];
+		
 	function MyDoc() {
         this.characterCount = 0;
         this.docBody = document.createElement("div");
@@ -22,8 +24,11 @@ var Aksharam = new(function(){
 		docStyle.paddingLeft = this.padding[1] + "%";
 		docStyle.paddingRight = this.padding[2] + "%";
 		docStyle.minHeight = "100%";
+		docStyle.fontSize = "1.2vw";
 		parent.appendChild(backDrop);
 		backDrop.appendChild(this.docBody);
+		document.execCommand('fontName', false, 'Times New Roman');
+		document.execCommand('fontSize', false, 4);
 	};
     
     this.getFile = function() {
@@ -38,10 +43,15 @@ var Aksharam = new(function(){
 		doc = new MyDoc();
 		doc.render(parent);
 		if(file) 
-			doc.openFile(file);		
+			doc.openFile(file);
+		for(var i = 0; i < fonts.length; ++i) 
+			flist[i] = {'id': i+1, 'value': fonts[i]};
     };
 
     this.getMenu = function(){
+		var sizeList = [];
+		for(var i = 1; i < 8; ++i)
+			sizeList[i-1] = {'id': i, 'value': i};
         return [ {
 				type: 'main',
 				id: 'ipsum lorem',
@@ -181,10 +191,10 @@ var Aksharam = new(function(){
 					},
 					{
 						type: 'group',
-						id: 'group4',
+						id: 'group5',
 						multiple: false,
 						required: false,
-						items: [ { 
+						items: [ {
 								type: 'color',
 							    id: 'color',
 							    title: 'Font Color',
@@ -192,23 +202,23 @@ var Aksharam = new(function(){
 							    currState: 'black',
 							    text: 'Text Colour', 
 							    callback: changeColour
-							}
-						]
-					},
-					{
-						type: 'group',
-						id: 'group5',
-						multiple: false,
-						required: false,
-						items: [ { 
-								type: 'size',
-							    id: 'sizewq',
+							},
+						    { 
+								type: 'list',
+							    id: 'fontsize',
 							    title: 'Font Size',
-							    icon: 'fa-sort-numeric-asc',
-							    currState: '4', 
-							    rangeStart: '1', 
-							    rangeEnd: '7',
+							    icon: 'fa-text-height',
+							    currState: '4',  
+							    list: sizeList,
 							    callback: changeFontSize
+							},
+							{
+								type: 'list',
+							    id: 'fontlist',
+							    title: 'Font', 
+							    currState: 8, 
+							    list: flist,
+							    callback: changeFont
 							}
 						]
 					}
@@ -234,6 +244,56 @@ var Aksharam = new(function(){
 								callback: insertImage
 							}
 						]
+					},
+					{
+						type: 'group',
+						id: 'group4',
+						multiple: true,
+						required: false,
+						items: [ {
+								type: 'button',
+								id: 'ul',
+								title: 'Unordered List',
+								icon: 'fa-list-ul',
+								onoff: false,
+								currState: false,
+								callback: makeList
+							},
+							{
+								type: 'button',
+								id: 'ol',
+								title: 'Ordered List',
+								icon: 'fa-list-ol',
+								onoff: false,
+								currState: false,
+								callback: makeList
+							}
+						]
+					},
+					{
+						type: 'group',
+						id: 'group19',
+						multiple: true,
+						required: false,
+						items: [ {
+								type: 'button',
+								id: 'head',
+								title: 'Heading',
+								icon: 'fa-star',
+								onoff: false,
+								currState: false,
+								callback: makeHeading
+							},
+							{
+								type: 'button',
+								id: 'shead',
+								title: 'Sub-Heading',
+								icon: 'fa-star-half',
+								onoff: false,
+								currState: false,
+								callback: makeHeading
+							}
+						]							
 					}
 				]
 			}
@@ -261,7 +321,8 @@ var Aksharam = new(function(){
 			for(var i = 0; i < arr.length; ++i) {
 				sel.removeAllRanges();
 				sel.addRange(arr[i]);
-				document.execCommand(e, false, f);
+				if(e !== 'undefined')
+					document.execCommand(e, false, f);
 			}
 			sel.removeAllRanges();
 			for(var i = 0; i < arr.length; ++i)
@@ -280,9 +341,28 @@ var Aksharam = new(function(){
 		document.execCommand('foreColor', false, val);
 	}
 	
-	function changeFontSize(f, e) {
-		console.log('called');
-		document.execCommand('fontSize', false, e);
+	function changeFontSize(e, f) {
+		document.execCommand('fontSize', false, f);
+	}
+	
+	function makeList(e) {
+		if(e[0] == 'u')
+			document.execCommand("insertUnorderedList");
+		else
+			document.execCommand("insertOrderedList");
+	}
+	
+	function changeFont(e, f) {
+		document.execCommand("fontName", false, fonts[f-1]);
+		console.log(fonts[f-1]);
+	}
+	
+	function makeHeading(e) {
+		changeText();
+		if(e[0] == 's')
+			document.execCommand('heading', false, 'H3');
+		else
+			document.execCommand('heading', false, 'H1');
 	}
 	
 })();
