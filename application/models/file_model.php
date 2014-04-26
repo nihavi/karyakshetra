@@ -122,8 +122,23 @@ class File_model extends CI_Model {
 		$this->db->where('files.fid = filepermissions.fid');
 		$this->db->where("filepermissions.gid = $group_id");
         $this->db->order_by('modified', 'asc');
-		$result = $this->db->get();
-		return $result;
+		$query = $this->db->get();
+		
+        return $query->result();
+    }
+    
+    function get_file($file_id)
+    {
+        $query = $this->db->get_where('files', array('fid' => $file_id));
+        
+        if ($query->num_rows() > 0)
+        {
+            return $query->row();
+        }
+        else
+        {
+            return false;
+        }
     }
     
 }

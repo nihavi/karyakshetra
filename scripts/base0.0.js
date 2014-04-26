@@ -784,6 +784,20 @@ Base = new (function(){
         moduleMode = response.mode;
         
         /*
+         * Check excludes and set environment accordingly
+         */
+        
+        if( 'exclude' in module ){
+            for(var i = 0; i < module.exclude.length; ++i){
+                switch( module.exclude[i] ){
+                    case 'defaultMenu':
+                        showDefaultMenu = false;
+                        break;
+                }
+            }
+        }
+        
+        /*
          * Check dependencies and load libraries 
          */
         if( 'depends' in module ){
@@ -835,8 +849,8 @@ Base = new (function(){
         menus = new Object();
         menuMeta = new Object();
         Base.updateMenu(module.getMenu());
+        focusFirstMenu();
         
-        Base.focusMenu('file');
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
@@ -879,19 +893,33 @@ Base = new (function(){
     };
     
     var activeMenu;
-    
+    var showDefaultMenu = true;
     this.updateMenu = function(menuObject){
         //Will be called by module with menuObject
         //Will merge defaultMenus and menuObject and create menu
         var oldActiveMenu = activeMenu;
-        var menu = defaultMenus;
+        var menu;
+        if( showDefaultMenu ){
+            menu = defaultMenus;
+        }
+        else {
+            menu = [];
+        }
         if ( menuObject ){
             menu = menu.concat(menuObject);
         }
         createMenu(menu);
         if( !this.focusMenu(oldActiveMenu) )
-            this.focusMenu('file');
+            focusFirstMenu();
     };
+    
+    var focusFirstMenu = function(){
+        var i;
+        for( i in menuMeta ){
+            Base.focusMenu(i);
+            break;
+        }
+    }
     
     this.focusMenu = function(id){
         //Will be called by module with id of a menu to activate that menu
