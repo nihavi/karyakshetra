@@ -1144,6 +1144,7 @@ Base = new (function(){
      */
     var modalCallback = false;
     this.openModal = function(height, width, callback){
+        Base.closeModal();
         var content;
         var style = {};
         if ( height ){
