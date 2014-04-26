@@ -1046,7 +1046,7 @@ Base = new (function(){
                             }
                             else if( item.type == 'text' ){
                                 menuItem.empty();
-                                menuItem.addClass('input-text btn-text btn-longtext btn-icon');
+                                menuItem.addClass('input-text btn-text btn-intext btn-icon');
                                 var input = $('<input class="menu-input" />').appendTo(menuItem);
                                 if( 'currState' in item ){
                                     input.val(item.currState);
@@ -1063,7 +1063,7 @@ Base = new (function(){
                             else if( item.type == 'list' ){
                                 if('list' in item) {
                                     menuItem.empty();
-                                    menuItem.addClass('select btn-text btn-longtext btn-icon');
+                                    menuItem.addClass('select btn-text btn-intext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
                                     for(var i = 0; i<item.list.length; i++) {
                                         
@@ -1079,7 +1079,7 @@ Base = new (function(){
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
-                                            elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
+                                            elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
                                             item.currState = selected;
                                         });
@@ -1096,7 +1096,7 @@ Base = new (function(){
                                         'min-width': parseInt(menuItem.css('min-width')) + 14
                                     });
                                     
-                                    var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
+                                    var text = $('<span class="btn-intext"></span>').prependTo(menuItem);
                                     
                                     if('currState' in item){
                                         for (var i=0;i<item.list.length;++i) {

@@ -1,14 +1,11 @@
 <?php
 
 class Opqueue extends CI_Controller {
-    
-    function index()
-    {
-        echo "Sorry, you need to know the predefined internal structure to use opQueue.";
-    }
-    
+
     function addop()
     {
+        $this->auth->require_authentication(true);
+        
         $this->load->model('Opqueue_model', 'opqueue');
         
         $fid = $this->input->post('fid', TRUE);
@@ -21,6 +18,8 @@ class Opqueue extends CI_Controller {
     
     function getop()
     {
+        $this->auth->require_authentication(true);
+        
         $this->load->model('Opqueue_model', 'opqueue');
         
         $fid = $this->input->post('fid', TRUE);
@@ -36,6 +35,8 @@ class Opqueue extends CI_Controller {
     
     function lastop()
     {
+        $this->auth->require_authentication(true);
+        
         $this->load->model('Opqueue_model', 'opqueue');
         
         $fid = $this->input->post('fid', TRUE);
