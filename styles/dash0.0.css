@@ -4,7 +4,8 @@
     box-sizing: border-box;
     float: left;
 }
-.explorer {
+.explorer,
+.new-file {
     width: 20%;
 }
 
@@ -64,4 +65,26 @@ input[type=checkbox].file-selector {
 
 .file input[type=checkbox]:checked {
     visibility: visible;
+}
+
+.new-file {
+    padding-right: 5px;
+}
+
+.module-link {
+    display: block;
+    background-color: #fafafa;
+    font-size: 1.2em;
+    padding: 1.2em 0.4em;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    color: #057cb8;
+    text-decoration: none;
+    transition: 0.3s background-color, 0.3s color;
+}
+
+.module-link:hover {
+    background-color: #00a400;
+    color: white;
+    transition: 0.3s background-color, 0.3s color;
 }

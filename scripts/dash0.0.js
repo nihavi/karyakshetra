@@ -2,8 +2,57 @@ Dash = new(function(){
     
     this.exclude = ['defaultMenu'];
     
+    function download() {
+        
+        var arg = '';
+        
+        var selectedFiles = $('#editable .file.focus');
+        
+        if (selectedFiles.length > 1) {
+            selectedFiles.each(function (i) {
+            
+                arg += $(this).data('fid') + '-';
+            
+            });
+        
+            window.location = response.baseUrl + 'download/files/' + arg;
+        
+        }
+        else
+        {
+            window.location = response.baseUrl + 'download/file/' + selectedFiles.data('fid');
+        }
+    }
+    
     this.init = function(){
-        $('<div class="explorer column"></div>').html('&nbsp;').appendTo('#editable');
+        var newFile = $('<div></div>');
+        //var newAkruti = $('<a>New Akruti</a>').appendTo(newFile);
+        var modules = [
+            {
+                'name'  : 'Akruti',
+                'link'  : 'akruti'
+            },
+            {
+                'name'  : 'Prastuti',
+                'link'  : 'show'
+            },
+            {
+                'name'  : 'Aalekhan',
+                'link'  : 'aalekhan'
+            },
+            {
+                'name'  : 'Aksharam',
+                'link'  : 'aksharam'
+            },
+            
+        ];
+    
+        for (var i=0; i<modules.length; ++i) {
+            var module = modules[i];
+            $('<a class="module-link" href="' + module.link +'">' + module.name + '</a>').appendTo(newFile);
+        }
+        
+        $('<div class="new-file column"></div>').append(newFile).appendTo('#editable');
         $('<div class="file-list column"></div>').appendTo('#editable');
         $.ajax({
             dataType: "json",
@@ -17,7 +66,9 @@ Dash = new(function(){
                     var f = $('<div></div>');
                     f.addClass('file');
                     
-                    var a = $('<a></a>')
+                    f.data('fid', file.id);
+                    
+                    var a = $('<a></a>');
                     a.attr('target', '_blank');
                     a.attr('href', file.module + '/' + file.id);
                     a.text(file.name);
@@ -46,17 +97,13 @@ Dash = new(function(){
             }
         });
     };
-
-    function updateList() {
-        
-    }
     
     this.getMenu = function(){
         return [
             {
                 type: 'main',
-                id: 'file',
-                title: 'File', //Name of menu
+                id: 'files',
+                title: 'Files', //Name of menu
                 icon: 'fa-file', //Font awesome icon name
                 groups: [
                     {
@@ -65,15 +112,16 @@ Dash = new(function(){
                         items: [
                             {
                                 type: 'button',
-                                icon: 'fa-coffee',
-                                title: 'Dummy',
-                                callback: console.log
+                                icon: 'fa-cloud-download',
+                                title: 'Download',
+                                callback: download
                             }
                         ]
                     }
                 ]
             }
         ];
+        
     };
     
     this.resize = function(){
