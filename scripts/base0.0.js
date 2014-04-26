@@ -531,8 +531,10 @@ Base = new (function(){
         if( 'getFile' in module ){
             var data = module.getFile();
             if( isNewFile() ){
-                var filename = prompt("Enter file name");
-                saveFile(data, filename);
+                Base.prompt("Enter file name", function(filename){
+                    if( !filename )return;
+                    saveFile(data, filename);
+                }, 'New file', 'Save');
             }
             else {
                 saveFile(data);
@@ -1169,12 +1171,55 @@ Base = new (function(){
         content = content.get(0);
         return content;
     }
-    this.closeModal = function(){
-        if( modalCallback ){
+    this.closeModal = function(callback){
+        //callback is boolean describing should it call callback or not, default true
+        if( typeof callback == 'undefined' ) callback = true;
+        if( callback && modalCallback ){
             modalCallback();
-            modalCallback = false;
         }
+        modalCallback = false;
         $('.modal-cont').remove();
+    }
+    
+    /*
+     * Implementation of prompt
+     */
+    var closePrompt = function(){
+    }
+    /*
+     * Base.prompt requires
+     * String text  - Text for prompt
+     * Function callback(Mixed response) - callback when prompt is complete, 
+     *      if it fails response will be false, otherwise String
+     * String value - Default value for prompt
+     * String ok    - Text to be shown in ok btn, default OK
+     * String cancel    - Text to be shown in cancel btn, default Cancel
+     */
+    this.prompt = function(text, callback, value, ok, cancel){
+        if( !text )
+            text = 'Enter value in given textbox';
+        if( !callback )
+            return;
+        if( !value )
+            value = '';
+        if( !ok )
+            ok = 'OK';
+        if( !cancel )
+            cancel = 'Cancel';
+        var modal = Base.openModal(null, null, function(){
+                callback(false);
+            });
+        $('<div class="prompt-text">'+text+'</div>').appendTo(modal);
+        $('<input class="prompt-in" value="'+value+'">').appendTo(modal).focus();
+        $('<div class="prompt-btn"></div>')
+            .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
+                    Base.closeModal();
+                }))
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',function(){
+                    callback($('.prompt-in').val());
+                    Base.closeModal(false);
+                }))
+            .appendTo(modal);
     }
     
     this.setEditable = function(){
