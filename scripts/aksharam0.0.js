@@ -153,16 +153,16 @@ var Aksharam = new(function(){
 						items: [
 							{
 								type: 'button',
-								id: 'justifyRight',
-								title: 'Right',
-								icon: 'fa-align-right',
+								id: 'justifyLeft',
+								title: 'Left',
+								icon: 'fa-align-left',
 								onoff: false,
 								currState: false,
 								callback: changeText
 							},
 							{
 								type: 'button',
-								id: 'justifyCentre',
+								id: 'justifyCenter',
 								title: 'Centre',
 								icon: 'fa-align-center',
 								onoff: false,
@@ -171,12 +171,35 @@ var Aksharam = new(function(){
 							},
 							{
 								type: 'button',
-								id: 'justifyLeft',
-								title: 'Left',
-								icon: 'fa-align-left',
+								id: 'justifyRight',
+								title: 'Right',
+								icon: 'fa-align-right',
 								onoff: false,
 								currState: false,
 								callback: changeText
+							}
+						]
+					}
+				]
+			},
+			{
+				type: 'main',
+				id: 'pecuniae',
+				title: 'Insert',
+				icon: 'fa-plus',
+				groups: [ {
+						type: 'group',
+						id: 'group3',
+						multiple: true,
+						required: false,
+						items: [ {
+								type: 'button',
+								id: 'image',
+								title: 'Image',
+								icon: 'fa-picture-o',
+								onoff: false,
+								currState: false,
+								callback: insertImage
 							}
 						]
 					}
@@ -213,14 +236,12 @@ var Aksharam = new(function(){
 				sel.addRange(arr[i]);
 		}
 	}
-
-	function cutCopyPaste() {
-		var ev = jQuery.Event("keypress");
-		ev.ctrlKey = false;
-		ev.which = 40;
-		doc.docBody.trigger(ev);
-		console.log(ev);
+	
+	function insertImage() {
+		var imgURL = prompt("Please enter the URL of the image: ");
+		document.execCommand("insertImage", false, imgURL);
 	}
+	
 })();
 
 module = Aksharam;
