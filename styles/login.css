@@ -1,0 +1,9 @@
+.container {
+    padding: 1em;
+}
+
+label,
+input[type=submit] {
+    display: block;
+    margin: 0.5em;
+}

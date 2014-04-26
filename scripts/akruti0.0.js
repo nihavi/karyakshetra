@@ -150,9 +150,13 @@ Akruti = new (function() {
             this.page.setAttribute('y', 0);
             this.page.setAttribute('stroke', '#aaa');
             this.page.setAttribute('stroke-width', '1');
-            this.page.setAttribute('fill', 'white');
+            this.page.setAttribute('fill', 'url(#alpha)');
             this.g.appendChild(this.page);
         }
+        
+        /* Adding a common class to page and svg */
+        this.page.classList.add('drawable-area');
+        this.element.classList.add('drawable-area');
 
         /* Getting page height width */
         this.pageH = arg.h;
@@ -758,38 +762,38 @@ Akruti = new (function() {
     FreeHandDrawing.prototype.delete = deleteSelf;
     
     this.init = function(parent, fileData, mode) {
-        svgParent = parent;
-        if( mode == 'edit' ){
-            isEditable = true;
-            Base.updateMenu( editor.getMenu({}) );
-            Base.stream(true);
-        }
-        else if( mode == 'view' ){
-            isEditable = false;
-            Base.listen(true);
-            Base.hideMenu(true);
-            Akruti.zoom('fit');
-        }
         if ( !initialized ) {
+            
             initialized = true;
-            if (fileData) {
-                Akruti.openFile(fileData);
-            }
-            else {
-                var arg = {
-                    h:550,
-                    w:1000
-                };
-                var svgObject = new Svg(arg, parent, isEditable);
-                allSvg[svgObject.id] = svgObject;
-                currentSvg = svgObject;
-            }
-            this.resize();
-            if (isEditable) {
-                editor.setMode('createFreeMode', true);
+            svgParent = parent;
+            
+            if( mode == 'edit' ) {
+                
+                isEditable = true;
+                if (fileData) {
+                    Akruti.openFile(fileData);
+                }
+                else {
+                    var arg = {
+                        h:550,
+                        w:1000
+                    };
+                    var svgObject = new Svg(arg, parent, isEditable);
+                    currentSvg = allSvg[svgObject.id] = svgObject;
+                }
+                Base.updateMenu(editor.menu);
                 Base.focusMenu('tools');
+                editor.setMode('createFreeMode', true);
+                Base.stream(true);
                 editor.init();
             }
+            else if( mode == 'view' ){
+                isEditable = false;
+                Base.listen(true);
+                Base.hideMenu(true);
+                Akruti.zoom('fit');
+            }
+            this.resize();
         }
     };
 
@@ -1430,7 +1434,7 @@ Akruti = new (function() {
         
         var selectElement = function(){    
             if (actives.list.length == 0) {
-                $(allSvg[this.pid].element).one('mousedown',deselectAll);
+                $(allSvg[this.pid].element).on('mousedown',deselectAll);
             }
             actives.list.push(this);
             this.g.classList.add('active');
@@ -1444,6 +1448,9 @@ Akruti = new (function() {
         };
         
         var deselectAll = function(e){
+            if (e) {
+                $(currentSvg.element).off('mousedown',deselectAll);
+            }
             if (actives.select)
             {
                 $(actives.select.g).remove();
@@ -1462,7 +1469,7 @@ Akruti = new (function() {
                 return;
             }
             if (actives.list.length == 0) {
-                $(currentSvg.element).one('mousedown',deselectAll);
+                $(currentSvg.element).on('mousedown',deselectAll);
             }
             for(var j=0; j<currentSvg.children.length; j++) {
                 actives.list.push(currentSvg.children[j]);
@@ -1482,8 +1489,8 @@ Akruti = new (function() {
         };
         
         var svgOnMouseDown = function(e) {
-
-            if (e.which == 1) {
+            
+            if (e.which == 1 ) {
                 e.data = $(this).data('myObject');
                 var element = svgOn[editor.currentMode].mousedown(e);
                 
@@ -2083,7 +2090,7 @@ Akruti = new (function() {
                 if (e.which == 1) {
                         
                     if (editor.currentMode == 'selectMode') {
-                        e.stopImmediatePropagation();
+                        e.stopPropagation();
                         if (!e.data || !e.data.selectArea) {
                             var myObject = $(this).data('myObject');
                             currentSvg = allSvg[myObject.pid];
@@ -2649,6 +2656,9 @@ Akruti = new (function() {
         $(window).on('keydown',function(e){
             if (e.which == 46 && actives.list.length != 0) {                //DeleteKey
                 deleteAllSelected();
+            }
+            if (e.which == '27' && actives.list.length != 0) {              //Esc key
+                deselectAll();
             }
         });
         

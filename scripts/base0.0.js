@@ -84,11 +84,11 @@ Base = new (function(){
         }
         var url;
         if( currFileId ){
-            url = baseUrl + 'save/file';
+            url = baseUrl + 'save/file/';
             data.id = currFileId;
         }
         else {
-            url = baseUrl + 'save/newfile';
+            url = baseUrl + 'save/newfile/';
             if( filename )
                 data.filename = filename;
             else
@@ -191,7 +191,7 @@ Base = new (function(){
         var updateOp = function(){
             $.ajax({
                 type: 'POST',
-                url: baseUrl+'opqueue/getop',
+                url: baseUrl+'opqueue/getop/',
                 data: {
                     fid: currFileId,
                     last: lastLoadedOp
@@ -213,7 +213,7 @@ Base = new (function(){
         if( currFileId ) {
             $.ajax({
                 type: 'POST',
-                url: baseUrl+'opqueue/lastop',
+                url: baseUrl+'opqueue/lastop/',
                 data: {
                     fid: currFileId,
                 },
@@ -231,7 +231,7 @@ Base = new (function(){
     var sendOp = function(op){
         $.ajax({
             type: 'POST',
-            url: baseUrl+'opqueue/addop',
+            url: baseUrl+'opqueue/addop/',
             data: {
                 fid: currFileId,
                 op: op
@@ -724,7 +724,7 @@ Base = new (function(){
     
     var loadMathJax = function(){
         window.MathJax = {
-            root: 'libs/MathJax',
+            root: baseUrl+'libs/MathJax',
             extensions: ["tex2jax.js"],
             jax: ["input/TeX","output/HTML-CSS"],
             showProcessingMessages: false,
@@ -746,9 +746,9 @@ Base = new (function(){
                     ["Typeset",MathJax.Hub,$('<div id="dummyMathJaxdummy" style="position:absolute;top:-100px;left:-1000px;">$\pm sin \left( x \right)$</div>').appendTo('body').get(0)],
                     function(){
                         $('#dummyMathJaxdummy').remove();
-                    }
+                    },
+                    solvedDep
                 )
-                solvedDep();
             }
         })
     };
@@ -809,6 +809,8 @@ Base = new (function(){
                 var file = response.fileData;
             }
         }
+        
+        $( "#wait-message" ).remove();
         
         //Set default palette
         Base.setPalette(defaultPalette);
@@ -894,7 +896,7 @@ Base = new (function(){
     this.focusMenu = function(id){
         //Will be called by module with id of a menu to activate that menu
         if (id && id in menuMeta){
-            activateMenu.bind($('#'+menuMeta[id]))();
+            activateMenu.call($('#'+menuMeta[id]));
             return true;
         }
         else {
@@ -963,7 +965,8 @@ Base = new (function(){
         //Append submenu to menubar
         var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
         subMenu.mousedown(function(ev){
-            ev.preventDefault();
+            if( !$(ev.target).closest('.input-text').length )
+                ev.preventDefault();
         });
         //Append submenu items to submenu
         var item,i,j;
@@ -1015,7 +1018,7 @@ Base = new (function(){
                             }
                             else if( item.type == 'text' ){
                                 menuItem.empty();
-                                menuItem.addClass('input-text btn-text btn-longtext btn-icon');
+                                menuItem.addClass('input-text btn-text btn-intext btn-icon');
                                 var input = $('<input class="menu-input" />').appendTo(menuItem);
                                 if( 'currState' in item ){
                                     input.val(item.currState);
@@ -1032,7 +1035,7 @@ Base = new (function(){
                             else if( item.type == 'list' ){
                                 if('list' in item) {
                                     menuItem.empty();
-                                    menuItem.addClass('select btn-text btn-longtext btn-icon');
+                                    menuItem.addClass('select btn-text btn-intext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
                                     for(var i = 0; i<item.list.length; i++) {
                                         
@@ -1048,7 +1051,7 @@ Base = new (function(){
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
-                                            elem.find('.btn-longtext').html(item.list[$(this).data('index')].value);
+                                            elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
                                             item.currState = selected;
                                         });
@@ -1065,7 +1068,7 @@ Base = new (function(){
                                         'min-width': parseInt(menuItem.css('min-width')) + 14
                                     });
                                     
-                                    var text = $('<span class="btn-longtext"></span>').prependTo(menuItem);
+                                    var text = $('<span class="btn-intext"></span>').prependTo(menuItem);
                                     
                                     if('currState' in item){
                                         for (var i=0;i<item.list.length;++i) {
@@ -1090,7 +1093,8 @@ Base = new (function(){
                             }
                             
                             menuItem.mousedown(function(ev){
-                                ev.preventDefault();
+                                if( !$(ev.target).closest('.input-text').length )
+                                    ev.preventDefault();
                             });
                             menuItem.click(handleMenuClick);
                             //Append menu item to submenu object

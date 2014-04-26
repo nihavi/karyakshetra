@@ -13,6 +13,7 @@ body {
     position: relative;
     box-shadow: 0 0 2px 2px #333;
     z-index: 10;
+    font-size: 15px;
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
@@ -46,7 +47,7 @@ body {
 }
 
 .btn-big {
-   padding: 15px 25px 15px 15px;
+   padding: 13px 22px 13px 13px;
 }
 
 .btn i {
@@ -57,14 +58,15 @@ body {
     line-height: 1.28571em;
     height: 1.28571em;
     width: 1.28571em;
-    padding: 2px;
-    margin: 4px;
+    padding: 4px;
+    margin: 3px;
     border: 1px solid transparent;
     transition: background-color 0.1s, box-shadow 0.1s, background-color 0.1s;
 }
 
 .btn-text {
     width: auto;
+    padding: auto 6px;
 }
 
 /* Custom fixed width */
@@ -77,12 +79,17 @@ i.fa.fa-cfw {
     margin-right: 2px;
 }
 
+.btn-text .btn-intext,
+.select .option {
+    font-size: 0.9em;
+}
+
 .btn-icon i {
     margin-right: 0;
 }
 
 .bar-sub {
-    font-size: 1.1em;
+    font-size: 1.2em;
 }
 
 .blue.bar-sub{
