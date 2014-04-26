@@ -119,9 +119,9 @@ Base = new (function(){
     /*
      * opQueue implementation
      */
-    var exQueue = new Array();
-    var newQueue = new Array();
-    var exPointer = 0;
+     exQueue = new Array();
+     newQueue = new Array();
+     exPointer = 0;
     
     this.addOp = function(pastState, newState){
         
@@ -134,6 +134,7 @@ Base = new (function(){
         exQueue[exPointer] = pastState;
         exPointer++;
         exQueue[exPointer] = null;
+        exQueue.splice(exPointer + 1);
         newQueue.push(newState);
         if( isStreaming )
             sendOp(newState);
