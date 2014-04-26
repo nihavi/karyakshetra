@@ -182,6 +182,8 @@ Show = new (function(){
     
     var insertSlide = function(id){
         var newSlide = new Slide();
+        var op = 'ds ' + newSlide.slideId;
+        startOp(op);
         newSlide.addElem({
             type: 'title',
             top: 5,
@@ -203,18 +205,32 @@ Show = new (function(){
         });
         newSlide.activate();
         Sidebar.addSlide(newSlide);
+        op = 'cs ' + allSlides.indexOf(newSlide) +' '+ JSON.stringify(newSlide.purify());
+        endOp(op);
     }
     var removeSlide = function(id){
+        var op = 'cs ' + allSlides.indexOf(activeSlide) +' '+ JSON.stringify(activeSlide.purify());
+        startOp(op);
+        op = 'ds ' + activeSlide.slideId;
         activeSlide.remove();
-        if( !allSlides.length ){
+        /*if( !allSlides.length ){
             insertSlide();
-        }
+        }*/
+        endOp(op);
     }
     var moveSlide = function(btnId){
+        var op = 'ms ' + activeSlide.slideId +' '+ (allSlides.indexOf(activeSlide)+1);
+        startOp(op);
         activeSlide.moveTo(btnId);
+        var op = 'ms ' + activeSlide.slideId +' '+ btnId;
+        endOp(op);
     }
     var slideColor = function(btnId, color){
+        var op = 'sc ' + activeSlide.slideId +' '+ activeSlide.bgColor;
+        startOp(op);
         activeSlide.bgColor = color;
+        var op = 'sc ' + activeSlide.slideId +' '+ activeSlide.bgColor;
+        endOp(op);
         activeSlide.renderSlide();
         activeSlide.renderSlideSide();
     }
@@ -427,14 +443,16 @@ Show = new (function(){
             this.text = "";
         if ('style' in elem)
             this.style = elem.style;
-        else
+        else{
+            elem.style = {};
             this.style = {};
+        }
             
         if( !('color' in elem.style) ){
             elem.style.color = '#000000';
         }
         if( !('backgroundColor' in elem.style) ){
-            elem.style.backgroundColor = '#ffffff';
+            elem.style.backgroundColor = 'transparent';
         }
         
         this.top = elem.top;
@@ -569,14 +587,19 @@ Show = new (function(){
                     this.style[i] = changes.style[i];
                 }
             }
-            this.renderElem();
+            if( this.parent == activeSlide ){
+                this.renderElem();
+            }
+            else {
+                this.parent.renderSlideSide();
+            }
             return this;
         },
         remove: function(){
-            $('#'+this.id).remove();
+            if( activeSlide == this.parent )
+                $('#'+this.id).remove();
             $('#'+this.parent.id+this.id).remove();
-            delete activeSlide.elems[this.id];
-            this.blur();
+            delete this.parent.elems[this.id];
             if( activeElement == this )
                 activeElement = null;
         },
@@ -692,6 +715,16 @@ Show = new (function(){
      * opCodes ( separated by -;- )
      * ne   - Next in Slideshow
      * pr   - Previous in Slideshow
+     * ns   - Next Slide
+     * ps   - Previous Slide
+     * 
+     *** Operations on slides
+     * cs [index] [slideJSON]   - Create slide
+     * de [slideId] - Delete slide
+     * ms [slideId] [up|down|index] - Move slide
+     * sc [slideId] [color] - Slide color
+     * 
+     *** Operations on Elements
      * sw|sh|st|sl [slideId] [elemId] [width]    - set width|height|top|left
      * de [slideId] [elemId]    - Delete element
      * cr [slideId] [elemJSON]  - Create element
@@ -709,7 +742,7 @@ Show = new (function(){
     var endOp = function(state){
         currOp.end = state;
         //TODO: Add all op first, then uncomment following line
-        //Base.addOp(currOp.init, currOp.end);
+        Base.addOp(currOp.init, currOp.end);
     }
     var getSlide = function(slideId){
         for( var i = 0; i<allSlides.length; i++ ){
@@ -752,6 +785,42 @@ Show = new (function(){
                 case 'ps':
                     SlideShow.prevSlide();
                     break;
+                case 'cs':
+                    var moveTo = parseInt(op[1])+1;
+                    var obj = JSON.parse(op.slice(2).join(' '));
+                    console.log(obj);
+                    var slide = new Slide(obj);
+                    console.log(slide);
+                    pastState += 'ds '+ slide.slideId;
+                    slide.moveTo(moveTo);
+                    Sidebar.addSlide(slide);
+                    Sidebar.moveSlide(slide.id, moveTo);
+                    slide.activate()
+                    newState += op.join(' ');
+                    break;
+                case 'ds':
+                    var slide = getSlide(op[1]);
+                    pastState += 'cs ' + allSlides.indexOf(slide) +' '+ JSON.stringify(slide.purify());
+                    slide.remove();
+                    newState += op.join(' ');
+                    break;
+                case 'ms':
+                    var slide = getSlide(op[1]);
+                    pastState += 'ms ' + op[1] +' '+ (allSlides.indexOf(slide)+1);
+                    slide.moveTo(op[2]);
+                    newState += op.join(' ');
+                    break;
+                case 'sc':
+                    var slide = getSlide(op[1]);
+                    pastState += 'sc ' + op[1] +' '+ slide.bgColor;
+                    op[2] = op.slice(2).join(' ');
+                    slide.bgColor = op[2];
+                    if( slide == activeSlide ){
+                        slide.renderSlide();
+                    }
+                    slide.renderSlideSide();
+                    newState += op.join(' ');
+                    break;
                 case 'sw':
                     var elem = getElem(op[1], op[2]);
                     pastState += 'sw '+ op[1] +' '+ op[2] +' '+ elem.width;
@@ -786,34 +855,42 @@ Show = new (function(){
                     break;
                 case 'cr':
                     var slide = getSlide(op[1]);
-                    obj = JSON.parse(op.slice(2).join(' '));
-                    slide.addElem(obj);
-                    slide.renderSlide();
-                    pastState = 'de ' + slide.slideId +' '+ obj.id;
-                    newState = op.join(' ');
+                    var obj = JSON.parse(op.slice(2).join(' '));
+                    var elem = slide.addElem(obj);
+                    if( slide == activeSlide ){
+                        elem.renderElem();
+                    }
+                    else {
+                        slide.renderSlideSide();
+                    }
+                    pastState += 'de ' + slide.slideId +' '+ obj.id;
+                    newState += op.join(' ');
                     break;
                 case 'de':
                     var elem = getElem(op[1], op[2]);
-                    pastState = 'cr '+ elem.parent.slideId +' '+ JSON.stringify(elem.purify())
+                    pastState += 'cr '+ elem.parent.slideId +' '+ JSON.stringify(elem.purify())
                     elem.remove();
-                    newState = op.join(' ');
+                    newState += op.join(' ');
                     break;
                 case 'ct':
                     var elem = getElem(op[1], op[2]);
-                    pastState = 'ct '+ elem.parent.slideId +' '+ elem.id +' '+elem.text;
+                    pastState += 'ct '+ elem.parent.slideId +' '+ elem.id +' '+elem.text;
                     elem.text = op.slice(3).join(' ');
-                    elem.renderElem();
-                    newState = op.join(' ');
+                    if( elem.parent == activeSlide )
+                        elem.renderElem();
+                    else 
+                        elem.parent.renderSlideSide();
+                    newState += op.join(' ');
                     break;
                 case 'ca':
                     var elem = getElem(op[1], op[2]);
-                    pastState = 'ca '+ elem.parent.slideId +' '+ elem.id +' '+elem.style.textAlign;
+                    pastState += 'ca '+ elem.parent.slideId +' '+ elem.id +' '+elem.style.textAlign;
                     elem.editElement({
                         style: {
                             textAlign: op[3]
                         }
                     });
-                    newState = op.join(' ');
+                    newState += op.join(' ');
                     if(elem == activeElement){
                         Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
                     }
@@ -821,9 +898,9 @@ Show = new (function(){
                 case 'cf':
                     var elem = getElem(op[1], op[2]);
                     op[4] = eval(op[4]);
-                    pastState = 'cf '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ !op[4];
+                    pastState += 'cf '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ !op[4];
                     elemFormat(elem, op[3], op[4]);
-                    newState = op.join(' ');
+                    newState += op.join(' ');
                     if(elem == activeElement){
                         Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
                     }
@@ -832,8 +909,8 @@ Show = new (function(){
                     var elem = getElem(op[1], op[2]);
                     op[4] = op.slice(4).join(' ');
                     var pastVal = elemEdit(elem, op[3], op[4]);
-                    pastState = 'ee '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
-                    newState = op.join(' ');
+                    pastState += 'ee '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
+                    newState += op.join(' ');
                     if(elem == activeElement){
                         Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
                     }
@@ -842,8 +919,8 @@ Show = new (function(){
                     var elem = getElem(op[1], op[2]);
                     op[4] = op.slice(4).join(' ');
                     var pastVal = elemColor(elem, op[3], op[4]);
-                    pastState = 'cc '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
-                    newState = op.join(' ');
+                    pastState += 'cc '+ elem.parent.slideId +' '+ elem.id +' '+ op[3] +' '+ pastVal;
+                    newState += op.join(' ');
                     if(elem == activeElement){
                         Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
                     }
