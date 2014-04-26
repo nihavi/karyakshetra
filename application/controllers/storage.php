@@ -28,7 +28,7 @@ class Storage extends CI_Controller {
     
         $file_list = array();
         
-        foreach ($files->result() as $f) {
+        foreach ($files as $f) {
         
             $file = array(
                 'name'     => $f->fname,
