@@ -41,4 +41,26 @@ class Storage extends CI_Controller {
         
         echo json_encode($data);
     }
+    
+    //function submit($mode, $fid)
+    //{
+        /*
+         * available modes
+         *  create  - creates database
+         *  submit  - insert in database
+         */
+        /*
+        $this->load->model('Submit_model', 'submit');
+        
+        if ($mode == 'create')
+        {
+            //The structure of database must be posted
+            $this->auth->require_authentication(true);
+            
+            //$structure = json_decode($this->input->post('struct', TRUE));
+            $structure='';
+            
+            $this->submit->create($fid, $structure);
+        }
+    }*/
 }
