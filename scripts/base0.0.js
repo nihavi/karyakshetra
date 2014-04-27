@@ -77,12 +77,9 @@ Base = new (function(){
      * File save mechanism
      */
     var currFileId;
-<<<<<<< HEAD
     var lastSavedFile;
-    
-=======
     var fileName;
->>>>>>> cc8b51fc2848b539e31400af0c4910e8cd4df246
+
     var saveFile = function(filedata, filename){
         var data = {
             file: filedata,
@@ -691,11 +688,8 @@ Base = new (function(){
             else {
                 currFileId = response.fileId;
                 var file = response.fileData;
-<<<<<<< HEAD
                 lastSavedFile = file;
-=======
                 fileName = response.fileName;
->>>>>>> cc8b51fc2848b539e31400af0c4910e8cd4df246
             }
         }
         
