@@ -46,12 +46,21 @@
     box-shadow:0px 0px 5px 5px #888888;
 }
 
+.slide-show{
+    overflow: hidden;
+}
+
 .slide-title{
     position: absolute;
     width:100%;
 }
 
 .slide-text{
+    position: absolute;
+    width:100%;
+}
+
+.slide-img{
     position: absolute;
     width:100%;
 }
@@ -94,6 +103,10 @@
     line-height: inherit    !important;
 }
 
+.elem-img{
+    height: 100%;
+    width: 100%;
+}
 .resize{
     position: absolute;
 }

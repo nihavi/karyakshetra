@@ -97,12 +97,15 @@ Show = new (function(){
     }
     Elem
     {
-        type: 'title' | 'text',
+        type: 'title' | 'text' | 'img',
         parent: Slide Object,   //Parent Slide
         id: String, //Id of element
         aminations: Array,  //Array of Animations
-        fontSize: Number,   //Font-size in percentage relative to slide height
-        text: String,   //Text inside the box
+        
+        fontSize: Number,   //Font-size in percentage relative to slide height, if title or text
+        text: String,   //Text inside the box, if title or text
+        src: String,    //Source url, if img
+        
         style: Object,  //Css key-value pairs
         top: Number,    //Distance from top edge of the slide in percentage
         left: Number,   //Distance from left edge of the slide in percentage
@@ -180,6 +183,41 @@ Show = new (function(){
         }
     };
     
+    var insertImage = function(){
+        var imgSelected = function(url){
+            if( url ){
+                var img = new Image()
+                img.onload = function(){
+                    var width = parseInt(this.width);
+                    var height = parseInt(this.height);
+                    var ratio = width / height;
+                    var slide = $('#slides');
+                    if( height > width ){
+                        height = (height / slide.height()) * 100;
+                        if( height > 80 )
+                            height = 80;
+                        width = ratio * height;
+                    }
+                    else {
+                        width = (width / slide.width()) * 100;
+                        if( width > 80 )
+                            width = 80;
+                        height = width / ratio;
+                    }
+                    activeElement = activeSlide.addElem({
+                            type: 'img',
+                            top: 10,
+                            left: 10,
+                            width: width,
+                            height: height,
+                            src : this.src,
+                        }).renderElem().data('elem');
+                }
+                img.src = url;
+            }
+        }
+        Base.prompt("Enter image url", imgSelected, '', 'Insert');
+    }
     var insertSlide = function(id){
         var newSlide = new Slide();
         var op = 'ds ' + newSlide.slideId;
@@ -432,15 +470,24 @@ Show = new (function(){
          */
         
         this.type = elem.type;
-        if ('fontSize' in elem)
-            this.fontSize = elem.fontSize;
-        else 
-            this.fontSize = 5;
+        if( this.type == 'title' || this.type == 'text' ){
+            if ('fontSize' in elem)
+                this.fontSize = elem.fontSize;
+            else 
+                this.fontSize = 6;
 
-        if ('text' in elem)
-            this.text = elem.text;
-        else 
-            this.text = "";
+            if ('text' in elem){
+                this.text = elem.text;
+            }
+            else 
+                this.text = "";
+        }
+        else if( this.type == 'img' ){
+            if ('src' in elem)
+                this.src = elem.src;
+            else 
+                this.src = '';
+        }
         if ('style' in elem)
             this.style = elem.style;
         else{
@@ -547,6 +594,61 @@ Show = new (function(){
                     slideObj.renderSlideSide();
                     return elemDOM;
                 }
+                else if(elem.type == 'img'){
+                    console.log(elem);
+                    //Parent element for image
+                    var elemDOM = $('<div class="elem slide-'+elem.type+'" id="'+elem.id+'">');
+                    elemDOM.css({
+                        top: (slide.height()*elem.top)/100,
+                        left: (slide.width()*elem.left)/100,
+                        height: (slide.height()*elem.height)/100,
+                        width: (slide.width()*elem.width)/100,
+                    });
+                    if(activeElement && activeElement == elem){
+                        $('.elem.active').removeClass('active');
+                        elemDOM.addClass('active');
+                    }
+                    
+                    //Actual element for text
+                    var elemImg = $('<img class="elem-img" src="'+elem.src+'">').css(elem.style).appendTo(elemDOM);
+                    
+                    elemDOM.data('elem',elem);
+                    elemDOM.appendTo(slide);
+                    
+                    //To move
+                    elemDOM.mousedown(moveInit);
+                    
+                    //To resize
+                    $('<div class="resize resize-r">')
+                        .mousedown(resizeRightInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-l">')
+                        .mousedown(resizeLeftInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-t">')
+                        .mousedown(resizeTopInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-b">')
+                        .mousedown(resizeBottomInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-tr">')
+                        .mousedown(resizeTopRightInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-tl">')
+                        .mousedown(resizeTopLeftInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-bl">')
+                        .mousedown(resizeBottomLeftInit)
+                        .appendTo(elemDOM);
+                    $('<div class="resize resize-br">')
+                        .mousedown(resizeBottomRightInit)
+                        .appendTo(elemDOM);
+                    
+                    elem.elemDOM = elemDOM;
+                    
+                    slideObj.renderSlideSide();
+                    return elemDOM;
+                }
             }
             else {
                 //Error: Elem type is not defined
@@ -572,6 +674,17 @@ Show = new (function(){
                         fontSize: (slide.height()*elem.fontSize)/100
                     });
                     var elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                    elemDOM.appendTo(slide);
+                }
+                else if(elem.type == 'img'){
+                    var elemDOM = $('<div class="elem-side slide-'+elem.type+'" id="'+slideId+elem.id+'">');
+                    elemDOM.css({
+                        top: (slide.height()*elem.top)/100,
+                        left: (slide.width()*elem.left)/100,
+                        height: (slide.height()*elem.height)/100,
+                        width: (slide.width()*elem.width)/100,
+                    });
+                    var elemImg = $('<img class="elem-img" src="'+elem.src+'">').css(elem.style).appendTo(elemDOM);
                     elemDOM.appendTo(slide);
                 }
             }
@@ -788,9 +901,7 @@ Show = new (function(){
                 case 'cs':
                     var moveTo = parseInt(op[1])+1;
                     var obj = JSON.parse(op.slice(2).join(' '));
-                    console.log(obj);
                     var slide = new Slide(obj);
-                    console.log(slide);
                     pastState += 'ds '+ slide.slideId;
                     slide.moveTo(moveTo);
                     Sidebar.addSlide(slide);
@@ -1258,7 +1369,6 @@ Show = new (function(){
     var elemColor = function(elem, mode, color){
         var style = new Object();
         var oldVal = elem.style[mode];
-        console.log(oldVal);
         style[mode] = color;
         elem.editElement({
             style: style
@@ -1325,236 +1435,237 @@ Show = new (function(){
          * Returns menus corresponding to element
          */
         
-        var format = {
-            type: 'main',
-            id: 'format',
-            title: 'Format', //Name of menu
-            icon: 'fa-format', //Font awesome icon name
-            groups: []
-        };
-        
-        var group;
-        
-        //Text align group
-        group = {
-            type: 'group',
-            id: 'align',
-            multiple: false,
-            required: true,
-            items: [
-                {
-                    type: 'button',
-                    icon: 'fa-align-left',
-                    id: 'left',
-                    title: 'Left align',
-                    onoff: true,
-                    callback: elemAlign
-                },
-                {
-                    type: 'button',
-                    icon: 'fa-align-center',
-                    id: 'center',
-                    title: 'Center align',
-                    onoff: true,
-                    callback: elemAlign
-                },
-                {
-                    type: 'button',
-                    icon: 'fa-align-right',
-                    id: 'right',
-                    title: 'Right align',
-                    onoff: true,
-                    callback: elemAlign
-                },
-                {
-                    type: 'button',
-                    icon: 'fa-align-justify',
-                    id: 'justify',
-                    title: 'Justify',
-                    onoff: true,
-                    callback: elemAlign
-                },
-            ]
-        };
-        if(('style' in elem) && ('textAlign' in elem.style)){
-            if(elem.style.textAlign == 'left')
+        if( elem.type == 'title' || elem.type == 'text' ){
+            var format = {
+                type: 'main',
+                id: 'format',
+                title: 'Format', //Name of menu
+                icon: 'fa-format', //Font awesome icon name
+                groups: []
+            };
+            
+            var group;
+            
+            //Text align group
+            group = {
+                type: 'group',
+                id: 'align',
+                multiple: false,
+                required: true,
+                items: [
+                    {
+                        type: 'button',
+                        icon: 'fa-align-left',
+                        id: 'left',
+                        title: 'Left align',
+                        onoff: true,
+                        callback: elemAlign
+                    },
+                    {
+                        type: 'button',
+                        icon: 'fa-align-center',
+                        id: 'center',
+                        title: 'Center align',
+                        onoff: true,
+                        callback: elemAlign
+                    },
+                    {
+                        type: 'button',
+                        icon: 'fa-align-right',
+                        id: 'right',
+                        title: 'Right align',
+                        onoff: true,
+                        callback: elemAlign
+                    },
+                    {
+                        type: 'button',
+                        icon: 'fa-align-justify',
+                        id: 'justify',
+                        title: 'Justify',
+                        onoff: true,
+                        callback: elemAlign
+                    },
+                ]
+            };
+            if(('style' in elem) && ('textAlign' in elem.style)){
+                if(elem.style.textAlign == 'left')
+                    group.items[0].currState = true;
+                else if(elem.style.textAlign == 'center')
+                    group.items[1].currState = true;
+                else if(elem.style.textAlign == 'right')
+                    group.items[2].currState = true;
+                else if(elem.style.textAlign == 'justify')
+                    group.items[3].currState = true;
+            }
+            else {
                 group.items[0].currState = true;
-            else if(elem.style.textAlign == 'center')
-                group.items[1].currState = true;
-            else if(elem.style.textAlign == 'right')
-                group.items[2].currState = true;
-            else if(elem.style.textAlign == 'justify')
-                group.items[3].currState = true;
+            }
+            
+            format.groups.push(group);
+            
+            //Formating group
+            group = {
+                type: 'group',
+                id: 'textDecor',
+                multiple: true,
+                required: false,
+                items: [
+                    {
+                        type: 'button',
+                        icon: 'fa-bold',
+                        id: 'bold',
+                        title: 'Bold',
+                        onoff: true,
+                        callback: elemFormatForMenu
+                    },
+                    {
+                        type: 'button',
+                        icon: 'fa-italic',
+                        id: 'italics',
+                        title: 'Italics',
+                        onoff: true,
+                        callback: elemFormatForMenu
+                    },
+                    {
+                        type: 'button',
+                        icon: 'fa-underline',
+                        id: 'underline',
+                        title: 'Underline',
+                        onoff: true,
+                        callback: elemFormatForMenu
+                    }
+                ]
+            };
+            if(('style' in elem)){
+                if( 'fontWeight' in elem.style && elem.style.fontWeight == 'bold')
+                    group.items[0].currState = true;
+                else 
+                    group.items[0].currState = false;
+                    
+                if( 'fontStyle' in elem.style && elem.style.fontStyle == 'italic')
+                    group.items[1].currState = true;
+                else 
+                    group.items[1].currState = false;
+                    
+                if( 'textDecoration' in elem.style && elem.style.textDecoration == 'underline')
+                    group.items[2].currState = true;
+                else 
+                    group.items[2].currState = false;
+            }
+            
+            format.groups.push(group);
+            
+            //Font size
+            group = {
+                type: 'group',
+                id: 'fontsize',
+                items: [
+                    {
+                        type: 'list',
+                        id: 'fontsize',
+                        title: 'Font size',
+                        list: [
+                            {
+                                id: '4',
+                                value: '4'
+                            },
+                            {
+                                id: '6',
+                                value: '6'
+                            },
+                            {
+                                id: '8',
+                                value: '8'
+                            },
+                            {
+                                id: '10',
+                                value: '10'
+                            },
+                            {
+                                id: '12',
+                                value: '12'
+                            },
+                            {
+                                id: '14',
+                                value: '14'
+                            },
+                            {
+                                id: '16',
+                                value: '16'
+                            },
+                            {
+                                id: '18',
+                                value: '18'
+                            },
+                            {
+                                id: '20',
+                                value: '20'
+                            }
+                        ],
+                        callback: elemEditForMenu
+                    },
+                ]
+            }
+            group.items[0].currState = elem.fontSize;
+            
+            format.groups.push(group);
+            
+            //Colors group
+            group = {
+                type: 'group',
+                id: 'colors',
+                items: [
+                    {
+                        type: 'color',
+                        icon: 'fa-circle',
+                        id: 'color',
+                        title: 'Font color',
+                        currState: '#000000',
+                        text: 'F',
+                        callback: elemColorForMenu
+                    },
+                    {
+                        type: 'color',
+                        icon: 'fa-circle',
+                        id: 'backgroundColor',
+                        title: 'Background color',
+                        currState: '#ffffff',
+                        text: 'B',
+                        callback: elemColorForMenu
+                    }
+                ]
+            }
+            if(('style' in elem) && ('color' in elem.style)){
+                group.items[0].currState = elem.style.color;
+            }
+            else {
+                group.items[0].currState = '#000';
+            }
+            
+            if(('style' in elem) && ('backgroundColor' in elem.style)){
+                group.items[1].currState = elem.style.backgroundColor;
+            }
+            else {
+                group.items[1].currState = '#fff';
+            }
+            
+            format.groups.push(group);
+            
+            group = {
+                type: 'group',
+                id: 'remove',
+                items: [
+                    {
+                        type: 'button',
+                        icon: 'fa-times',
+                        id: 'remove',
+                        title: 'Remove textbox',
+                        callback: removeElem
+                    }
+                ]
+            };
+            format.groups.push(group);
         }
-        else {
-            group.items[0].currState = true;
-        }
-        
-        format.groups.push(group);
-        
-        //Formating group
-        group = {
-            type: 'group',
-            id: 'textDecor',
-            multiple: true,
-            required: false,
-            items: [
-                {
-                    type: 'button',
-                    icon: 'fa-bold',
-                    id: 'bold',
-                    title: 'Bold',
-                    onoff: true,
-                    callback: elemFormatForMenu
-                },
-                {
-                    type: 'button',
-                    icon: 'fa-italic',
-                    id: 'italics',
-                    title: 'Italics',
-                    onoff: true,
-                    callback: elemFormatForMenu
-                },
-                {
-                    type: 'button',
-                    icon: 'fa-underline',
-                    id: 'underline',
-                    title: 'Underline',
-                    onoff: true,
-                    callback: elemFormatForMenu
-                }
-            ]
-        };
-        if(('style' in elem)){
-            if( 'fontWeight' in elem.style && elem.style.fontWeight == 'bold')
-                group.items[0].currState = true;
-            else 
-                group.items[0].currState = false;
-                
-            if( 'fontStyle' in elem.style && elem.style.fontStyle == 'italic')
-                group.items[1].currState = true;
-            else 
-                group.items[1].currState = false;
-                
-            if( 'textDecoration' in elem.style && elem.style.textDecoration == 'underline')
-                group.items[2].currState = true;
-            else 
-                group.items[2].currState = false;
-        }
-        
-        format.groups.push(group);
-        
-        //Font size
-        group = {
-            type: 'group',
-            id: 'fontsize',
-            items: [
-                {
-                    type: 'list',
-                    id: 'fontsize',
-                    title: 'Font size',
-                    list: [
-                        {
-                            id: '4',
-                            value: '4'
-                        },
-                        {
-                            id: '6',
-                            value: '6'
-                        },
-                        {
-                            id: '8',
-                            value: '8'
-                        },
-                        {
-                            id: '10',
-                            value: '10'
-                        },
-                        {
-                            id: '12',
-                            value: '12'
-                        },
-                        {
-                            id: '14',
-                            value: '14'
-                        },
-                        {
-                            id: '16',
-                            value: '16'
-                        },
-                        {
-                            id: '18',
-                            value: '18'
-                        },
-                        {
-                            id: '20',
-                            value: '20'
-                        }
-                    ],
-                    callback: elemEditForMenu
-                },
-            ]
-        }
-        group.items[0].currState = elem.fontSize;
-        
-        format.groups.push(group);
-        
-        //Colors group
-        group = {
-            type: 'group',
-            id: 'colors',
-            items: [
-                {
-                    type: 'color',
-                    icon: 'fa-circle',
-                    id: 'color',
-                    title: 'Font color',
-                    currState: '#000000',
-                    text: 'F',
-                    callback: elemColorForMenu
-                },
-                {
-                    type: 'color',
-                    icon: 'fa-circle',
-                    id: 'backgroundColor',
-                    title: 'Background color',
-                    currState: '#ffffff',
-                    text: 'B',
-                    callback: elemColorForMenu
-                }
-            ]
-        }
-        if(('style' in elem) && ('color' in elem.style)){
-            group.items[0].currState = elem.style.color;
-        }
-        else {
-            group.items[0].currState = '#000';
-        }
-        
-        if(('style' in elem) && ('backgroundColor' in elem.style)){
-            group.items[1].currState = elem.style.backgroundColor;
-        }
-        else {
-            group.items[1].currState = '#fff';
-        }
-        
-        format.groups.push(group);
-        
-        group = {
-            type: 'group',
-            id: 'remove',
-            items: [
-                {
-                    type: 'button',
-                    icon: 'fa-times',
-                    id: 'remove',
-                    title: 'Remove textbox',
-                    callback: removeElem
-                }
-            ]
-        };
-        format.groups.push(group);
-        
         /*var wordArt = {
             type: 'main',
             id: 'wordart',
@@ -1761,12 +1872,17 @@ Show = new (function(){
             }
         }
         
-        return [format, animation];
+        if( elem.type == 'title' || elem.type == 'text' ){
+            return [format, animation];
+        }
+        else {
+            return [animation];
+        }
         
     }
     var moveInit = function(ev){
         if(ev.which != 1)return;
-        
+        console.log(activeElement);
         var secondClick = false;
         if (activeElement){
             if(activeElement == $(ev.target).closest('.elem').data('elem')){
@@ -1778,14 +1894,30 @@ Show = new (function(){
                 activeElement.blur()
             }
         }
-        if ($(ev.target).closest('.elem-text').length == 0){
+        
+        elem = $(ev.target).closest('.elem').data('elem')
+        
+        if( elem.type == 'text' || elem.type == 'title' ){
+            if ($(ev.target).closest('.elem-text').length == 0){
+                ev.preventDefault();
+                var elem = $(this);
+                $('.elem.active').removeClass('active');
+                elem.addClass('active');
+                activeElement = elem.data('elem');
+                activeElement.focus();
+                return;
+            }
+        }
+        else if( elem.type == 'img' ){
+            console.log($(ev.target).closest('.elem-img'));
             ev.preventDefault();
-            var elem = $(this);
-            $('.elem.active').removeClass('active');
-            elem.addClass('active');
-            activeElement = elem.data('elem');
-            activeElement.focus();
-            return;
+            if ($(ev.target).closest('.elem-img').length == 0){
+                var elem = $(this);
+                $('.elem.active').removeClass('active');
+                elem.addClass('active');
+                activeElement = elem.data('elem');
+                return;
+            }
         }
         
         ev.preventDefault();
@@ -1853,6 +1985,7 @@ Show = new (function(){
         }
     }
     var moveElement = function(ev){
+        console.log(activeElement);
         if (ev.which != 1) return;
         var slide = $('.slide');
         var mouseXold = activeElement.lastMousePos.x;
@@ -1967,7 +2100,7 @@ Show = new (function(){
         
         $('.slide').unbind();
         $('.slide').remove();
-        var slideDOM = $('<div class="slide" id="'+slide.id+'">').appendTo('#slides');
+        var slideDOM = $('<div class="slide slide-show" id="'+slide.id+'">').appendTo('#slides');
         slideDOM.data('slide', slide);
         
         var contain = $('#slides');
@@ -2035,6 +2168,26 @@ Show = new (function(){
                 
                 //Actual element for text
                 elemText = $('<div class="elem-text">').html(elem.text).css(elem.style).appendTo(elemDOM);
+                
+                elemDOM.data('elem',elem);
+                elemDOM.appendTo(slide);
+                
+                elem.elemDOM = elemDOM;
+                
+                return elemDOM;
+            }
+            if(elem.type == 'img'){
+                //Parent element for image
+                var elemDOM = $('<div class="elem-pres slide-'+elem.type+'" id="'+elem.id+'">');
+                elemDOM.css({
+                    top: (slide.height()*elem.top)/100,
+                    left: (slide.width()*elem.left)/100,
+                    height: (slide.height()*elem.height)/100,
+                    width: (slide.width()*elem.width)/100,
+                });
+                
+                //Actual element for image
+                elemText = $('<img class="elem-img" src="'+elem.src+'">').css(elem.style).appendTo(elemDOM);
                 
                 elemDOM.data('elem',elem);
                 elemDOM.appendTo(slide);
@@ -2283,6 +2436,13 @@ Show = new (function(){
                             id: 'insert-text',
                             title: 'Textbox',
                             callback: selectOp
+                        },
+                        {
+                            type: 'button',
+                            icon: 'fa-picture-o',
+                            id: 'insert-img',
+                            title: 'Image',
+                            callback: insertImage
                         },
                         {
                             type: 'button',

@@ -1101,7 +1101,7 @@ Akruti = new (function() {
                     }
                 }
                 if ( pastState.length != 0) {
-                    Base.addOp({
+                    sendOp({
                         op:'m',
                         ar:pastState
                     },{
@@ -1128,7 +1128,7 @@ Akruti = new (function() {
                     }
                 }
                 if ( pastState.length != 0 ) {
-                    Base.addOp({
+                    sendOp({
                         op:'m',
                         ar:pastState
                     },{
