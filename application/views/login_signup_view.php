@@ -64,7 +64,7 @@
                     </div>
                     <div class="form-items">
                         <label for="signup-repassword">Re-enter Password</label>
-                        <input type="password" id="signup-repassword" name="password_conf" class="textbox" placeholder="Re-enter Password" required>
+                        <input type="password" id="signup-repassword" name="password_conf" class="textbox" required>
                     </div>
                     <input type="submit" class="btn" value="Sign up">
                 <?php echo form_close(); ?>

@@ -1,6 +1,12 @@
 $(document).ready(function() {
     setSize();
-    $('input').removeAttr('placeholder');
+    var current = window.location.hash.replace('#','');
+    if (current == 'signup') {
+        $('#small-circle').css('transition','none').css('transform','rotate(180deg)');
+        $('#login-title').hide();
+        $('#signup-title').show();
+    }
+    $('#small-circle').css('transition','all 0.5s ease 0.1s')
     $('#show-signup').click(function(){
         $('#small-circle').css({
             transform:'rotate(180deg)'
