@@ -1362,12 +1362,12 @@ Akruti = new (function() {
                                     icon:'fa-th-list',
                                     currState:cStrokeStyle,
                                     list:[{"id": 0, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='none' stroke='black'><svg>"},
-                                          {"id": 1, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='5 5' stroke='black'><svg>"},
-                                          {"id": 2, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 3 4 3' stroke='black'><svg>"},
-                                          {"id": 3, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 3 4 3 4 3' stroke='black'><svg>"},
-                                          {"id": 4, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='1 3' stroke='black'><svg>"},
-                                          {"id": 5, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 4 1 4' stroke='black'><svg>"},
-                                          {"id": 6, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 4 1 4 1 4' stroke='black'><svg>"},
+                                          {"id": 1, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='5 8' stroke='black'><svg>"},
+                                          {"id": 2, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 7 4 7' stroke='black'><svg>"},
+                                          {"id": 3, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 7 4 7 4 7' stroke='black'><svg>"},
+                                          {"id": 4, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='1 7' stroke='black'><svg>"},
+                                          {"id": 5, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 6 1 6' stroke='black'><svg>"},
+                                          {"id": 6, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 6 1 6 1 6' stroke='black'><svg>"},
                                            ],
                                     callback:this.setStrokeStyle
                                 }
