@@ -1,0 +1,115 @@
+* {
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+}
+body {
+    background-color:#111;
+    color:white;
+    font-family:Sans Serif;
+}
+#big-circle {
+    background-color:#057cb8;
+    position:absolute;
+    border-radius:5000px;
+}
+#small-circle {
+    background-color:#111;
+    position:absolute;
+    border-radius:5000px;
+}
+
+#big-title {
+    position:absolute;
+    display:inline-block;
+    margin:15px;
+    letter-spacing:2px;
+    font-size:3em;
+    text-shadow:0px 0px 7px #aaa;
+}
+.small-title {
+    margin:10px;
+}
+#signup-title {
+    display:none;
+}
+
+#login-container, #signup-container {
+    display:inline-block;
+    position:absolute;
+    background-color:#111;
+    text-align:center;
+    border-radius:8px;
+    padding:20px;
+    box-shadow:0px 0px 3px 2px white;
+}
+
+.form-items {
+    font-size:1em;
+    margin:5px 0;
+}
+label {
+    display:inline-block;
+    text-align: right;
+    margin-right:3px;
+}
+
+#login-container label {
+    width:100px;
+}
+
+#signup-container label {
+    width:200px;
+}
+
+.textbox {
+    width:200px;
+    right:0;
+    border-radius:5px;
+    border:1px solid #ccc;
+    padding:0.4em 0.4em;
+    font-size:1em;
+}
+.textbox:focus {
+    border:1px solid #057cb8;
+    box-shadow: 0 0 8px 2px #057cb8;
+}
+
+.btn {
+    background-color: black;
+    color:white;
+    font-size: 1em;
+    border:1px solid grey;
+    border-radius:4px;
+    padding: 5px 15px;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.go-to-other {
+    text-decoration: underline;
+}
+.go-to-other:hover, .go-to-other:focus {
+    cursor: pointer;
+    color:#057cb8;
+}
+
+#small-circle {
+    transform:rotate(0deg);
+    -webkit-transform:rotate(0deg);
+    transition:all 0.5s ease 0.1s;
+}
+
+#small-circle:hover {
+    transition:all 0.5s ease 0.1s;
+}
+
+#signup-container {
+    transform:rotate(180deg);
+    -webkit-transform:rotate(180deg);
+}
+.errors {
+    color:#a00;
+}
