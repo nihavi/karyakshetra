@@ -37,7 +37,7 @@ class File_model extends CI_Model {
         return $file_id;
     }
     
-    function save_as($file_name, $file_data, $ftype = 0, $user_id = -1)
+    function save_as($file_name, $file_data, $ftype = 0, $user_id = null, $uploaded = false)
     {
         $this->db->trans_start();
         
@@ -69,16 +69,15 @@ class File_model extends CI_Model {
         //Insert file path into DB
         $this->db->set('path', $file_path);
         $this->db->update('files');
-
-        //Add file permissions, default to `public` for now
         
-        $this->db->where('gname', 'public');
-        $query = $this->db->get('groups');
-        
-        if ($user_id == -1)
+        if ($user_id == null)
         {
+            $this->db->where('gname', 'public');
+            $query = $this->db->get('groups');
             $user_id = $query->row()->gid;
         }
+        
+        //Add file permissions, default to `public` for now
         
         $this->db->insert('filepermissions', array(
                 'gid'       => $user_id,
@@ -88,11 +87,18 @@ class File_model extends CI_Model {
         );
         
         //Actual file save call
-        $this->save($file_id, $file_data, $file_path, FALSE);
+        if (! $uploaded)
+        {
+            $this->save($file_id, $file_data, $file_path, FALSE);
+            $this->db->trans_complete();
+            return $file_id;
+        }
+        else
+        {
+            $this->db->trans_complete();
+            return $file_path;
+        }
         
-        $this->db->trans_complete();
-        
-        return $file_id;
     }
     
     function open($file_id){
@@ -142,6 +148,20 @@ class File_model extends CI_Model {
         {
             return false;
         }
+    }
+    
+    function extract_upload($file_name, $file_ext, $file_path)
+    {
+        $module = substr($file_ext, 1);
+        $this->load->helper('module_helper');
+        $ftype = module_id($module);
+        
+        $save_path = $this->save_as($file_name, null, $ftype, $this->session->userdata('uid'), true);
+    
+        $zip = new ZipArchive; 
+        $zip->open($file_path); 
+        $zip->extractTo($save_path); 
+        $zip->close();
     }
     
 }

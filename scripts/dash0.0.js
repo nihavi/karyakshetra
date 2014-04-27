@@ -1,5 +1,7 @@
 Dash = new(function(){
     
+    var baseUrl;
+    
     this.exclude = ['defaultMenu'];
     
     function download() {
@@ -24,9 +26,27 @@ Dash = new(function(){
         }
     }
     
+    function upload()
+    {
+        var modal = Base.openModal(null, null, function(){
+                callback(false);
+            });
+        
+        $.ajax({
+            'type': 'GET',
+            'url' : baseUrl + 'upload/',
+            'success' : function(data) {
+                $(modal).html(data);
+            }
+        });
+    }
+    
     this.init = function(){
+        
+        baseUrl = response.baseUrl;
+        
         var newFile = $('<div></div>');
-        //var newAkruti = $('<a>New Akruti</a>').appendTo(newFile);
+
         var modules = [
             {
                 'name'  : 'Akruti',
@@ -115,9 +135,15 @@ Dash = new(function(){
                                 icon: 'fa-cloud-download',
                                 title: 'Download',
                                 callback: download
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-cloud-upload',
+                                title: 'Upload',
+                                callback: upload
                             }
                         ]
-                    }
+                    },
                 ]
             }
         ];
