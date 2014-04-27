@@ -1246,7 +1246,7 @@ Akruti = new (function() {
                                 onoff: true,
                                 currState:false,
                                 callback: editor.setMode
-                            },
+                            }
                         ]
                     }
                 ]   //Groups inside this menu
