@@ -164,6 +164,23 @@ i.fa.fa-cfw {
     text-shadow: none;
 }
 
+.btn-home {
+    padding: 13px 18px 13px 13px;
+    background-color: #FF7417;
+}
+.btn-home i {
+    margin: 0;
+    padding: 0;
+}
+.btn-home:hover {
+    background-color: #dd500f;
+}
+.a-home {
+    display: inline-block;
+    color: inherit;
+    float: left;
+}
+
 .sep {
     float: left;
     color: white;
@@ -426,4 +443,48 @@ i.fa.fa-cfw {
 .modal-cont > .modal > .modal-close:active {
     color: red;
     opacity: 0.9;
+}
+
+/*
+ * Style for prompt
+ */
+.prompt-text {
+    margin: 10px;
+    line-height: 1.2em;
+}
+
+.prompt-in {
+    width: 90%;
+}
+
+.prompt-btn {
+    margin: 10px;
+}
+.prompt-btn > .button{
+    min-width: 90px;
+}
+
+/*
+ * Classes and styles for module
+ * To standardize certain common interface
+ */
+
+.button{
+    font-size:20px;
+    color:white;
+    text-align:center;
+    margin-right:5px;
+    margin-left:5px;
+    background-color:#498af2;
+    border-style:solid;
+    border-color:blue;
+    border-width:1px;
+    border-radius:2px;
+    box-shadow:0px 0px 1px black;
+}
+.button:hover{
+    box-shadow:0px 0px 2px black;
+}
+.button:active{
+    box-shadow:0px 0px 1px black inset;
 }

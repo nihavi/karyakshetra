@@ -2,9 +2,9 @@
 
 class Download extends CI_Controller {
     
-    function file($fid = '')
+    function file($fid = null)
     {
-        if ($fid !== '')
+        if ($fid)
         {
             $this->load->model('File_model', 'file');
             
@@ -30,9 +30,9 @@ class Download extends CI_Controller {
         }
     }
     
-    function files($flist = '')
+    function files($flist = null)
     {
-        if ($flist !== '')
+        if ($flist)
         {
             $flist = explode("-", $flist);
             

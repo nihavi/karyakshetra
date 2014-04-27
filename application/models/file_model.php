@@ -120,13 +120,13 @@ class File_model extends CI_Model {
 
     function get_files_of_user($group_id)
     {
-		$this->db->select('files.*');
-		$this->db->from('files, filepermissions');
-		$this->db->where('files.fid = filepermissions.fid');
-		$this->db->where("filepermissions.gid = $group_id");
-        $this->db->order_by('modified', 'asc');
-		$query = $this->db->get();
-		
+        $this->db->select('files.*');
+        $this->db->from('files, filepermissions');
+        $this->db->where('files.fid = filepermissions.fid');
+        $this->db->where("filepermissions.gid = $group_id");
+        $this->db->order_by('modified', 'desc');
+        $query = $this->db->get();
+        
         return $query->result();
     }
     
