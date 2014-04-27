@@ -23,7 +23,6 @@ var Aalekhan = new (function(){
     this.getFile = function(){
         var graph={
             'Settings': {
-                'Created': new Date().toString(),
                 'zoomX': zX,
                 'zoomY': zY,
                 'showGrid': sG,
