@@ -787,11 +787,10 @@ Akruti = new (function() {
                 else {
                     $(parent).html('No File opened')
                 }
-                
                 Base.hideMenu(true);
             }
             this.resize();
-            this.zoom(1);
+            this.zoom('fit');
         }
     };
     
@@ -1248,24 +1247,6 @@ Akruti = new (function() {
                                 currState:false,
                                 callback: editor.setMode
                             },
-                            {
-                                type: 'button',
-                                icon: 'fa-magic',
-                                id: 'magicMode',
-                                title:'Magic',
-                                onoff: true,
-                                currState:false,
-                                callback: editor.setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-bolt',
-                                id: 'lightningMode',
-                                title:'Lightning',
-                                onoff: true,
-                                currState:false,
-                                callback: editor.setMode
-                            }
                         ]
                     }
                 ]   //Groups inside this menu
@@ -1361,13 +1342,13 @@ Akruti = new (function() {
                                     title:'Stroke Style',
                                     icon:'fa-th-list',
                                     currState:cStrokeStyle,
-                                    list:[{"id": 0, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='none' stroke='black'><svg>"},
-                                          {"id": 1, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='5 8' stroke='black'><svg>"},
-                                          {"id": 2, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 7 4 7' stroke='black'><svg>"},
-                                          {"id": 3, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 7 4 7 4 7' stroke='black'><svg>"},
-                                          {"id": 4, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='1 7' stroke='black'><svg>"},
-                                          {"id": 5, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 6 1 6' stroke='black'><svg>"},
-                                          {"id": 6, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 6 1 6 1 6' stroke='black'><svg>"},
+                                    list:[{"id": 0, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='none'          stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 1, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='5 8'           stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 2, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='12 7 4 7'      stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 3, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='12 7 4 7 4 7'  stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 4, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='3 7'           stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 5, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='10 6 1 6'      stroke='black' stroke-width='2'><svg>"},
+                                          {"id": 6, "value":"<svg height='3' width='75'><line x1='1' y1='0' x2='75' y2='0' stroke-dasharray='10 6 1 6 1 6'  stroke='black' stroke-width='2'><svg>"},
                                            ],
                                     callback:this.setStrokeStyle
                                 }
