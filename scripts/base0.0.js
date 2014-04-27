@@ -76,6 +76,7 @@ Base = new (function(){
      * File save mechanism
      */
     var currFileId;
+    var lastSavedFile;
     
     var saveFile = function(filedata, filename){
         var data = {
@@ -100,6 +101,7 @@ Base = new (function(){
             data: data,
             success: function(data){
                 currFileId = data;
+                lastSavedFile = filedata;
                 console.log('File saved with id '+data);
             },
             error: function(){
@@ -684,6 +686,7 @@ Base = new (function(){
             else {
                 currFileId = response.fileId;
                 var file = response.fileData;
+                lastSavedFile = file;
             }
         }
         
@@ -722,6 +725,14 @@ Base = new (function(){
         //Call module's init
         module.init(edit.get(0), file, moduleMode);
         module.resize();
+                
+        window.onbeforeunload = function(){
+            //To prevent unload if file is changed
+            if( 'getFile' in module ){
+                if( module.getFile() != lastSavedFile )
+                    return "You have not saved the file yet. You may lose the changes.";
+            }
+        };
     }
 
     function createColorPicker() {
@@ -807,7 +818,7 @@ Base = new (function(){
         mainMenu.empty();
         $('#subMenu').remove();
         
-        var homeLink = $('<a class="a-home" target="_blank" href="'+baseUrl+'">')
+        var homeLink = $('<a class="a-home" href="'+baseUrl+'">')
             .append($('<div class="btn btn-big btn-home"></div>')
                 .append($('<i class="fa fa-home"></i>')))
             .appendTo(mainMenu);
