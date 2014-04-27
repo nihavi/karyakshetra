@@ -994,7 +994,7 @@ Akruti = new (function() {
         this.fillColor   = 'none';
         this.opacity     = 1;
         this.dasharray   = 'none';
-        var dashOptions = ['none', '5 5', '12 3 4 3', '12 3 4 3 4 3', '1 3', '10 4 1 4', '10 4 1 4 1 4'];
+        var dashOptions = ['none', '5 8', '12 7 4 7', '12 7 4 7 4 7', '3 7', '10 6 1 6', '10 6 1 6 1 6'];
         
         actives = new Object();
         actives.list = new Array();
