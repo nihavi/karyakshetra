@@ -55,8 +55,14 @@ a {
     text-align: center;
 }
 
-.btn-big, .account-options {
+.btn-big,
+.account-options,
+#file-name {
    padding: 13px 22px 13px 13px;
+}
+
+#file-name {
+    cursor: default;
 }
 
 .btn i {
@@ -166,7 +172,7 @@ i.fa.fa-cfw {
 
 .btn-home {
     padding: 13px 18px 13px 13px;
-    background-color: #FF7417;
+    background-color: darkorange;
 }
 .btn-home i {
     margin: 0;

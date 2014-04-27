@@ -2,7 +2,7 @@ Dash = new(function(){
     
     var baseUrl;
     
-    this.exclude = ['defaultMenu'];
+    this.exclude = ['defaultMenu', 'fileName'];
     
     function download() {
         
@@ -92,10 +92,12 @@ Dash = new(function(){
                     a.attr('target', '_blank');
                     a.attr('href', file.module + '/' + file.id);
                     a.text(file.name);
-            
                     f.append($('<input class="file-selector" type="checkbox">'));
             
                     f.append(a);
+                    file.module = file.module.charAt(0).toUpperCase() + file.module.slice(1);
+                    var moduleLabel = $('<span class="disabled module-label pull-right">' + file.module + ' file</span>');
+                    f.append(moduleLabel);
                     
                     f.on('click', function(e) {
                         
