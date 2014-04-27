@@ -30,6 +30,7 @@
                     }
                 ?>
                 </div>
+                <p><a href="<?php echo base_url() . 'account/login';?>">Login</a> if you already have an account.</p>
         </div>
     </body>
 </html>

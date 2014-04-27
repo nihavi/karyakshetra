@@ -24,9 +24,10 @@
                 <?php echo validation_errors('<div class="errors"></div>'); ?>
                 <?php
                     if(!empty($invalid) && $invalid)
-                        echo '<p>The username or password you entered is incorrect.</p>';
+                        echo '<p>The username or password you entered is incorrect.</p>'; 
                 ?>
                 </div>
+                <p><a href="<?php echo base_url() . 'account/signup';?>">Sign up</a> now if you don't have an account yet.</p>
         </div>
     </body>
 </html>
