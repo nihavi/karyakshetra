@@ -298,7 +298,7 @@ var Aalekhan = new (function(){
         });
         
         $(window).bind('keydown', function(ev){
-            if((ev.keyCode==9 && event.shiftKey) || ev.keyCode==38){
+            if((ev.keyCode==9 && ev.shiftKey) || ev.keyCode==38){
                 var focus = $('.expr.active').index() - 1;
                 if(focus >= 0){
                     $('.expr-in').eq(focus).show().focus();
