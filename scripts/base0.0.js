@@ -88,7 +88,7 @@ Base = new (function(){
         var url;
         if( currFileId ){
             url = baseUrl + 'save/file/';
-            data.id = currFileId;
+            postData.id = currFileId;
         }
         else {
             url = baseUrl + 'save/newfile/';
