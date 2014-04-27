@@ -1910,8 +1910,8 @@ Show = new (function(){
         }
         else if( elem.type == 'img' ){
             console.log($(ev.target).closest('.elem-img'));
+            ev.preventDefault();
             if ($(ev.target).closest('.elem-img').length == 0){
-                ev.preventDefault();
                 var elem = $(this);
                 $('.elem.active').removeClass('active');
                 elem.addClass('active');
