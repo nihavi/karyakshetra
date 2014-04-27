@@ -60,8 +60,9 @@
 {
     type: 'list',
     id: String, //Id selected by module
-    title: String, //Name of button
-    currState: String, //Default size
+    title: String,  //Name of button
+    state: Boolean, //Is state maintained, default true
+    currState: String, //Default state
     list = Array, //Array of Objects. Object is defined as {id: String, value: String}
     callback: Function(String id, Number selectedItemId)    //Callback on change
 }
@@ -959,9 +960,12 @@ Base = new (function(){
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
-                                            elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
                                             item.callback(item.id, selected);
-                                            item.currState = selected;
+                                            
+                                            if( !('state' in item) || item.state ){
+                                                elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
+                                                item.currState = selected;
+                                            }
                                         });
                                     }
                                     
@@ -979,10 +983,15 @@ Base = new (function(){
                                     var text = $('<span class="btn-intext"></span>').prependTo(menuItem);
                                     
                                     if('currState' in item){
-                                        for (var i=0;i<item.list.length;++i) {
-                                            if (item.list[i].id == item.currState) {
-                                                text.html(item.list[i].value);
+                                        if( !('state' in item) || item.state ){
+                                            for (var i=0;i<item.list.length;++i) {
+                                                if (item.list[i].id == item.currState) {
+                                                    text.html(item.list[i].value);
+                                                }
                                             }
+                                        }
+                                        else {
+                                            text.html(item.currState);
                                         }
                                     }
                                     else {
