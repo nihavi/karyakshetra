@@ -81,7 +81,7 @@ Base = new (function(){
     var fileName;
 
     var saveFile = function(filedata, filename){
-        var data = {
+        var postData = {
             file: filedata,
             module: moduleId,
         }
@@ -93,18 +93,20 @@ Base = new (function(){
         else {
             url = baseUrl + 'save/newfile/';
             if( filename )
-                data.filename = filename;
+                postData.filename = filename;
             else
-                data.filename = 'New file';
+                postData.filename = 'Untitled file';
         }
         $.ajax({
             type: 'POST',
             url: url,
-            data: data,
+            data: postData,
             success: function(data){
                 currFileId = data;
                 lastSavedFile = filedata;
-                console.log('File saved with id '+data);
+                console.log('File saved with id ' + data);
+                console.log(postData.filename);
+                $('#file-name').text(postData.filename);
             },
             error: function(){
                 console.log('File not saved');
@@ -538,7 +540,7 @@ Base = new (function(){
                 Base.prompt("Enter file name", function(filename){
                     if( !filename )return;
                     saveFile(data, filename);
-                }, 'New file', 'Save');
+                }, 'Untitled file', 'Save');
             }
             else {
                 saveFile(data);
@@ -660,6 +662,9 @@ Base = new (function(){
                     case 'defaultMenu':
                         showDefaultMenu = false;
                         break;
+                    case 'fileName':
+                        showFileName = false;
+                        break;
                 }
             }
         }
@@ -771,6 +776,7 @@ Base = new (function(){
     
     var activeMenu;
     var showDefaultMenu = true;
+    var showFileName = true;
     this.updateMenu = function(menuObject){
         //Will be called by module with menuObject
         //Will merge defaultMenus and menuObject and create menu
@@ -823,13 +829,15 @@ Base = new (function(){
         
         var homeLink = $('<a class="a-home" href="'+baseUrl+'">')
             .append($('<div class="btn btn-big btn-home"></div>')
-                .append($('<i class="fa fa-home"></i>')))
+            .append($('<i class="fa fa-home"></i>')))
             .appendTo(mainMenu);
 
         var accountOptions = $('<a href="' + baseUrl +'account/logout/" class="account-options pull-right" >Logout</a>').appendTo(mainMenu);
         
-        $('<span style="color:#aaa;" class="account-options pull-right">' + ((fileName) ? fileName : 'Untitled file') + '</span>').appendTo(mainMenu);
-
+        if (showFileName) {    
+            $('<span style="color:#aaa;" id="file-name" class=" pull-right">' + ((fileName) ? fileName : 'Untitled file') + '</span>').appendTo(mainMenu);
+        }
+        
         for(var i = 0; i<menuObject.length; ++i){
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){

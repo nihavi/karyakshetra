@@ -1,6 +1,8 @@
 Dash = new(function(){
     
-    this.exclude = ['defaultMenu'];
+    var baseUrl;
+    
+    this.exclude = ['defaultMenu', 'fileName'];
     
     function download() {
         
@@ -24,9 +26,27 @@ Dash = new(function(){
         }
     }
     
+    function upload()
+    {
+        var modal = Base.openModal(null, null, function(){
+                callback(false);
+            });
+        
+        $.ajax({
+            'type': 'GET',
+            'url' : baseUrl + 'upload/',
+            'success' : function(data) {
+                $(modal).html(data);
+            }
+        });
+    }
+    
     this.init = function(){
+        
+        baseUrl = response.baseUrl;
+        
         var newFile = $('<div></div>');
-        //var newAkruti = $('<a>New Akruti</a>').appendTo(newFile);
+
         var modules = [
             {
                 'name'  : 'Akruti',
@@ -72,10 +92,12 @@ Dash = new(function(){
                     a.attr('target', '_blank');
                     a.attr('href', file.module + '/' + file.id);
                     a.text(file.name);
-            
                     f.append($('<input class="file-selector" type="checkbox">'));
             
                     f.append(a);
+                    file.module = file.module.charAt(0).toUpperCase() + file.module.slice(1);
+                    var moduleLabel = $('<span class="disabled module-label pull-right">' + file.module + ' file</span>');
+                    f.append(moduleLabel);
                     
                     f.on('click', function(e) {
                         
@@ -115,9 +137,15 @@ Dash = new(function(){
                                 icon: 'fa-cloud-download',
                                 title: 'Download',
                                 callback: download
+                            },
+                            {
+                                type: 'button',
+                                icon: 'fa-cloud-upload',
+                                title: 'Upload',
+                                callback: upload
                             }
                         ]
-                    }
+                    },
                 ]
             }
         ];

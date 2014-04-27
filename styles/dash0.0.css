@@ -1,3 +1,11 @@
+.disabled {
+    color: #666;
+}
+
+.file.focus .disabled {
+    color: white;
+}
+
 .column {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -10,6 +18,8 @@
 }
 
 .file-list {
+    height: 100%;
+    overflow: auto;
     background-color: #fafafa;
     width: 80%;
     border: 1px solid #ccc;
@@ -87,4 +97,11 @@ input[type=checkbox].file-selector {
     background-color: #00a400;
     color: white;
     transition: 0.3s background-color, 0.3s color;
+}
+
+.module-label {
+    width: 15%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
