@@ -65,11 +65,12 @@ class Base extends CI_Controller
         
         if( $file_id ){
             $this->load->model('File_model', 'file');
-            $file_data = $this->file->open($file_id);
+            $file = $this->file->open($file_id);
             
-            if($file_data){
+            if($file){
                 $data['file_id'] = $file_id;
-                $data['file_data'] = $file_data;
+                $data['file_data'] = $file['data'];
+                $data['file_name'] = $file['name'];
             }
         }
         

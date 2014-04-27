@@ -76,7 +76,7 @@ Base = new (function(){
      * File save mechanism
      */
     var currFileId;
-    
+    var fileName;
     var saveFile = function(filedata, filename){
         var data = {
             file: filedata,
@@ -821,6 +821,7 @@ Base = new (function(){
             else {
                 currFileId = response.fileId;
                 var file = response.fileData;
+                fileName = response.fileName;
             }
         }
         
@@ -943,6 +944,13 @@ Base = new (function(){
         menuMeta = new Array();
         mainMenu.empty();
         $('#subMenu').remove();
+        
+        var accountOptions = $('<a href="' + baseUrl +'account/logout/" class="account-options pull-right" >Logout</a>').appendTo(mainMenu);
+        
+        $('<span style="color:#aaa;" class="account-options pull-right">' + ((fileName) ? fileName : 'Untitled file') + '</span>').appendTo(mainMenu);
+        
+        
+        
         for(var i = 0; i<menuObject.length; ++i){
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){
@@ -956,6 +964,7 @@ Base = new (function(){
                     //Insert menu into DOM
                     id = 'menuHead'+menuId;
                     var menuItem = $('<div class="btn btn-big" id="'+id+'"></div>').appendTo(mainMenu);
+                    
                     menuItem.click(activateMenu);
                     $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                     $('<span> '+item.title+'</span>').appendTo(menuItem);
