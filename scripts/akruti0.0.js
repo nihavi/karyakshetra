@@ -1247,25 +1247,8 @@ Akruti = new (function() {
                                 onoff: true,
                                 currState:false,
                                 callback: editor.setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-magic',
-                                id: 'magicMode',
-                                title:'Magic',
-                                onoff: true,
-                                currState:false,
-                                callback: editor.setMode
-                            },
-                            {
-                                type: 'button',
-                                icon: 'fa-bolt',
-                                id: 'lightningMode',
-                                title:'Lightning',
-                                onoff: true,
-                                currState:false,
-                                callback: editor.setMode
                             }
+                            
                         ]
                     }
                 ]   //Groups inside this menu
