@@ -173,7 +173,6 @@ var Aalekhan = new (function(){
             $('.expr.active').removeClass('active');
             $(this).closest('.expr').addClass('active');
             Base.updateMenu(defaultMenu.concat(formatMenu(id)));
-            Base.focusMenu('expr');
         });
         
         input.blur(function(ev){
