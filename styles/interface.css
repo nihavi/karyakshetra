@@ -375,3 +375,55 @@ i.fa.fa-cfw {
 .account-options:hover {
     color: white;
 }
+
+/*
+ * Modal box
+ */
+.modal-cont {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    text-align:center;
+    background-color: rgba(255,255,255,0.4);
+    z-index: 5000;
+}
+.modal-cont:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -0.25em; /* Adjusts for spacing */
+}
+.modal-cont > .modal {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    max-width: 480px;
+    min-width: 120px;
+    max-height: 80%;
+    overflow: auto;
+    padding: 15px;
+    background-color: rgba(255,255,255,0.9);
+    box-shadow: 0px 0px 5px 2px #888;
+    border-radius: 5px;
+}
+.modal-cont > .modal > .modal-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 1em;
+    width: 1em;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.5;
+}
+.modal-cont > .modal > .modal-close:hover {
+    opacity: 0.9;
+}
+.modal-cont > .modal > .modal-close:active {
+    color: red;
+    opacity: 0.9;
+}

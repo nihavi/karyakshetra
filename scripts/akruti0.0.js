@@ -25,7 +25,7 @@ Akruti = new (function() {
             'y2':'y2',
             'sc':'stroke',
             'sw':'stroke-width',
-            //'sd': 'stroke-dasharray',
+            'sd': 'stroke-dasharray',
             'o':'opacity',
         },
         sA:{
@@ -42,7 +42,7 @@ Akruti = new (function() {
             'sc':'stroke',
             'sw':'stroke-width',
             'f' :'fill',
-            //'sd': 'stroke-dasharray',
+            'sd': 'stroke-dasharray',
             'o':'opacity',
         },
         r:{
@@ -62,18 +62,17 @@ Akruti = new (function() {
             'd': 'd',
             'sc': 'stroke',
             'sw': 'stroke-width',
-            //'sd': 'stroke-dasharray',
+            'sd': 'stroke-dasharray',
             'o': 'opacity',
         },
     };
     
     var Svg = function(arg, parent, editable) {
-
+    
         /* Creating DOM element */
         this.element = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg');
 
         /* Setting ID */
-        this.pid = parent.id;
         this.id = (arg.id)?arg.id:'s'+svgId++;
         this.element.setAttribute( 'id', this.id );
 
@@ -100,7 +99,7 @@ Akruti = new (function() {
         this.element.appendChild(this.g);
 
 
-        /* Making page background */
+        /* Making alpha background | for page*/
         {
             var alphaSize = 15;
             var colorDark = '#ccc';
@@ -120,6 +119,7 @@ Akruti = new (function() {
                 rects[i] = document.createElementNS('http://www.w3.org/2000/svg','rect');
                 rects[i].setAttribute('height',alphaSize);
                 rects[i].setAttribute('width',alphaSize);
+                rects[i].setAttribute('opacity',0.6);
                 pattern.appendChild(rects[i]);
             }
             rects[0].setAttribute('x', 0);
@@ -154,20 +154,17 @@ Akruti = new (function() {
             this.g.appendChild(this.page);
         }
         
-        /* Adding a common class to page and svg */
-        this.page.classList.add('drawable-area');
-        this.element.classList.add('drawable-area');
 
         /* Getting page height width */
         this.pageH = arg.h;
         this.pageW = arg.w;
         this.page.setAttribute('width', this.pageW);
         this.page.setAttribute('height', this.pageH);
-
+        
         /* Default required svg Height Width | svgH and svgW can't be less than this */
         this.reqH = this.pageH;
         this.reqW = this.pageW;
-
+        
         /* Calculating dimensions of svg */
         var parentDimension = parent.getBoundingClientRect();
         var h = parentDimension.height;
@@ -184,7 +181,7 @@ Akruti = new (function() {
 
         /* Setting ondrag to false */
         this.element.ondragstart = function(e){return false;};
-
+        
         /* appending my Object in DOM object and adding DOM element to its parent*/
         $(this.element).data('myObject',this);
         parent.appendChild(this.element);
@@ -193,7 +190,7 @@ Akruti = new (function() {
         if (editable) {
             editor.makeEditable(this.element);
         }
-
+        
         /* For Children of Svg */
         this.childrenId = 1;
         this.children = new Array();
@@ -667,6 +664,7 @@ Akruti = new (function() {
         this.rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         
         this.pid = mySvgObject.id;
+        this.g.classList.add('select-area');
         this.rect.classList.add('select-area');
         this.rect.setAttribute('fill','none');
         this.rect.setAttribute('stroke','#0096fd');
@@ -775,8 +773,8 @@ Akruti = new (function() {
                 }
                 else {
                     var arg = {
-                        h:550,
-                        w:1000
+                        h:450,
+                        w:800
                     };
                     var svgObject = new Svg(arg, parent, isEditable);
                     currentSvg = allSvg[svgObject.id] = svgObject;
@@ -787,13 +785,20 @@ Akruti = new (function() {
                 Base.stream(true);
                 editor.init();
             }
-            else if( mode == 'view' ){
+            else if( mode == 'view' ) {
                 isEditable = false;
-                Base.listen(true);
+                if (fileData) {
+                    Akruti.openFile(fileData);
+                    Base.listen(true);
+                }
+                else {
+                    $(parent).html('No File opened')
+                }
+                
                 Base.hideMenu(true);
-                Akruti.zoom('fit');
             }
             this.resize();
+            this.zoom('fit');
         }
     };
 
@@ -960,7 +965,33 @@ Akruti = new (function() {
             myPerformOp(data.ar[i], true)
         }
         //return svgObject;
-    }
+    };
+    
+    this.exportAs = {
+        svg:function(){
+            var xmltag = '<?xml version="1.0" encoding="UTF-8"?>';
+            var doctype = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+            var svg = currentSvg;
+            var elem = $(svg.element).clone();
+            elem.removeAttr('style');
+            var page = elem.find('#'+svg.id+'p').attr('stroke-width',0);
+            if (page.attr('fill') == 'url(#alpha)') {
+                page.attr('fill','none');
+            };
+            elem.find('.drawing-elements').removeAttr('style').removeAttr('class');
+            elem.find('defs').remove();
+            elem.find('.select-area').remove();
+            elem.find('#'+svg.id+'g').removeAttr('transform');
+            elem.attr({
+                'height':svg.page.h,
+                'width':svg.page.w,
+                'viewBox': '0 0 '+svg.page.w+' '+svg.page.h
+            });
+            var outerHTML = elem.get(0).outerHTML;
+            return xmltag+doctype+outerHTML;
+        }
+    };
+    
     
     /*******************************   Editor Module   *******************************/
     var editor = new (function() {
@@ -974,6 +1005,8 @@ Akruti = new (function() {
         this.strokeColor = 'rgb(0,0,0)';
         this.fillColor   = 'none';
         this.opacity     = 1;
+        this.dasharray   = 'none';
+        var dashOptions = ['none', '5 5', '12 3 4 3', '12 3 4 3 4 3', '1 3', '10 4 1 4', '10 4 1 4 1 4'];
         
         actives = new Object();
         actives.list = new Array();
@@ -1090,6 +1123,33 @@ Akruti = new (function() {
             }
         };
         
+        this.setStrokeStyle = function(id, dasharrayIndex){
+            var dasharray = dashOptions[dasharrayIndex];
+            if (actives.list.length == 0) {
+                editor.dasharray = dasharray;
+            }
+            else {
+                var pastState = new Array();
+                var newState = new Array();                
+                for (var i=0; i<actives.list.length; i++) {
+                    var states = actives.list[i].changeAttributes({'sd':dasharray}, true, true);
+                    if ( states.pastState.sd != states.newState.sd ) {
+                        pastState[i] = states.pastState;
+                        newState[i] = states.newState;
+                    }
+                }
+                if ( pastState.length != 0 ) {
+                    Base.addOp({
+                        op:'m',
+                        ar:pastState
+                    },{
+                        op:'m',
+                        ar:newState
+                    })
+                }
+            }
+        };
+            
         this.setFillColor = function(id, color){
             if (actives.list.length == 0) {
                 editor.fillColor = color;
@@ -1133,9 +1193,11 @@ Akruti = new (function() {
         var getOpacity = function(){
             return editor.opacity;
         }
-     
-        this.menu = [
-        {
+        
+        var getStrokeStyle = function(){
+            return editor.dasharray;
+        }
+        var toolsMenu = {
             type: 'main',
             id: 'tools',
             title: 'Tools', //Name of menu
@@ -1213,90 +1275,105 @@ Akruti = new (function() {
                     ]
                 }
             ]   //Groups inside this menu
-        },
-        {
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
+        }
+     
+        this.getMenu = function(arg) {
+            var cFillColor   = (arg.f)? arg.f : editor.fillColor;
+            var cStrokeColor = (arg.sc)? arg.sc : editor.strokeColor;
+            var cStrokeWidth = (arg.sw)? arg.sw : editor.strokeWidth;
+            var cStrokeStyle = dashOptions.indexOf( (arg.sd)? arg.sd : editor.dasharray );
+            var cOpacity     = (arg.o)? arg.o : editor.opacity;
+            return [
+                toolsMenu,
                 {
-                    type: 'group',
-                    id: 'colorGroup',
-                    items: [
+                    type: 'main',
+                    id: 'edit',
+                    title: 'Edit', //Name of menu
+                    icon: 'fa-edit', //Font awesome icon name
+                    groups: [
                         {
-                            type: 'color',
-                            id: 'fillColor',
-                            title:'Fill',
-                            text: 'Fill Color',
-                            currState: this.fillColor,
-                            icon: 'fa-tint',
-                            callback: this.setFillColor,
+                            type: 'group',
+                            id: 'colorGroup',
+                            items: [
+                                {
+                                    type: 'color',
+                                    id: 'fillColor',
+                                    title:'Fill',
+                                    text: 'Fill Color',
+                                    currState: cFillColor,
+                                    icon: 'fa-tint',
+                                    callback: this.setFillColor,
+                                },
+                                {
+                                    type: 'color',
+                                    id: 'strokeColor',
+                                    title:'Stroke Color',
+                                    currState: cStrokeColor,
+                                    icon: 'fa-tint', 
+                                    text: 'Stroke',
+                                    callback: this.setStrokeColor,
+                                },
+                            ]
                         },
                         {
-                            type: 'color',
-                            id: 'strokeColor',
-                            title:'Stroke Color',
-                            currState: this.strokeColor,
-                            icon: 'fa-tint', 
-                            text: 'Stroke',
-                            callback: this.setStrokeColor,
-                        },
-                    ]
-                },
-                {
-                    type: 'group',
-                    id: 'delete',
-                    items: [
-                        {
-                            type: 'button',
+                            type: 'group',
                             id: 'delete',
-                            title: 'Delete',
-                            icon: 'fa-eraser', //Font awesome icon name
-                            onoff: false,  //Is a on/off button
-                            callback: this.deleteAllSelected
-                        },
-                    ],
-                },
-                {
-                    type: 'group',
-                    id: 'strokeProperties',
-                    items: [
-                        {
-                            type:'list',
-                            id:'stroke-width',
-                            title:'Stroke Weight',
-                            icon:'fa-th-list',
-                            currState:this.strokeWidth,
-                            list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
-                            callback:this.setStrokeWidth
+                            items: [
+                                {
+                                    type: 'button',
+                                    id: 'delete',
+                                    title: 'Delete',
+                                    icon: 'fa-eraser', //Font awesome icon name
+                                    onoff: false,  //Is a on/off button
+                                    callback: deleteAllSelected
+                                },
+                            ],
                         },
                         {
-                            type:'list',
-                            id:'opacity',
-                            title:'Opacity',
-                            icon:'fa-th-list',
-                            currState:this.opacity,
-                            list:[{"id":0,"value":"0"},{"id":0.1,"value":"0.1"},{"id":0.2,"value":"0.2"},{"id":0.3,"value":"0.3"},{"id":0.4,"value":"0.4"},{"id":0.5,"value":"0.5"},{"id":0.6,"value":"0.6"},{"id":0.7,"value":"0.7"},{"id":0.8,"value":"0.8"},{"id":0.9,"value":"0.9"},
-                                  {"id":1,"value":"1"}],
-                            callback:this.setOpacity
-                        },
-                        {
-                            type:'list',
-                            id:'stroke-dasharray',
-                            title:'Stroke Style',
-                            icon:'fa-th-list',
-                            currState:'5 5',
-                            list:[
-                                  {"id":'5 5',"value":"<svg height='3' width='60'><line x1='1' y1='1' x2='60' y2='1' stroke-dasharray='5 5' stroke='black'><svg>"}
-                                ],
-                            callback:console.log
+                            type: 'group',
+                            id: 'strokeProperties',
+                            items: [
+                                {
+                                    type:'list',
+                                    id:'stroke-width',
+                                    title:'Stroke Weight',
+                                    icon:'fa-th-list',
+                                    currState:cStrokeWidth,
+                                    list:[{"id":1,"value":"1px"},{"id":2,"value":"2px"},{"id":3,"value":"3px"},{"id":4,"value":"4px"},{"id":5,"value":"5px"},{"id":6,"value":"6px"},{"id":7,"value":"7px"},{"id":8,"value":"8px"},{"id":9,"value":"9px"}],
+                                    callback:this.setStrokeWidth
+                                },
+                                {
+                                    type:'list',
+                                    id:'opacity',
+                                    title:'Opacity',
+                                    icon:'fa-th-list',
+                                    currState:cOpacity,
+                                    list:[{"id":0,"value":"0"},{"id":0.1,"value":"0.1"},{"id":0.2,"value":"0.2"},{"id":0.3,"value":"0.3"},{"id":0.4,"value":"0.4"},{"id":0.5,"value":"0.5"},{"id":0.6,"value":"0.6"},{"id":0.7,"value":"0.7"},{"id":0.8,"value":"0.8"},{"id":0.9,"value":"0.9"},
+                                          {"id":1,"value":"1"}],
+                                    callback:this.setOpacity
+                                },
+                                {
+                                    type:'list',
+                                    id:'stroke-dasharray',
+                                    title:'Stroke Style',
+                                    icon:'fa-th-list',
+                                    currState:cStrokeStyle,
+                                    list:[{"id": 0, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='none' stroke='black'><svg>"},
+                                          {"id": 1, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='5 5' stroke='black'><svg>"},
+                                          {"id": 2, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 3 4 3' stroke='black'><svg>"},
+                                          {"id": 3, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='12 3 4 3 4 3' stroke='black'><svg>"},
+                                          {"id": 4, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='1 3' stroke='black'><svg>"},
+                                          {"id": 5, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 4 1 4' stroke='black'><svg>"},
+                                          {"id": 6, "value":"<svg height='3' width='60'><line x1='1' y1='0' x2='60' y2='0' stroke-dasharray='10 4 1 4 1 4' stroke='black'><svg>"},
+                                           ],
+                                    callback:this.setStrokeStyle
+                                }
+                            ]
                         }
-                    ]
-                }
-            ]  
-        },
-    ];
+                    ]  
+                },
+            ];
+        }
         
         var eq = function (arg1, arg2) {
             if (arg1.length != arg2.length) {
@@ -1320,10 +1397,50 @@ Akruti = new (function() {
                 if (actives.list.length == 0) {
                     return;
                 }
-                if (actives.list.length == 1) {
-                    if (actives.list[0].t == 'l') {
-                        
+                {
+                    var arg  = new Object();
+                    var flag = {
+                        f:true,
+                        sc:true,
+                        sw:true,
+                        o:true,
+                        sd:true
+                    };
+                    var flagf=0;
+                    for (var i=1; i<actives.list.length; i++) {
+                        var type = actives.list[i].t;
+                        var t = actives.list[0].t;
+                        if (actives.list[0]) {
+                            flagf=1;
+                            check = actives.list[0];
+                        }
+                        else if (flagf==0 && ('f' in actives.list[i])) {
+                            check = actives.list[i];
+                            flagf = 1;                            
+                        }
+                        if (flagf==1 && ('f' in actives.list[i]) && (check.f!=actives.list[i].f)) {
+                            flag.f = false;
+                        }
+                        if (actives.list[0].sc != actives.list[i].sc) {
+                            flag.sc = false;
+                        }
+                        if (actives.list[0].sw != actives.list[i].sw) {
+                            flag.sw = false;
+                        }
+                        if (actives.list[0].o != actives.list[i].o) {
+                            flag.o = false;
+                        }
+                        if (actives.list[0].sd != actives.list[i].sd) {
+                            flag.sd = false;
+                        }
                     }
+                    for (var i in flag) {
+                        if (flag[i]) {
+                            arg[i] = actives.list[0][i];
+                        }
+                    }
+                    Base.updateMenu( editor.getMenu(arg) );
+                    Base.focusMenu('edit');
                 }
             }
             var pivotsX = new Array();
@@ -1345,8 +1462,7 @@ Akruti = new (function() {
             }
             
            // $(pivots[8]).addClass('rotate-pivot').css('cursor','cell').on('mousedown', elementsRotate.mousedown);
-            $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown)
-            Base.focusMenu('edit');
+            $(actives.select.rect).on('mousedown',{selectArea:true}, elementOn.mousedown);
         };
         
         var selectElement = function(){    
@@ -1374,6 +1490,9 @@ Akruti = new (function() {
                 delete actives.select;
                 while (actives.list.length != 0) {
                     actives.list.pop().g.classList.remove('active');
+                }
+                {
+                    Base.updateMenu( editor.getMenu({}) );
                 }
             }
         };
@@ -1601,7 +1720,7 @@ Akruti = new (function() {
                         'sw':getStrokeWidth(),
                         'f' :getFillColor(),
                         'o':getOpacity(),
-                        //'sd':getStrokeDashArray(),
+                        'sd':getStrokeStyle(),
                     };
                     var element = new Ellipse(attributes,mySvgObject);
                     element.X = x;
@@ -1681,7 +1800,8 @@ Akruti = new (function() {
                         'y2':y,
                         'sc':getStrokeColor(),
                         'sw':getStrokeWidth(),
-                        'o' :getOpacity()
+                        'o' :getOpacity(),
+                        'sd':getStrokeStyle(),
                     };
                     
                     var element = new Line(attributes,mySvgObject);
@@ -1771,6 +1891,7 @@ Akruti = new (function() {
                         'sw': getStrokeWidth(),
                         'f' : getFillColor(),
                         'o' : getOpacity(),
+                        'sd':getStrokeStyle(),
                     };
                     
                     var element = new Rectangle(attributes,mySvgObject);
@@ -1852,6 +1973,7 @@ Akruti = new (function() {
                         'sc': getStrokeColor(),
                         'sw': getStrokeWidth(),
                         'o' : getOpacity(),
+                        'sd':getStrokeStyle(),
                     }
                     var element = new FreeHandDrawing(attributes, mySvgObject);
                     element.minX = x;
@@ -2546,7 +2668,7 @@ Akruti = new (function() {
             }
         }
 
-        this.deleteAllSelected = function(){
+        var deleteAllSelected = function(){
             var pastState = new Array();
             var newState = new Array();
             for(var i=0;i<actives.list.length;i++) {
@@ -2566,7 +2688,7 @@ Akruti = new (function() {
         
         $(window).on('keydown',function(e){
             if (e.which == 46 && actives.list.length != 0) {                //DeleteKey
-                editor.deleteAllSelected();
+                deleteAllSelected();
             }
             if (e.which == '27' && actives.list.length != 0) {              //Esc key
                 deselectAll();
@@ -2640,45 +2762,7 @@ Akruti = new (function() {
         
     })();
     /******************************* Editor Module End *******************************/
-        
-    
-   
-    this.getMenu = function (){
-        return [];
-    };
     
 })();
 
 module = Akruti;
-
-/*
-{
-            type: 'main',
-            id: 'edit',
-            title: 'Edit', //Name of menu
-            icon: 'fa-edit', //Font awesome icon name
-            groups: [
-                {
-                    type: 'group',
-                    id: 'undoRedo',
-                    items: [
-                        {
-                            type: 'button',
-                            id: 'undo',
-                            title: 'Undo',
-                            icon: 'fa-undo',
-                            onoff: false,
-                            callback: this.undo
-                        },
-                        {
-                            type: 'button',
-                            id: 'redo',
-                            title: 'Redo',
-                            icon: 'fa-repeat', //Font awesome icon name
-                            onoff: false,  //Is a on/off button
-                            callback: this.redo
-                        },
-                    ]
-                },
-            ]
-        }*/
