@@ -19,7 +19,7 @@ class Upload extends CI_Controller {
 		else
 		{
 			$config['upload_path'] = './data/uploads';
-			$config['allowed_types'] = 'akruti|aalekhan|aksharam|show';
+			$config['allowed_types'] = '*';
 			
 			$this->load->library('upload', $config);
 	
