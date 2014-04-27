@@ -4,6 +4,15 @@ body {
     height:100%;
 }
 
+a {
+    text-decoration: none;
+}
+
+/* Utility classes */
+.pull-right {
+    float: right;
+}
+
 .interface {
     font-family: 'Source Sans Pro', sans-serif;
 }
@@ -46,7 +55,7 @@ body {
     text-align: center;
 }
 
-.btn-big {
+.btn-big, .account-options {
    padding: 13px 22px 13px 13px;
 }
 
@@ -374,6 +383,15 @@ i.fa.fa-cfw {
             left: auto;
             margin: 0;
         }
+
+.account-options {
+    color: #ddd;
+    cursor: pointer;
+}
+
+.account-options:hover {
+    color: white;
+}
 
 /*
  * Modal box

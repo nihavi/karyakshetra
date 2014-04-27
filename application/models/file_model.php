@@ -108,7 +108,10 @@ class File_model extends CI_Model {
             
             $file_data = read_file( $file_path . 'data.kdat' );
             
-            return $file_data;
+            return array(
+                'name' => $query->row()->fname,
+                'data' => $file_data
+            );
         }
         else {
             return false;

@@ -15,6 +15,7 @@
                     if( isset($file_id) ){
                         echo "fileId: '".$file_id."',";
                         echo "fileData: '".$file_data."',";
+                        echo "fileName: '".$file_name."',";
                     }
                 ?>
             }
