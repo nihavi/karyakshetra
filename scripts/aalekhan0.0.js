@@ -444,6 +444,10 @@ var Aalekhan = new (function(){
     }
     
     this.resize=function(){
+        graphParent.css({
+            top: 0,
+            left: $('#sidebar').outerWidth()
+        });
         graphParent.width(editable.innerWidth()-$('#sidebar').outerWidth());
         var oXm=oX/cW;
         var oYm=oY/cH;
