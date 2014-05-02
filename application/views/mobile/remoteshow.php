@@ -55,7 +55,7 @@
     
             var sendOp = function(op){
                 xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("POST",baseUrl+'opqueue/addop',true);
+                xmlhttp.open("POST",baseUrl+'opqueue/addop/',true);
                 xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
                 xmlhttp.send('fid='+currFileId+'&op='+op);
             }
