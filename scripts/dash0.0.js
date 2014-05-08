@@ -8,7 +8,7 @@ Dash = new(function(){
         
         var arg = '';
         
-        var selectedFiles = $('#editable .file.focus');
+        var selectedFiles = $('#file-list .file.focus');
         
         if (selectedFiles.length > 1) {
             selectedFiles.each(function (i) {
@@ -28,22 +28,23 @@ Dash = new(function(){
     
     function upload()
     {
-        var modal = Base.openModal(null, null, function(){
-                callback(false);
-            });
+        var modal = Base.openModal(null, null, null);
+        modal = $(modal);
+        modal.append($('<span class="wait"></span>'));
         
         $.ajax({
             'type': 'GET',
             'url' : baseUrl + 'upload/',
             'success' : function(data) {
-                $(modal).html(data);
+                modal.html(data);
             }
         });
     }
     
-    this.init = function(){
+    this.init = function(parent){
         
         baseUrl = response.baseUrl;
+        parent = $(parent);
         
         var newFile = $('<div></div>');
 
@@ -72,8 +73,8 @@ Dash = new(function(){
             $('<a class="module-link" href="' + module.link +'">' + module.name + '</a>').appendTo(newFile);
         }
         
-        $('<div class="new-file column"></div>').append(newFile).appendTo('#editable');
-        $('<div class="file-list column"></div>').appendTo('#editable');
+        $('<div id="new-file" class="column"></div>').append(newFile).appendTo(parent);
+        $('<div id="file-list" class="column"></div>').appendTo(parent);
         $.ajax({
             dataType: "json",
             url: response.baseUrl + 'storage/dash/',
@@ -114,7 +115,7 @@ Dash = new(function(){
                         }
                     });
                     
-                    $('.file-list').append(f);
+                    $('#file-list').append(f);
                 }
             }
         });

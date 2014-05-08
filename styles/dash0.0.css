@@ -13,11 +13,11 @@
     float: left;
 }
 .explorer,
-.new-file {
+#new-file {
     width: 20%;
 }
 
-.file-list {
+#file-list {
     height: 100%;
     overflow: auto;
     background-color: #fafafa;
