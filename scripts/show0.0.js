@@ -1,5 +1,5 @@
 /*
- * Show - Presentation
+ * Show - Prastuti - Presentation
  */
 
 Show = new (function(){
@@ -14,6 +14,7 @@ Show = new (function(){
          * Initialize show
          * 
          * parent: parent DOM element for module
+         * file: file to be opened
          * 
          */
         
@@ -29,8 +30,9 @@ Show = new (function(){
         this.resize();
         
         if( file ){
-            var newSlide = new Slide();
-            newSlide.renderSlide();
+            //I'm keeping following two lines as comment as I don't know why it was here.
+            //var newSlide = new Slide();
+            //newSlide.renderSlide();
             //Two lines above is a hack, do it properly :FIXME
             this.openFile(file);
         }
@@ -125,10 +127,9 @@ Show = new (function(){
     var Sidebar = {
         /*
          * Sidebar object
-         * 
-         * FIXME: Different sizes with and without scrollbar
          */
         init: function(){
+            //Redraw sidebar
             var slide;
             var sidebar = $('#sidebar');
             sidebar.empty();
@@ -166,7 +167,7 @@ Show = new (function(){
             Sidebar.updateNo();
         },
         moveSlide: function(slideId, newIndex){
-            //newIndex is 1 based
+            //Note: newIndex is 1 based
             var slide = $('.side-parent#parent'+slideId).detach();
             
             var insertBefore = $('.side-parent').eq(newIndex - 1);
@@ -177,6 +178,7 @@ Show = new (function(){
             Sidebar.updateNo();
         },
         updateNo: function(){
+            //Updates serial numbers
             $('.side-no').each(function(index){
                 $(this).text((index+1)+'.');
             });
@@ -218,10 +220,20 @@ Show = new (function(){
         }
         Base.prompt("Enter image url", imgSelected, '', 'Insert');
     }
-    var insertSlide = function(id){
+    var insertSlide = function(id, opReturn){
+        //Insert slide with default elements
+        //opReturn: if true, return op instead of adding it to opQueue
         var newSlide = new Slide();
         var op = 'ds ' + newSlide.slideId;
-        startOp(op);
+        var retOp;
+        if(opReturn){
+            retOp = {
+                pastState: op
+            }
+        }
+        else {
+            startOp(op);
+        }
         newSlide.addElem({
             type: 'title',
             top: 5,
@@ -244,19 +256,29 @@ Show = new (function(){
         newSlide.activate();
         Sidebar.addSlide(newSlide);
         op = 'cs ' + allSlides.indexOf(newSlide) +' '+ JSON.stringify(newSlide.purify());
-        endOp(op);
+        if(opReturn){
+            retOp.newState = op;
+            return retOp;
+        }
+        else {
+            endOp(op);
+        }
     }
     var removeSlide = function(id){
-        var op = 'cs ' + allSlides.indexOf(activeSlide) +' '+ JSON.stringify(activeSlide.purify());
-        startOp(op);
-        op = 'ds ' + activeSlide.slideId;
+        var op1 = 'cs ' + allSlides.indexOf(activeSlide) +' '+ JSON.stringify(activeSlide.purify());
+        var op2 = 'ds ' + activeSlide.slideId;
         activeSlide.remove();
-        /*if( !allSlides.length ){
-            insertSlide();
-        }*/
-        endOp(op);
+        if( !allSlides.length ){
+            //Add new slide if last slide is removed
+            var ret = insertSlide(null, true);
+            op1 = ret.pastState + '-;-' + op1;
+            op2 = op2 + '-;-' + ret.newState;
+        }
+        startOp(op1);
+        endOp(op2);
     }
     var moveSlide = function(btnId){
+        //Reorder slide
         var op = 'ms ' + activeSlide.slideId +' '+ (allSlides.indexOf(activeSlide)+1);
         startOp(op);
         activeSlide.moveTo(btnId);
@@ -274,6 +296,8 @@ Show = new (function(){
     }
     
     var clone = function(obj){
+        //Create clone of an object
+        //TODO: Add this in Base as can be commonly used by all modules
         if(obj == null || typeof(obj) != 'object')
             return obj;
         
@@ -317,6 +341,7 @@ Show = new (function(){
          * Constructor of class Slide
          */
         if( slide ){
+            //If slide already given
             for( var prop in slide ){
                 if( prop != 'elems' ){
                     this[prop] = slide[prop];
@@ -343,9 +368,6 @@ Show = new (function(){
     
     Slide.prototype = {
         renderSlide: function(){
-            /*
-             * slide: Object of type Slide
-             */
             
             if(activeElement)activeElement.blur();
             
@@ -386,6 +408,7 @@ Show = new (function(){
             activeSlide = slide;
         },
         activate: function(){
+            //Focus slide
             this.renderSlide();
             Sidebar.activate(this.id);
             defaultMenus[1].groups[0].items[0].currState = this.bgColor;
@@ -416,6 +439,7 @@ Show = new (function(){
             }
         },
         addElem: function(obj){
+            //Create and add Element to slide
             var elem = new Elem(obj);
             if( obj.id ){
                 elem.id = obj.id;
@@ -429,7 +453,7 @@ Show = new (function(){
             return elem;
         },
         moveTo: function(newIndex){
-            //newIndex is 1 based
+            //Note: newIndex is 1 based
             var index = allSlides.indexOf(this);
             if( newIndex == 'up' )
                 newIndex = index;
@@ -446,6 +470,11 @@ Show = new (function(){
             Sidebar.moveSlide(this.id, newIndex);
         },
         purify: function(){
+            /* 
+             * Purify slide object for file save
+             * Remove cyclic references, unnecessary properties
+             * Returns clone of the slide
+             */
             var obj = {};
             for( var i in this ){
                 if( this.hasOwnProperty(i) ){
@@ -595,7 +624,6 @@ Show = new (function(){
                     return elemDOM;
                 }
                 else if(elem.type == 'img'){
-                    console.log(elem);
                     //Parent element for image
                     var elemDOM = $('<div class="elem slide-'+elem.type+'" id="'+elem.id+'">');
                     elemDOM.css({
@@ -690,6 +718,10 @@ Show = new (function(){
             }
         },
         editElement: function(changes){
+            /* 
+             * TODO: make it more efficient
+             *  - don't rerender when possible
+             */
             var i;
             for (i in changes){
                 if(i != 'style')
@@ -733,10 +765,15 @@ Show = new (function(){
              * removes
              * - parent,
              * - elemDOM
+             * - editable
              */
             var obj = {};
             for( var i in this ){
-                if( i != 'parent' && i != 'elemDOM' && this.hasOwnProperty(i) ){
+                if( i != 'parent' && 
+                    i != 'elemDOM' && 
+                    i != 'editable' &&
+                    this.hasOwnProperty(i) ){
+                    
                     obj[i] = clone(this[i]);
                 }
             }
@@ -797,7 +834,7 @@ Show = new (function(){
     }
     
     var textFocus = function(ev){
-        //Will be called when a contentEdtable is focused
+        //Will be called when a contentEditable is focused
         activeElement = $(this).closest('.elem').data('elem');
         $('.elem.active').removeClass('active');
         activeElement.elemDOM.addClass('active');
@@ -810,7 +847,7 @@ Show = new (function(){
         activeElement.focus();
     };
     var textBlur = function(ev){
-        //Will be called when a contentEdtable is focused
+        //Will be called when a contentEditable is blured
         if(activeElement){
             activeElement.elemDOM.css({
                 cursor: 'move',
@@ -826,6 +863,8 @@ Show = new (function(){
      */
     /*
      * opCodes ( separated by -;- )
+     * 
+     *** Operation for SlideShow
      * ne   - Next in Slideshow
      * pr   - Previous in Slideshow
      * ns   - Next Slide
@@ -849,12 +888,13 @@ Show = new (function(){
      */
     var currOp;
     var startOp = function(state){
+        //Add pastState
         currOp = {};
         currOp.init = state;
     }
     var endOp = function(state){
+        //Add newState and finally Base.addOp
         currOp.end = state;
-        //TODO: Add all op first, then uncomment following line
         Base.addOp(currOp.init, currOp.end);
     }
     var getSlide = function(slideId){
@@ -873,9 +913,7 @@ Show = new (function(){
         else 
             return undefined;
     };
-    this.performOp = function(command){
-        //For now only one command
-        
+    this.performOp = function(command){        
         var ops = command.split('-;-');
         var pastState = '';
         var newState = '';
@@ -1044,7 +1082,7 @@ Show = new (function(){
         }
     }
     /*
-     * Resize mechanisms 
+     * Resize mechanisms
      */
     var resizeRightInit = function(ev){
         if (ev.which != 1)return;
@@ -1388,7 +1426,7 @@ Show = new (function(){
             }
             else {
                 activeElement.animations[0] = {
-                    type: 'entry',
+                    type: 'entry',  //FIXME in future, when other type comes
                     name: name,
                     duration: 'normal',
                     timing: 'click'
@@ -1427,6 +1465,7 @@ Show = new (function(){
         }
     }
     var log = function(a, b){
+        //TODO: remove in prodction
         console.log(a, b);
     }
     var formatMenu = function(elem){
@@ -1666,7 +1705,8 @@ Show = new (function(){
             };
             format.groups.push(group);
         }
-        /*var wordArt = {
+        /* TODO
+        var wordArt = {
             type: 'main',
             id: 'wordart',
             title: 'Word Art', //Name of menu
@@ -1881,6 +1921,8 @@ Show = new (function(){
         
     }
     var moveInit = function(ev){
+        //Called on mousedown in elements
+        //Does everything to be done, like focus, make editable, prepare for move.
         if(ev.which != 1)return;
         console.log(activeElement);
         var secondClick = false;
@@ -1985,7 +2027,7 @@ Show = new (function(){
         }
     }
     var moveElement = function(ev){
-        console.log(activeElement);
+        //Actually moves element on mousemove after moveInit
         if (ev.which != 1) return;
         var slide = $('.slide');
         var mouseXold = activeElement.lastMousePos.x;
@@ -2013,7 +2055,7 @@ Show = new (function(){
             duration: Boolean,  //Is duration applicable for animation, default true
             execute: Function(object),  //Accepts object and do animation. On completion call SlideShow.finishAnim
             finish: Function(object),   //Accepts animation object and ends animation.
-            cancel: Function(object),   //Accepts animation object and rollbacks animation.
+            cancel: Function(object),   //Accepts animation object and rollbacks running or completed animation.
         }
     */
     
@@ -2369,6 +2411,7 @@ Show = new (function(){
         }
         
         this.resize = function(){
+            //FIXME: on resize, go to the stage before resize
             if(activeSlide)
                 activeSlide.renderSlideShow();
         };
@@ -2406,7 +2449,7 @@ Show = new (function(){
         SlideShow.init();
     }
     /*
-     * for slideshow ends here
+     * slideshow ends here
      */
      
     var removeInsertOp = function(){
@@ -2415,6 +2458,7 @@ Show = new (function(){
     };
     
     var selectOp = function(id){
+        //For now, used in only one case.
         insertOp = id;
         $('#slides').bind('mousedown',createTextBox);
     };
