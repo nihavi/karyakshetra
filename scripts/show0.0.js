@@ -102,7 +102,7 @@ Show = new (function(){
         type: 'title' | 'text' | 'img',
         parent: Slide Object,   //Parent Slide
         id: String, //Id of element
-        aminations: Array,  //Array of Animations
+        animations: Array,  //Array of Animations
         
         fontSize: Number,   //Font-size in percentage relative to slide height, if title or text
         text: String,   //Text inside the box, if title or text
