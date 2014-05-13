@@ -415,30 +415,7 @@ Base = new (function(){
     //Add event listener for key shortcuts
     $(window).keydown(handleKeyShortcuts);
     
-    //Add common shortcuts
-    this.addShortcuts([
-        {
-            ctrl: true,
-            char: 'Z',
-            callback: this.undo
-        },
-        {
-            ctrl: true,
-            shift: true,
-            char: 'Z',
-            callback: this.redo
-        },
-        {
-            ctrl: true,
-            char: 'Y',
-            callback: this.redo
-        },
-        {
-            ctrl: true,
-            char: 'R',
-            callback: this.redo
-        }
-    ]);
+    //Common shortcuts are added at the end of this script
     
     /*
      * Base Frontend
@@ -1421,5 +1398,36 @@ Base = new (function(){
         $('#showMenu').remove();
         handleResize();
     }
+    
+    
+    //Add common shortcuts
+    this.addShortcuts([
+        {
+            ctrl: true,
+            char: 'Z',
+            callback: this.undo
+        },
+        {
+            ctrl: true,
+            shift: true,
+            char: 'Z',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'Y',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'R',
+            callback: this.redo
+        },
+        {
+            ctrl: true,
+            char: 'S',
+            callback: saveFrontEnd
+        }
+    ]);
     
 })();
