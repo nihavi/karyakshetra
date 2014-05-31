@@ -10,6 +10,8 @@ class Account_model extends CI_Model {
     
     function valid_credentials($uname, $upass)
     {
+        $upass = sha1($upass);
+        
         $query = $this->db->get_where('users', array('username' => $uname, 'password' => $upass));
         if ($query->num_rows() > 0)
         {
@@ -23,6 +25,8 @@ class Account_model extends CI_Model {
     
     function register_user($uname, $upass)
     {
+        $upass = sha1($upass);
+        
         $this->db->trans_start();
         $this->db->insert('groups', array(
                 'gname' => $uname,

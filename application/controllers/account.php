@@ -20,17 +20,17 @@ class Account extends CI_Controller{
         $this->form_validation->set_rules('password', 'Password', 'trim|required');
         
         if ($this->form_validation->run() == FALSE)
-		{
-			$this->load->view('login_view');
-		}
-		else
-		{
-			$uname = $this->input->post('username');
+        {
+            $this->load->view('login_view');
+        }
+        else
+        {
+            $uname = $this->input->post('username');
             $upass = $this->input->post('password');
             
             $this->load->model('Account_model', 'account');
             
-            $uid = $this->account->valid_credentials($uname, sha1($upass));
+            $uid = $this->account->valid_credentials($uname, $upass);
             if ($uid)
             {
                 $this->session->set_userdata(array('uname' => $uname, 'uid' => $uid));
@@ -64,17 +64,17 @@ class Account extends CI_Controller{
         $this->form_validation->set_rules('password_conf', 'password confirmation', 'trim|required|matches[password]');
         
         if ($this->form_validation->run() == FALSE)
-		{
-			$this->load->view('signup_view');
-		}
-		else
-		{
-			$uname = $this->input->post('username');
+        {
+            $this->load->view('signup_view');
+        }
+        else
+        {
+            $uname = $this->input->post('username');
             $upass = $this->input->post('password');
             
             $this->load->model('Account_model', 'account');
             
-            $uid = $this->account->register_user($uname, sha1($upass));
+            $uid = $this->account->register_user($uname, $upass);
             if ($uid)
             {
                 $this->session->set_userdata(array('uname' => $uname, 'uid' => $uid));
