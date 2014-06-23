@@ -1170,6 +1170,12 @@ Base = new (function(){
      * Implementation of modal box
      */
     var modalCallback = false;
+    var closeModalEsc = function(ev){
+        //Close modal if key pressed is Esc
+        if( ev.keyCode == 27 ){
+            Base.closeModal();
+        }
+    }
     this.openModal = function(height, width, callback){
         Base.closeModal();
         var content;
@@ -1183,6 +1189,7 @@ Base = new (function(){
         if ( callback ){
             modalCallback = callback;
         }
+        $(document).bind('keyup', closeModalEsc);
         $('<div class="modal-cont"></div>').append(
             $('<div class="modal"></div>').css(
                 style
@@ -1203,6 +1210,7 @@ Base = new (function(){
             modalCallback();
         }
         modalCallback = false;
+        $(document).bind('keyup', closeModalEsc);
         $('.modal-cont').remove();
     }
     
@@ -1234,16 +1242,24 @@ Base = new (function(){
         var modal = Base.openModal(null, null, function(){
                 callback(false);
             });
+        var promptEnter = function(){
+                callback($('.prompt-in').val());
+                Base.closeModal(false);
+            }
         $('<div class="prompt-text">'+text+'</div>').appendTo(modal);
-        $('<input class="prompt-in" value="'+value+'">').appendTo(modal).focus();
+        $('<input class="prompt-in" value="'+value+'">')
+            .keyup(function(ev){
+                    if(ev.keyCode == 13){
+                        promptEnter();
+                    }
+                })
+            .appendTo(modal)
+            .focus();
         $('<div class="prompt-btn"></div>')
             .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
                     Base.closeModal();
                 }))
-            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',function(){
-                    callback($('.prompt-in').val());
-                    Base.closeModal(false);
-                }))
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',promptEnter))
             .appendTo(modal);
     }
     
