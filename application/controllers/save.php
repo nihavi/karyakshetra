@@ -22,7 +22,7 @@ class Save extends CI_Controller {
             
             $data = $this->input->post('file');
             
-            $file_id = $this->file->save_as($fname, $data, $ftype, $user_id);
+            $file_id = $this->file->save_as($fname, $data, $ftype, 0, $user_id);
             
             echo $file_id;
         }
