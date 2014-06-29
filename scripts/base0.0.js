@@ -87,6 +87,7 @@ Base = new (function(){
         }
         var url;
         if( currFileId ){
+            //If current file is not new file
             url = baseUrl + 'save/file/';
             postData.id = currFileId;
         }
@@ -130,7 +131,6 @@ Base = new (function(){
      exPointer = 0;
     
     this.addOp = function(pastState, newState){
-        
         /*
          * pastState - previous state to be restored on undo
          * newState - next state to be rendered on viewer
@@ -158,8 +158,10 @@ Base = new (function(){
          * Will not return anything
          */
         if(exPointer > 0){
-            if( isStreaming )
+            if( isStreaming ){
+                //Doing it before everything else to reduce lag in viewer
                 sendOp(exQueue[exPointer-1]);
+            }
             var op = module.performOp(exQueue[exPointer-1]);
             if(exQueue.length == exPointer+1)
                 exQueue[exPointer+1] = null;
@@ -181,8 +183,10 @@ Base = new (function(){
          * Will not return anything
          */
         if(exQueue[exPointer+1] != null){
-            if( isStreaming )
+            if( isStreaming ){
+                //Doing it before everything else to reduce lag in viewer
                 sendOp(exQueue[exPointer+1]);
+            }
             var op = module.performOp(exQueue[exPointer+1]);
             exQueue[exPointer] = op.pastState;
             exPointer++;
@@ -415,7 +419,7 @@ Base = new (function(){
     //Add event listener for key shortcuts
     $(window).keydown(handleKeyShortcuts);
     
-    //Common shortcuts are added at the end of this script
+    //Common shortcuts are added at the end of this script to avoid undefined functions
     
     /*
      * Base Frontend
@@ -797,6 +801,7 @@ Base = new (function(){
     }
     
     var createMenu = function(menuObject){
+        //Create menu labels in menubar, and merge menus with same id
         var item, i, menuItem;
         var id;
         var mainMenu = $('#mainMenu');
@@ -848,7 +853,10 @@ Base = new (function(){
     }
     
     var activateMenu = function(ev){
-        //Onclick event handler on main menu items
+        /* 
+         * Onclick event handler on main menu items
+         * Creates menu associated with label
+         */
         var id = $(this).attr('id');
         var menu = menus[id];
         activeMenu = menu.id;
@@ -991,7 +999,6 @@ Base = new (function(){
                                         text.html(item.list[0].value);
                                     }
                                 }
-                                
                             }
                             else { // if item.type == 'button' or item.type is not known
                                 if(('onoff' in item) && item.onoff == true){
@@ -1023,8 +1030,7 @@ Base = new (function(){
                 else {
                     //Error: empty/invalid group, ignored
                 }
-            }            
-            
+            }
         }
         else {
             //Error: empty menu item, ignored
@@ -1033,6 +1039,7 @@ Base = new (function(){
     }
     
     var handleMenuClick = function(ev){
+        //Handles click on toolbar items
         var elem = $(this);
         var itemId = $(this).attr('id');
         var item = submenu[itemId];
@@ -1163,6 +1170,12 @@ Base = new (function(){
      * Implementation of modal box
      */
     var modalCallback = false;
+    var closeModalEsc = function(ev){
+        //Close modal if key pressed is Esc
+        if( ev.keyCode == 27 ){
+            Base.closeModal();
+        }
+    }
     this.openModal = function(height, width, callback){
         Base.closeModal();
         var content;
@@ -1176,6 +1189,7 @@ Base = new (function(){
         if ( callback ){
             modalCallback = callback;
         }
+        $(document).bind('keyup', closeModalEsc);
         $('<div class="modal-cont"></div>').append(
             $('<div class="modal"></div>').css(
                 style
@@ -1196,6 +1210,7 @@ Base = new (function(){
             modalCallback();
         }
         modalCallback = false;
+        $(document).bind('keyup', closeModalEsc);
         $('.modal-cont').remove();
     }
     
@@ -1205,7 +1220,7 @@ Base = new (function(){
     var closePrompt = function(){
     }
     /*
-     * Base.prompt requires
+     * Base.prompt accepts
      * String text  - Text for prompt
      * Function callback(Mixed response) - callback when prompt is complete, 
      *      if it fails response will be false, otherwise String
@@ -1227,20 +1242,29 @@ Base = new (function(){
         var modal = Base.openModal(null, null, function(){
                 callback(false);
             });
+        var promptEnter = function(){
+                callback($('.prompt-in').val());
+                Base.closeModal(false);
+            }
         $('<div class="prompt-text">'+text+'</div>').appendTo(modal);
-        $('<input class="prompt-in" value="'+value+'">').appendTo(modal).focus();
+        $('<input class="prompt-in" value="'+value+'">')
+            .keyup(function(ev){
+                    if(ev.keyCode == 13){
+                        promptEnter();
+                    }
+                })
+            .appendTo(modal)
+            .focus();
         $('<div class="prompt-btn"></div>')
             .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
                     Base.closeModal();
                 }))
-            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',function(){
-                    callback($('.prompt-in').val());
-                    Base.closeModal(false);
-                }))
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',promptEnter))
             .appendTo(modal);
     }
     
     this.setEditable = function(){
+        //Adjusts the editable portion accoring to the screen size.
         var edit = $('#editable');
         var menu = $('#menubar');
         if($('#menubar').css('display')=='none'){
@@ -1382,7 +1406,7 @@ Base = new (function(){
     }
     
     this.hideMenu = function(complete){
-        //Hide base completely if complete is true
+        //Hide menus completely if complete is true
         $('#menubar').hide();
         if(!complete){
             var showBtn = $('<div id="showMenu"><i class="fa fa-angle-down"></i></div>').appendTo('#interface');
