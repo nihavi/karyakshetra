@@ -9,6 +9,11 @@ class File_model extends CI_Model {
         $this->load->database();
     }
     
+    function mkdir($dir_name, $parent_id = 0, $user_id = null)
+    {
+        return $this->save_as($dir_name, null, 0, $parent_id, $user_id, false, true);
+    }
+    
     function save($file_id, $file_data, $file_path = NULL, $update_db = TRUE)
     {
         if( !$file_path ){
@@ -37,38 +42,48 @@ class File_model extends CI_Model {
         return $file_id;
     }
     
-    function save_as($file_name, $file_data, $ftype = 0, $user_id = null, $uploaded = false)
+    function save_as($file_name, $file_data, $ftype, $parent_id = 0, $user_id = null, $uploaded = false, $isDir = false)
     {
+        /*
+         * $uploaded = false, It'll save file and return fid
+         *           = true, It'll save empty file and return file_path
+         * 
+         * if !$file_data, It'll save empty file and return fid
+         */
+        
         $this->db->trans_start();
         
         //Prepare array for insertion
         $data = array(
             'fname'=> $file_name,
             'ftype'=> $ftype,
-            'pid'=> 0
+            'pid'=> $parent_id
         );
 
         $this->db->set('modified', 'NOW()', FALSE);
         $this->db->insert('files', $data);
         
-        //Prepare file path
         $file_id = $this->db->insert_id();
-        $this->db->where('fid', $file_id);
         
-        $date_path =  strtolower(date('Y/M/'));
-        
-        $file_path = DATAPATH . $date_path . $file_id . '/';
-        
-        
-        if (!is_dir($file_path))
-        {
-            umask(0);
-            mkdir($file_path, 0777, true);
+        if( !$isDir ){
+            //Prepare file path
+            $this->db->where('fid', $file_id);
+            
+            $date_path =  strtolower(date('Y/M/'));
+            
+            $file_path = DATAPATH . $date_path . $file_id . '/';
+            
+            
+            if (!is_dir($file_path))
+            {
+                umask(0);
+                mkdir($file_path, 0777, true);
+            }
+            
+            //Insert file path into DB
+            $this->db->set('path', $file_path);
+            $this->db->update('files');
         }
-        
-        //Insert file path into DB
-        $this->db->set('path', $file_path);
-        $this->db->update('files');
         
         if ($user_id == null)
         {
@@ -89,7 +104,10 @@ class File_model extends CI_Model {
         //Actual file save call
         if (! $uploaded)
         {
-            $this->save($file_id, $file_data, $file_path, FALSE);
+            if ( $file_data )
+            {
+                $this->save($file_id, $file_data, $file_path, FALSE);
+            }
             $this->db->trans_complete();
             return $file_id;
         }
@@ -101,9 +119,48 @@ class File_model extends CI_Model {
         
     }
     
-    function open($file_id){
+    function remove_file($file_id)
+    {
+        $this->db->trans_start();
+        $this->db->where('fid', $file_id);
+        $this->db->where('ftype != ', 0);
+        $this->db->set('removed', 1);
+        $this->db->update('files');
+        $this->db->trans_complete();
+        
+        return $this->db->trans_status();
+    }
+    
+    function remove_dir($dir_id, $recursive = false)
+    {
+        if( $recursive ){
+        }
+        else {
+            $query = $this->db->get_where('files', array(
+                    'pid' => $dir_id,
+                    'removed' => 0,
+                ));
+        
+            if ($query->num_rows() > 0)
+            {
+                return false;
+            }
+            
+            $this->db->trans_start();
+            $this->db->where('fid', $dir_id);
+            $this->db->set('removed', 1);
+            $this->db->update('files');
+            $this->db->trans_complete();
+            
+            return $this->db->trans_status();
+        }
+    }
+    
+    function open($file_id)
+    {
         
         $this->db->where('fid', $file_id);
+        $this->db->where('removed', 0);
         
         $query = $this->db->get('files');
         
@@ -124,12 +181,14 @@ class File_model extends CI_Model {
         }
     }
 
-    function get_files_of_user($group_id)
+    function get_files_of_user($group_id, $parent_id = 0)
     {
         $this->db->select('files.*');
         $this->db->from('files, filepermissions');
         $this->db->where('files.fid = filepermissions.fid');
         $this->db->where("filepermissions.gid = $group_id");
+        $this->db->where("files.pid = $parent_id");
+        $this->db->where("files.removed = 0");
         $this->db->order_by('modified', 'desc');
         $query = $this->db->get();
         
@@ -138,7 +197,10 @@ class File_model extends CI_Model {
     
     function get_file($file_id)
     {
-        $query = $this->db->get_where('files', array('fid' => $file_id));
+        $query = $this->db->get_where('files', array(
+                'fid' => $file_id,
+                'removed' => 0,
+            ));
         
         if ($query->num_rows() > 0)
         {

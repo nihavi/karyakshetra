@@ -1262,6 +1262,26 @@ Base = new (function(){
             .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',promptEnter))
             .appendTo(modal);
     }
+    /*
+     * Base.alert accepts
+     * String text  - Text to show
+     * Function callback() - callback when alert is closed
+     * String ok    - Text to be shown in ok btn, default OK
+     */
+    this.alert = function(text, callback, ok){
+        if( !text )
+            return false;
+        if( !callback || typeof(callback) != 'function' )
+            callback = function(){};
+        if( !ok )
+            ok = 'OK';
+        
+        var modal = Base.openModal(null, null, callback);
+        $('<div class="alert-text">'+text+'</div>').appendTo(modal);
+        $('<div class="alert-btn"></div>')
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',Base.closeModal))
+            .appendTo(modal);
+    }
     
     this.setEditable = function(){
         //Adjusts the editable portion accoring to the screen size.
