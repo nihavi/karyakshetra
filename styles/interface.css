@@ -409,9 +409,11 @@ i.fa.fa-cfw {
     bottom: 0;
     left: 0;
     text-align:center;
-    background-color: rgba(255,255,255,0.4);
+    background-color: transparent;
+    background-color: rgba(50, 50, 50, 0.2);
     z-index: 5000;
 }
+
 .modal-cont:before {
   content: '';
   display: inline-block;
@@ -419,6 +421,7 @@ i.fa.fa-cfw {
   vertical-align: middle;
   margin-right: -0.25em; /* Adjusts for spacing */
 }
+
 .modal-cont > .modal {
     position: relative;
     display: inline-block;
@@ -428,9 +431,10 @@ i.fa.fa-cfw {
     max-height: 80%;
     overflow: auto;
     padding: 15px;
+    background-color: #fff;
     background-color: rgba(255,255,255,0.9);
-    box-shadow: 0px 0px 5px 2px #888;
-    border-radius: 5px;
+    box-shadow: 0px 0px 5px 2px #ccc;
+    border-radius: 2px;
 }
 .modal-cont > .modal > .modal-close {
     position: absolute;
