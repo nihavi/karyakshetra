@@ -471,6 +471,21 @@ i.fa.fa-cfw {
 }
 
 /*
+ * Style for alert
+ */
+.alert-text{
+    margin: 10px;
+    font-size: 1.2em;
+}
+
+.alert-btn {
+    margin: 10px;
+}
+
+.alert-btn > .button{
+    min-width: 90px;
+}
+/*
  * Classes and styles for module
  * To standardize certain common interface
  */
