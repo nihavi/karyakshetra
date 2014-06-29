@@ -50,7 +50,6 @@ function objectFunction(){
         $('#file-list').empty();
         
         var files = data.files;
-        console.log(files);
         for (var i=0;i<files.length;++i) {
             var file = files[i];
             var dir = false;
@@ -136,14 +135,65 @@ function objectFunction(){
                     getFileList(currDirectory.id);
                 },
                 error: function(){
-                    console.log('Could not make directory');
+                    console.log('Could not create directory');
                 }
             });
-        }, 'New directory', 'Make');
+        }, 'New directory', 'Create');
     }
     
     function directoryUp(){
         getFileList(currDirectory.pid);
+    }
+    
+    function removeFiles(){
+        var toRemove = [];
+        $('#file-list .file')
+            .filter( function( index, elem ){
+                if( $(elem).find('input.file-selector').prop('checked') )
+                    return true;
+                else 
+                    return false;
+            })
+            .each( function( index ){
+                toRemove[index] = $(this).data('fid');
+            });
+        
+        if( toRemove.length ){
+            $.ajax({
+                type: 'POST',
+                dataType: "json",
+                url: baseUrl + 'storage/remove/',
+                data: {
+                    remove: toRemove
+                },
+                success: function(data){
+                    var text;
+                    if( data.fail == 0){
+                        if( data.success == 1 ){
+                            text = "File successfully removed.";
+                        }
+                        else {
+                            text = data.success + " files successfully removed."
+                        }
+                    }
+                    else {
+                        if( data.fail == 1 && data.success == 0 ){
+                            text = "Could not remove file";
+                        }
+                        else {
+                            text =  data.success + " file" + ((data.success > 1)?"s":"") + " removed.<br>"
+                            text += "Could not remove " + data.fail + " file" + ((data.success > 1)?"s":"");
+                        }
+                    }
+                    Base.alert(text);
+                    
+                    getFileList(currDirectory.id);
+                },
+                error: function(){
+                    console.log('Could not remove files');
+                }
+            });
+        }
     }
     
     this.init = function(parent){
@@ -211,10 +261,22 @@ function objectFunction(){
                             },
                             {
                                 type: 'button',
-                                icon: 'fa-step-backward',
+                                icon: 'fa-reply',
                                 title: 'One level up',
                                 callback: directoryUp,
                             }
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        id: 'fileOperations',
+                        items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-times',
+                                title: 'Remove',
+                                callback: removeFiles
+                            },
                         ]
                     },
                     {

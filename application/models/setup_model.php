@@ -42,6 +42,10 @@ class Setup_model extends CI_Model {
             'pid'=>array(
                 'type'=>'INT'
             ),
+            'removed'=>array(
+                'type'=>'BOOLEAN',
+                'default'=>0
+            ),
         );
 
         $this->dbforge->add_field($fields);

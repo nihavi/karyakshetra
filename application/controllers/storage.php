@@ -83,6 +83,53 @@ class Storage extends CI_Controller {
         return $this->file->mkdir($dir_name, $parent_id, $uid);
     }
     
+    function remove()
+    {
+        $this->auth->require_authentication(true);
+        
+        $remove = $this->input->post('remove', TRUE);
+        $recursive = $this->input->post('recur', TRUE);
+        
+        if ( $recursive )
+            $recursive = true;
+        else 
+            $recursive = false;
+        
+        $this->load->model('File_model', 'file');
+        $uid = $this->session->userdata('uid');
+        
+        $succ = 0;
+        $fail = 0;
+        
+        $noOfFiles = sizeof($remove);
+        for( $i = 0; $i < $noOfFiles; $i++ )
+        {
+            $f = $this->file->get_file( $remove[$i] );
+            if( !$f )
+                continue;
+            
+            if( $f->ftype == 0 ){
+                if( $this->file->remove_dir($f->fid, $recursive) === false )
+                    $fail++;
+                else 
+                    $succ++;
+            }
+            else {
+                if( $this->file->remove_file($f->fid) === false )
+                    $fail++;
+                else 
+                    $succ++;
+            }
+        }
+        
+        $data = array(
+            'success' => $succ,
+            'fail' => $fail
+        );
+        
+        echo json_encode($data);
+    }
+    
     //function submit($mode, $fid)
     //{
         /*

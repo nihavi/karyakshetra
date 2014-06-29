@@ -119,9 +119,48 @@ class File_model extends CI_Model {
         
     }
     
-    function open($file_id){
+    function remove_file($file_id)
+    {
+        $this->db->trans_start();
+        $this->db->where('fid', $file_id);
+        $this->db->where('ftype != ', 0);
+        $this->db->set('removed', 1);
+        $this->db->update('files');
+        $this->db->trans_complete();
+        
+        return $this->db->trans_status();
+    }
+    
+    function remove_dir($dir_id, $recursive = false)
+    {
+        if( $recursive ){
+        }
+        else {
+            $query = $this->db->get_where('files', array(
+                    'pid' => $dir_id,
+                    'removed' => 0,
+                ));
+        
+            if ($query->num_rows() > 0)
+            {
+                return false;
+            }
+            
+            $this->db->trans_start();
+            $this->db->where('fid', $dir_id);
+            $this->db->set('removed', 1);
+            $this->db->update('files');
+            $this->db->trans_complete();
+            
+            return $this->db->trans_status();
+        }
+    }
+    
+    function open($file_id)
+    {
         
         $this->db->where('fid', $file_id);
+        $this->db->where('removed', 0);
         
         $query = $this->db->get('files');
         
@@ -149,6 +188,7 @@ class File_model extends CI_Model {
         $this->db->where('files.fid = filepermissions.fid');
         $this->db->where("filepermissions.gid = $group_id");
         $this->db->where("files.pid = $parent_id");
+        $this->db->where("files.removed = 0");
         $this->db->order_by('modified', 'desc');
         $query = $this->db->get();
         
@@ -157,7 +197,10 @@ class File_model extends CI_Model {
     
     function get_file($file_id)
     {
-        $query = $this->db->get_where('files', array('fid' => $file_id));
+        $query = $this->db->get_where('files', array(
+                'fid' => $file_id,
+                'removed' => 0,
+            ));
         
         if ($query->num_rows() > 0)
         {
