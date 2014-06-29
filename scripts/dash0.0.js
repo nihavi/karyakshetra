@@ -1,7 +1,9 @@
-Dash = new(function(){
+function objectFunction(){
     
     var baseUrl;
     
+    //features not required from base
+    //not sure whether the above comment is very reasonable though
     this.exclude = ['defaultMenu', 'fileName'];
     
     function download() {
@@ -10,6 +12,7 @@ Dash = new(function(){
         
         var selectedFiles = $('#file-list .file.focus');
         
+        //different destination URIs if a zip of multiple files is required
         if (selectedFiles.length > 1) {
             selectedFiles.each(function (i) {
             
@@ -48,6 +51,10 @@ Dash = new(function(){
         
         var newFile = $('<div></div>');
 
+        /*
+         * Module name to module URI path map
+         * Necessary because server sends module name, but URI is required for link
+         * */
         var modules = [
             {
                 'name'  : 'Akruti',
@@ -96,6 +103,8 @@ Dash = new(function(){
                     f.append($('<input class="file-selector" type="checkbox">'));
             
                     f.append(a);
+                    //capitalise string
+                    //could actually be made a utility function
                     file.module = file.module.charAt(0).toUpperCase() + file.module.slice(1);
                     var moduleLabel = $('<span class="disabled module-label pull-right">' + file.module + ' file</span>');
                     f.append(moduleLabel);
@@ -157,6 +166,8 @@ Dash = new(function(){
     
     };
 
-})();
+};
+
+Dash = new objectFunction();
 
 module = Dash;
