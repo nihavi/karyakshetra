@@ -489,6 +489,65 @@ i.fa.fa-cfw {
 .alert-btn > .button{
     min-width: 90px;
 }
+
+/*
+ * Style for file browser
+ */
+.browse-file-list {
+    text-align: left;
+    width: 480px;
+}
+.browse-file.enabled a {
+    color: #057cb8;
+    text-decoration: none;
+}
+.browse-file.enabled a:hover {
+    text-decoration: underline;
+}
+.browse-file {
+    padding: 0.5em;
+    border-bottom: 1px solid #ccc;
+    color: #057cb8;
+    display: block;
+    text-decoration: none;
+    transition: 0.3s background-color;
+}
+.browse-file.enabled {
+    cursor: pointer;
+}
+.browse-file.enabled:hover {
+    background-color: #eee;
+    transition: 0.3s background-color;
+}
+.browse-file.disabled {
+    color: #666;
+}
+.browse-file.enabled.focus {
+    background-color: darkorange;
+    color: white;
+}
+.browse-file.enabled.focus a, .browse-file.enabled.focus span {
+    color: white;
+}
+.browse-btn {
+    margin: 10px;
+}
+.browse-btn > .button{
+    min-width: 90px;
+}
+.browse-module-label.disabled {
+    color: #666;
+}
+.browse-module-label.disabled.focus {
+    color: #white;
+}
+.browse-module-label {
+    width: 20%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /*
  * Classes and styles for module
  * To standardize certain common interface

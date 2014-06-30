@@ -52,6 +52,7 @@ class Storage extends CI_Controller {
                 'name'      => $f->fname,
                 'module'    => $module['name'],
                 'id'        => $f->fid,
+                'ftype'     => $f->ftype,
                 'modified'  => $f->modified,
             );
             
