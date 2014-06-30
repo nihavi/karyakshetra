@@ -124,6 +124,8 @@ function objectFunction(){
     
     function newDirectory(){
         Base.prompt("Enter new directory name", function(name){
+            if( !name )
+                return;
             $.ajax({
                 type: 'POST',
                 url: baseUrl + 'storage/mkdir/',
