@@ -1280,7 +1280,8 @@ Base = new (function(){
         $('<div class="alert-text">'+text+'</div>').appendTo(modal);
         $('<div class="alert-btn"></div>')
             .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',Base.closeModal))
-            .appendTo(modal);
+            .appendTo(modal)
+            .find('.button').focus();
     }
     /*
      * Base.browse accepts
