@@ -61,6 +61,8 @@ function objectFunction(){
             f.addClass('file');
             
             f.data('fid', file.id);
+            f.data('fname', file.fname);
+            f.data('ftype', file.ftype);
             
             var a = $('<a></a>');
             if(dir){
@@ -137,7 +139,7 @@ function objectFunction(){
                     getFileList(currDirectory.id);
                 },
                 error: function(){
-                    console.log('Could not create directory');
+                    Base.alert('Could not create directory');
                 }
             });
         }, 'New directory', 'Create');
@@ -147,6 +149,62 @@ function objectFunction(){
         getFileList(currDirectory.pid);
     }
     
+    function renameFiles(){
+        var toRename = [];
+        var renameFiles = $('#file-list .file')
+            .filter( function( index, elem ){
+                if( $(elem).find('input.file-selector').prop('checked') )
+                    return true;
+                else 
+                    return false;
+            });
+        
+        var renameCount = renameFiles.length;
+        
+        if( renameCount <= 0 ){
+            return;
+        }
+        else if( renameCount > 1 ){
+            Base.alert('Batch rename is not supported yet.');
+        }
+        else {
+            var renameFileId = renameFiles.data('fid');
+            
+            Base.prompt('Enter new file name', function(value){
+                    if( !value )
+                        return;
+                    $.ajax({
+                        type: 'POST',
+                        dataType: "json",
+                        url: baseUrl + 'storage/rename/',
+                        data: {
+                            rename: [
+                                {
+                                    fid: renameFileId,
+                                    name: value,
+                                }
+                            ]
+                        },
+                        success: function(data){
+                            var text;
+                            if( data.fail ){
+                                text = 'Could not rename file';
+                            }
+                            else {
+                                text = 'File successfully renamed';
+                            }
+                                
+                            Base.alert(text);
+                            
+                            getFileList(currDirectory.id);
+                        },
+                        error: function(){
+                            Base.alert('Could not rename file');
+                        }
+                    });
+                }, renameFiles.data('fname'));
+        }
+    }
     function removeFiles(){
         var toRemove = [];
         $('#file-list .file')
@@ -192,7 +250,7 @@ function objectFunction(){
                     getFileList(currDirectory.id);
                 },
                 error: function(){
-                    console.log('Could not remove files');
+                    Base.alert('Could not remove files');
                 }
             });
         }
@@ -273,6 +331,12 @@ function objectFunction(){
                         type: 'group',
                         id: 'fileOperations',
                         items: [
+                            {
+                                type: 'button',
+                                icon: 'fa-font',
+                                title: 'Rename',
+                                callback: renameFiles
+                            },
                             {
                                 type: 'button',
                                 icon: 'fa-times',

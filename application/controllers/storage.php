@@ -84,6 +84,36 @@ class Storage extends CI_Controller {
         return $this->file->mkdir($dir_name, $parent_id, $uid);
     }
     
+    function rename(){
+        $this->auth->require_authentication(true);
+        
+        $rename = $this->input->post('rename', TRUE);
+        
+        $this->load->model('File_model', 'file');
+        
+        $succ = 0;
+        $fail = 0;
+        
+        $noOfFiles = sizeof($rename);
+        for( $i = 0; $i < $noOfFiles; $i++ )
+        {
+            if( !isset($rename[$i]['fid']) || !isset($rename[$i]['name']) )
+                continue;
+            
+            if( $this->file->rename($rename[$i]['fid'], $rename[$i]['name']) )
+                $succ++;
+            else 
+                $fail++;
+        }
+        
+        $data = array(
+            'success' => $succ,
+            'fail' => $fail
+        );
+        
+        echo json_encode($data);
+    }
+    
     function remove()
     {
         $this->auth->require_authentication(true);
@@ -110,13 +140,13 @@ class Storage extends CI_Controller {
                 continue;
             
             if( $f->ftype == 0 ){
-                if( $this->file->remove_dir($f->fid, $recursive) === false )
+                if( !$this->file->remove_dir($f->fid, $recursive) )
                     $fail++;
                 else 
                     $succ++;
             }
             else {
-                if( $this->file->remove_file($f->fid) === false )
+                if( !$this->file->remove_file($f->fid) )
                     $fail++;
                 else 
                     $succ++;
