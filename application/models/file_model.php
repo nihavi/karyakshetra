@@ -119,6 +119,16 @@ class File_model extends CI_Model {
         
     }
     
+    function rename($file_id, $name)
+    {
+        $this->db->trans_start();
+        $this->db->where('fid', $file_id);
+        $this->db->set('fname', $name);
+        $this->db->update('files');
+        $this->db->trans_complete();
+        return ($this->db->trans_status() === false)?false:true;
+    }
+    
     function remove_file($file_id)
     {
         $this->db->trans_start();
@@ -128,7 +138,7 @@ class File_model extends CI_Model {
         $this->db->update('files');
         $this->db->trans_complete();
         
-        return $this->db->trans_status();
+        return ($this->db->trans_status() === false)?false:true;
     }
     
     function remove_dir($dir_id, $recursive = false)
@@ -152,7 +162,7 @@ class File_model extends CI_Model {
             $this->db->update('files');
             $this->db->trans_complete();
             
-            return $this->db->trans_status();
+            return ($this->db->trans_status() === false)?false:true;
         }
     }
     

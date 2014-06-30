@@ -9,8 +9,8 @@
         <link href="<?php echo base_url();?>styles/normalize.css" rel="stylesheet">
         <link href="<?php echo base_url();?>styles/login.css" rel="stylesheet">
     </head>
-    <body><?php
-    
+    <body onload="document.getElementById('username').focus();">
+        <?php
         $this->load->helper('form');
     
         ?><div class="container">

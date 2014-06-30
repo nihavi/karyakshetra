@@ -1280,6 +1280,167 @@ Base = new (function(){
         $('<div class="alert-text">'+text+'</div>').appendTo(modal);
         $('<div class="alert-btn"></div>')
             .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',Base.closeModal))
+            .appendTo(modal)
+            .find('.button').focus();
+    }
+    /*
+     * Base.browse accepts
+     * Function callback(Number file_id) - callback when browse is complete, 
+     *      if it fails response will be false, otherwise file_id
+     * String ok    - Text to be shown in ok btn, default OK
+     * String cancel    - Text to be shown in cancel btn, default Cancel
+     * Array ftypes - IDs of allowed file types
+     */
+    this.browse = function(callback, ok, cancel, ftypes){
+        if( !callback )
+            return;
+        if( !ok )
+            ok = 'OK';
+        if( !cancel )
+            cancel = 'Cancel';
+        if( !(Array.isArray(ftypes) && ftypes.length) ){
+            ftypes = [];
+        }
+        
+        var currDirectory = {
+                id: 0,
+                pid: 0,
+            };
+            
+        var updateFileListUI = function (data, fileListUI) {
+        
+            fileListUI.empty();
+            
+            var files = data.files;
+            console.log(currDirectory);
+            var disable = ( currDirectory.pid == currDirectory.id );
+            var f = $('<div class="browse-file"></div>');
+            if( disable ){
+                f.addClass('disabled');
+            }
+            else {
+                f.addClass('enabled');
+            }
+            var a = $('<span></span>');
+            a.html('<span class="fa fa-reply"></span> Parent Directory');
+            f.append(a);
+            if( !disable ){
+                f.on('click', function(e) {
+                    getFileList(currDirectory.pid, fileListUI);
+                });
+            }
+            fileListUI.append(f);
+            
+            
+            for (var i=0;i<files.length;++i) {
+                var file = files[i];
+                var dir = false;
+                if( !file.module ){
+                    dir = true;
+                }
+                file.ftype = parseInt(file.ftype);
+                
+                var disable = (ftypes.length && file.ftype != 0 && ftypes.indexOf(file.ftype) == -1);
+                var f = $('<div class="browse-file"></div>');
+                
+                if( disable )
+                    f.addClass('disabled');
+                else 
+                    f.addClass('enabled');
+                
+                f.data('fid', file.id);
+                f.data('ftype', file.ftype);
+                
+                var a;
+                if(dir){
+                    a = $('<a></a>');
+                    a.attr('href', 'javascript:;');
+                    a.data('fid', file.id);
+                    a.click(function (ev){
+                        getFileList($(this).data('fid'), fileListUI);
+                    });
+                }
+                else {
+                    a = $('<span></span>')
+                }
+                a.text(file.name);
+        
+                f.append(a);
+                var moduleLabel;
+                
+                if( dir ){
+                    moduleLabel = 'Directory';
+                }
+                else {
+                    moduleLabel = file.module.charAt(0).toUpperCase() + file.module.slice(1) + ' file';
+                }
+                
+                moduleLabel = $('<span class="disabled browse-module-label pull-right">' + moduleLabel + '</span>');
+                f.append(moduleLabel);
+                
+                if( !disable ){
+                    f.on('click', function(e) {
+                        if (!$(e.target).is('a')) {
+                            var file = $(this);
+                            if (file.hasClass('focus')) {
+                                fileListUI.find('.browse-file.focus').removeClass('focus');
+                                file.removeClass('focus');
+                            }
+                            else {
+                                fileListUI.find('.browse-file.focus').removeClass('focus');
+                                file.addClass('focus');
+                            }
+                        }
+                    });
+                }
+                
+                fileListUI.append(f);
+            }
+        }
+        
+        var getFileList = function (parent, fileListUI) {
+            //Originally copied from Dash
+            $.ajax({
+                dataType: "json",
+                url: baseUrl + 'storage/filelist/' + parent +'/',
+                success: function (data){
+                    currDirectory.id = data.dir.id;
+                    currDirectory.pid = data.dir.parent;
+                    updateFileListUI(data, fileListUI);
+                },
+            });
+        }
+        
+        var modal = Base.openModal(null, null, function(){
+                callback(false);
+            });
+        
+        modal = $(modal);
+        
+        var fileListUI = $('<div class="browse-file-list">FileList</div>').appendTo(modal);
+        getFileList(currDirectory.id, fileListUI);
+        
+        var browseEnter = function(){
+            var file = fileListUI.find('.browse-file.focus');
+            if( file.length && ( !ftypes.length || ftypes.indexOf(parseInt(file.data('ftype'))) > -1) ){
+                callback(file.data('fid'));
+                Base.closeModal(false);
+            }
+            else if( !ftypes.length || ftypes.indexOf(0) > -1 ){
+                callback(currDirectory.id);
+                Base.closeModal(false);
+            }
+            else {
+                Base.closeModal();
+                //Error: Select allowed file
+            }
+        }
+        
+        $('<div class="browse-btn"></div>')
+            .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
+                    Base.closeModal();
+                }))
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',browseEnter))
             .appendTo(modal);
     }
     
