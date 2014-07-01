@@ -1256,10 +1256,10 @@ Base = new (function(){
             .appendTo(modal)
             .focus();
         $('<div class="prompt-btn"></div>')
-            .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
+            .append($('<input type="button" value="'+cancel+'" class="btn" />').bind('click',function(){
                     Base.closeModal();
                 }))
-            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',promptEnter))
+            .append($('<input type="button" value="'+ok+'" class="btn" />').bind('click',promptEnter))
             .appendTo(modal);
     }
     /*
