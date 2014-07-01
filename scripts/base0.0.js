@@ -80,7 +80,7 @@ Base = new (function(){
     var lastSavedFile;
     var fileName;
 
-    var saveFile = function(filedata, filename){
+    var saveFile = function(filedata, filename, parentId){
         var postData = {
             file: filedata,
             module: moduleId,
@@ -97,6 +97,11 @@ Base = new (function(){
                 postData.filename = filename;
             else
                 postData.filename = 'Untitled file';
+            
+            if( !parentId ){
+                parentId = 0;
+            }
+            postData.parent = parentId;
         }
         $.ajax({
             type: 'POST',
@@ -525,10 +530,70 @@ Base = new (function(){
         if( 'getFile' in module ){
             var data = module.getFile();
             if( isNewFile() ){
-                Base.prompt("Enter file name", function(filename){
+                /*Base.prompt("Enter file name", function(filename){
                     if( !filename )return;
                     saveFile(data, filename);
-                }, 'Untitled file', 'Save');
+                }, 'Untitled file', 'Save');*/
+                function saveAsDialogue(parentFile, value){
+                    var modal = $(Base.openModal());
+                    $('<div class="save-text"></div>')
+                        .append($('<span>File location</span>'))
+                        .append(
+                            $('<div class="browse-result"></div>')
+                                .append($('<span class="path"></span>'))
+                                .append(
+                                    $('<input type="button" value="Browse" class="button pull-right" />')
+                                        .bind('click', function(){
+                                            var value = $('.prompt-in').val();
+                                            Base.closeModal(false);
+                                            Base.browse(function(file){
+                                                saveAsDialogue(file, value);
+                                            }, 'Open', null, [0])
+                                        })
+                                )
+                                .append($('<span class="clearfloat"></span>'))
+                        )
+                        .append($('<span>Enter file name</span>'))
+                        .appendTo(modal);
+                    
+                    if(parentFile.path){
+                        modal.find('.browse-result .path').text(parentFile.path);
+                    }
+                    else {
+                        $.ajax({
+                            url: baseUrl + 'storage/getpath/' + parentFile.id +'/',
+                            success: function (data){
+                                if( data ){
+                                    modal.find('.browse-result .path').text(data);
+                                }
+                                else {
+                                    parentFile = {id: 0, path: '/'};
+                                    modal.find('.browse-result .path').text(parentFile.path);
+                                }
+                            },
+                        });
+                    }
+                        
+                    var promptEnter = function(){
+                        saveFile(data, $('.prompt-in').val(), parentFile.id);
+                        Base.closeModal(false);
+                    }
+                    $('<input class="prompt-in" value="'+value+'">')
+                        .keyup(function(ev){
+                                if(ev.keyCode == 13){
+                                    promptEnter();
+                                }
+                            })
+                        .appendTo(modal)
+                        .focus();
+                    $('<div class="prompt-btn"></div>')
+                        .append($('<input type="button" value="Cancel" class="button" />').bind('click',function(){
+                                Base.closeModal();
+                            }))
+                        .append($('<input type="button" value="Save" class="button" />').bind('click',promptEnter))
+                        .appendTo(modal);
+                }
+                saveAsDialogue({id: 0, path: '/'}, 'Untitled file');
             }
             else {
                 saveFile(data);

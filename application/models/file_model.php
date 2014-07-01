@@ -235,7 +235,7 @@ class File_model extends CI_Model {
         {
             $file = $this->get_file($file->pid);
             if( !$file )
-                echo false;
+                return false;
             $path = $file->fname . '/' . $path;
         }
         

@@ -14,6 +14,7 @@ class Save extends CI_Controller {
             
             $fname = $this->input->post('filename', TRUE);
             $ftype = $this->input->post('module', TRUE);
+            $parent = $this->input->post('parent', TRUE);
             
             if(!$fname)
             {
@@ -22,7 +23,7 @@ class Save extends CI_Controller {
             
             $data = $this->input->post('file');
             
-            $file_id = $this->file->save_as($fname, $data, $ftype, 0, $user_id);
+            $file_id = $this->file->save_as($fname, $data, $ftype, $parent, $user_id);
             
             echo $file_id;
         }

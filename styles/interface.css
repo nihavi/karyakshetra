@@ -399,6 +399,23 @@ i.fa.fa-cfw {
     color: white;
 }
 
+/* 
+ * Save dialogue box
+ */
+.save-text{
+    margin: 10px;
+    font-size: 1.2em;
+}
+.save-text .browse-result{
+    text-align: left;
+    margin: 10px;
+}
+.save-text .browse-result .path{
+    float: left;
+    display: inline-block;
+    width: 240px;
+}
+
 /*
  * Modal box
  */
