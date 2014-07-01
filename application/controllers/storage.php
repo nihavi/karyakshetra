@@ -21,6 +21,7 @@ class Storage extends CI_Controller {
                 'name'      => $d->fname,
                 'modified'  => $d->modified,
                 'parent'    => $d->pid,
+                'path'      => $this->file->get_file_path($d->fid),
             );
         }
         else {
@@ -29,6 +30,7 @@ class Storage extends CI_Controller {
                 'name'      => '',
                 'modified'  => '',
                 'parent'    => 0,
+                'path'      => '/',
             );
         }
         
@@ -65,6 +67,14 @@ class Storage extends CI_Controller {
         );
         
         echo json_encode($data);
+    }
+    
+    function getpath($file_id){
+        $this->auth->require_authentication(true);
+        
+        $this->load->model('File_model', 'file');
+        
+        echo $this->file->get_file_path($file_id);
     }
     
     function mkdir()

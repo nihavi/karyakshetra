@@ -17,7 +17,7 @@ function objectFunction(){
         if (selectedFiles.length > 1) {
             selectedFiles.each(function (i) {
             
-                arg += $(this).data('fid') + '-';
+                arg += $(this).data('file').id + '-';
             
             });
         
@@ -26,7 +26,7 @@ function objectFunction(){
         }
         else
         {
-            window.location = response.baseUrl + 'download/file/' + selectedFiles.data('fid');
+            window.location = response.baseUrl + 'download/file/' + selectedFiles.data('file').id;
         }
     }
     
@@ -60,9 +60,7 @@ function objectFunction(){
             var f = $('<div></div>');
             f.addClass('file');
             
-            f.data('fid', file.id);
-            f.data('fname', file.name);
-            f.data('ftype', file.ftype);
+            f.data('file', file);
             
             var a = $('<a></a>');
             if(dir){
@@ -168,8 +166,8 @@ function objectFunction(){
             Base.alert('Batch rename is not supported yet.');
         }
         else {
-            var renameFileId = renameFiles.data('fid');
-            var renameFileName = renameFiles.data('fname');
+            var renameFileId = renameFiles.data('file').id;
+            var renameFileName = renameFiles.data('file').name;
             
             Base.prompt('Enter new file name', function(value){
                     if( !value )
@@ -216,7 +214,7 @@ function objectFunction(){
                     return false;
             })
             .each( function( index ){
-                toRemove[index] = $(this).data('fid');
+                toRemove[index] = $(this).data('file').id;
             });
         
         if( toRemove.length ){

@@ -531,6 +531,7 @@ Base = new (function(){
             alert('File save not supported');
         }
     }
+    
     var defaultMenus = [
         {
             type: 'main',
@@ -547,7 +548,7 @@ Base = new (function(){
                             icon: 'fa-save',
                             title: 'Save',
                             callback: saveFrontEnd
-                        }
+                        },
                     ]
                 }
             ]
@@ -1312,7 +1313,6 @@ Base = new (function(){
             fileListUI.empty();
             
             var files = data.files;
-            console.log(currDirectory);
             var disable = ( currDirectory.pid == currDirectory.id );
             var f = $('<div class="browse-file"></div>');
             if( disable ){
@@ -1404,6 +1404,7 @@ Base = new (function(){
                 dataType: "json",
                 url: baseUrl + 'storage/filelist/' + parent +'/',
                 success: function (data){
+                    fileLocationUI.find('.browse-location').text(data.dir.path);
                     currDirectory.id = data.dir.id;
                     currDirectory.pid = data.dir.parent;
                     updateFileListUI(data, fileListUI);
@@ -1417,7 +1418,12 @@ Base = new (function(){
         
         modal = $(modal);
         
-        var fileListUI = $('<div class="browse-file-list">FileList</div>').appendTo(modal);
+        var fileLocationUI = $('<div class="browse-location-p"></div>')
+            .append($('<span class="fa fa-folder">&nbsp;</span>'))
+            .append($('<span class="browse-location"></span>'))
+            .appendTo(modal);
+            
+        var fileListUI = $('<div class="browse-file-list"></div>').appendTo(modal);
         getFileList(currDirectory.id, fileListUI);
         
         var browseEnter = function(){
@@ -1641,3 +1647,4 @@ Base = new (function(){
     };
     
 })();
+

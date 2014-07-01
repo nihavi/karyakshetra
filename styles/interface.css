@@ -493,6 +493,11 @@ i.fa.fa-cfw {
 /*
  * Style for file browser
  */
+.browse-location-p {
+    text-align: left;
+    color: #666;
+    padding: 15px;
+}
 .browse-file-list {
     text-align: left;
     width: 480px;

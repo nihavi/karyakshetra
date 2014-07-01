@@ -222,6 +222,26 @@ class File_model extends CI_Model {
         }
     }
     
+    function get_file_path($file_id)
+    {
+        if($file_id == 0)
+            return '/';
+        
+        $file = $this->get_file($file_id);
+        if( !$file )
+            return false;
+        $path = $file->fname;
+        while( $file->pid != 0 )
+        {
+            $file = $this->get_file($file->pid);
+            if( !$file )
+                echo false;
+            $path = $file->fname . '/' . $path;
+        }
+        
+        return '/' . $path;
+    }
+    
     function extract_upload($file_name, $file_ext, $file_path)
     {
         $module = substr($file_ext, 1);
