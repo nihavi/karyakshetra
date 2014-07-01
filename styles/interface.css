@@ -502,11 +502,11 @@ i.fa.fa-cfw {
     text-align: left;
     width: 480px;
 }
-.browse-file.enabled a {
+.browse-file a {
     color: #057cb8;
     text-decoration: none;
 }
-.browse-file.enabled a:hover {
+.browse-file a:hover {
     text-decoration: underline;
 }
 .browse-file {

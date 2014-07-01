@@ -17,8 +17,9 @@ class Storage extends CI_Controller {
                 return false;
             }
             $dir = array(
-                'id'        => $d->fid,
                 'name'      => $d->fname,
+                'id'        => $d->fid,
+                'ftype'     => 0,
                 'modified'  => $d->modified,
                 'parent'    => $d->pid,
                 'path'      => $this->file->get_file_path($d->fid),
@@ -26,8 +27,9 @@ class Storage extends CI_Controller {
         }
         else {
             $dir = array(
-                'id'        => 0,
                 'name'      => '',
+                'id'        => 0,
+                'ftype'     => 0,
                 'modified'  => '',
                 'parent'    => 0,
                 'path'      => '/',

@@ -122,6 +122,13 @@ Base = new (function(){
             return true;
     }
     
+    var isFileNotSaved = function(){
+        if( 'getFile' in module ){
+            if( module.getFile() != lastSavedFile )
+                return true;
+        }
+        return false;
+    }
     
     /*
      * opQueue implementation
@@ -531,7 +538,42 @@ Base = new (function(){
             alert('File save not supported');
         }
     }
-    
+    var openFrontEnd = function(){
+        
+        var openFile = function(file, newtab){
+            Base.closeModal(false);
+            if( !file )
+                return;
+            if( newtab )
+                window.open(baseUrl + file.module + '/' + file.id,'_blank');
+            else 
+                window.open(baseUrl + file.module + '/' + file.id,'_self');
+        };
+        
+        Base.browse(function(file){
+            if( file == false ){
+                return;
+            }
+            if( isFileNotSaved() ){                
+                var modal = $(Base.openModal());
+                $('<div class="alert-text">The current file is not saved. You may lose your changes on opening new file.</div>').appendTo(modal);
+                $('<div class="prompt-btn"></div>')
+                    .append($('<input type="button" value="Don\'t Open" class="button" />').bind('click',Base.closeModal))
+                    .append($('<br>'))
+                    .append($('<input type="button" value="Open file in new tab" class="button" />').bind('click', function(ev){
+                            openFile(file, true);
+                        }))
+                    .append($('<br>'))
+                    .append($('<input type="button" value="Open anyway" class="button" />').bind('click',function(ev){
+                            openFile(file, false);
+                        }))
+                    .appendTo(modal);
+            }
+            else {
+                openFile(file, false );
+            }
+        }, 'Open', null, [], false);
+    }
     var defaultMenus = [
         {
             type: 'main',
@@ -549,6 +591,12 @@ Base = new (function(){
                             title: 'Save',
                             callback: saveFrontEnd
                         },
+                        {
+                            type: 'button',
+                            icon: 'fa-folder-open',
+                            title: 'Open file',
+                            callback: openFrontEnd
+                        }
                     ]
                 }
             ]
@@ -718,9 +766,8 @@ Base = new (function(){
                 
         window.onbeforeunload = function(){
             //To prevent unload if file is changed
-            if( 'getFile' in module ){
-                if( module.getFile() != lastSavedFile )
-                    return "You have not saved the file yet. You may lose the changes.";
+            if( isFileNotSaved() ){
+                return "You have not saved the file yet. You may lose the changes.";
             }
         };
     }
@@ -1207,12 +1254,12 @@ Base = new (function(){
     this.closeModal = function(callback){
         //callback is boolean describing should it call callback or not, default true
         if( typeof callback == 'undefined' ) callback = true;
+        $(document).unbind('keyup', closeModalEsc);
+        $('.modal-cont').remove();
         if( callback && modalCallback ){
             modalCallback();
         }
         modalCallback = false;
-        $(document).bind('keyup', closeModalEsc);
-        $('.modal-cont').remove();
     }
     
     /*
@@ -1286,13 +1333,15 @@ Base = new (function(){
     }
     /*
      * Base.browse accepts
-     * Function callback(Number file_id) - callback when browse is complete, 
-     *      if it fails response will be false, otherwise file_id
-     * String ok    - Text to be shown in ok btn, default OK
-     * String cancel    - Text to be shown in cancel btn, default Cancel
-     * Array ftypes - IDs of allowed file types
+     * Function callback(Number file) - callback when browse is complete, 
+     *      if it fails response will be false, otherwise file object
+     * String ok            - Text to be shown in ok btn, default OK
+     * String cancel        - Text to be shown in cancel btn, default Cancel
+     * Array ftypes         - IDs of allowed file types
+     * Boolean directory    - Allow selecting directory as result, default true
+     *      Used when any file but directory is to be choosen, make it false. And leave ftypes
      */
-    this.browse = function(callback, ok, cancel, ftypes){
+    this.browse = function(callback, ok, cancel, ftypes, directory){
         if( !callback )
             return;
         if( !ok )
@@ -1302,10 +1351,12 @@ Base = new (function(){
         if( !(Array.isArray(ftypes) && ftypes.length) ){
             ftypes = [];
         }
+        if( directory != false )
+            directory = true;
         
         var currDirectory = {
                 id: 0,
-                pid: 0,
+                parent: 0,
             };
             
         var updateFileListUI = function (data, fileListUI) {
@@ -1313,7 +1364,7 @@ Base = new (function(){
             fileListUI.empty();
             
             var files = data.files;
-            var disable = ( currDirectory.pid == currDirectory.id );
+            var disable = ( currDirectory.parent == currDirectory.id );
             var f = $('<div class="browse-file"></div>');
             if( disable ){
                 f.addClass('disabled');
@@ -1326,7 +1377,7 @@ Base = new (function(){
             f.append(a);
             if( !disable ){
                 f.on('click', function(e) {
-                    getFileList(currDirectory.pid, fileListUI);
+                    getFileList(currDirectory.parent, fileListUI);
                 });
             }
             fileListUI.append(f);
@@ -1343,13 +1394,12 @@ Base = new (function(){
                 var disable = (ftypes.length && file.ftype != 0 && ftypes.indexOf(file.ftype) == -1);
                 var f = $('<div class="browse-file"></div>');
                 
-                if( disable )
+                if( disable || (dir && !directory))
                     f.addClass('disabled');
                 else 
                     f.addClass('enabled');
                 
-                f.data('fid', file.id);
-                f.data('ftype', file.ftype);
+                f.data('file', file);
                 
                 var a;
                 if(dir){
@@ -1405,8 +1455,7 @@ Base = new (function(){
                 url: baseUrl + 'storage/filelist/' + parent +'/',
                 success: function (data){
                     fileLocationUI.find('.browse-location').text(data.dir.path);
-                    currDirectory.id = data.dir.id;
-                    currDirectory.pid = data.dir.parent;
+                    currDirectory = data.dir;
                     updateFileListUI(data, fileListUI);
                 },
             });
@@ -1428,13 +1477,17 @@ Base = new (function(){
         
         var browseEnter = function(){
             var file = fileListUI.find('.browse-file.focus');
-            if( file.length && ( !ftypes.length || ftypes.indexOf(parseInt(file.data('ftype'))) > -1) ){
-                callback(file.data('fid'));
+            if( !directory && !file.length)
+                return;
+            if( file.length && ( !ftypes.length || ftypes.indexOf(parseInt(file.data('file').ftype)) > -1) && (parseInt(file.data('file').ftype) != 0 || directory) ){
+                console.log(ftypes);
+                var fileObj = file.data('file');
                 Base.closeModal(false);
+                callback(fileObj);
             }
-            else if( !ftypes.length || ftypes.indexOf(0) > -1 ){
-                callback(currDirectory.id);
+            else if( directory && ( !ftypes.length || ftypes.indexOf(0) > -1 ) ){
                 Base.closeModal(false);
+                callback(currDirectory);
             }
             else {
                 Base.closeModal();
