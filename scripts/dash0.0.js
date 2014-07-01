@@ -61,7 +61,7 @@ function objectFunction(){
             f.addClass('file');
             
             f.data('fid', file.id);
-            f.data('fname', file.fname);
+            f.data('fname', file.name);
             f.data('ftype', file.ftype);
             
             var a = $('<a></a>');
@@ -169,6 +169,7 @@ function objectFunction(){
         }
         else {
             var renameFileId = renameFiles.data('fid');
+            var renameFileName = renameFiles.data('fname');
             
             Base.prompt('Enter new file name', function(value){
                     if( !value )
@@ -202,7 +203,7 @@ function objectFunction(){
                             Base.alert('Could not rename file');
                         }
                     });
-                }, renameFiles.data('fname'));
+                }, renameFileName);
         }
     }
     function removeFiles(){
