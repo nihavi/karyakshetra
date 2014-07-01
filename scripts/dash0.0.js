@@ -71,7 +71,6 @@ function objectFunction(){
                 });
             }
             else {
-                a.attr('target', '_blank');
                 a.attr('href', file.module + '/' + file.id);
             }
             a.text(file.name);
