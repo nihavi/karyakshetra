@@ -581,7 +581,7 @@ i.fa.fa-cfw {
  * To standardize certain common interface
  */
 
-.modal-content .btn {
+.modal-content .button {
     font-size: 16px;
     text-decoration: none;
     background-color: #1185c0;
@@ -593,19 +593,11 @@ i.fa.fa-cfw {
     transition: background-color 0.1s;
 }
 
-.modal-content .btn.btn-large {
-    font-size: 20px;
-}
-
-.modal-content .btn.btn-small {
-    font-size: 14px;
-}
-
-.modal-content .btn:hover {
+.modal-content .button:hover {
     background-color: #006ca8;
     border: 1px solid #005c98;
 }
-
+/* Old button styles 
 .button {
     font-size:20px;
     color:white;
@@ -625,7 +617,7 @@ i.fa.fa-cfw {
 .button:active{
     box-shadow:0px 0px 1px black inset;
 }
-
+*/
 /* Please wait span */
 
 span.wait:before {
