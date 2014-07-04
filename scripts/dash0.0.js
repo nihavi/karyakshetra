@@ -48,6 +48,13 @@ function objectFunction(){
     function updateFileListUI (data) {
         
         $('#file-list').empty();
+            
+        $('<div id="location-bar"></div>')
+            .append($('<span class="fa fa-folder">&nbsp;</span>'))
+            .append($('<span class="location"></span>')
+                .text(data.dir.path)
+            )
+            .appendTo('#file-list');
         
         var files = data.files;
         for (var i=0;i<files.length;++i) {
