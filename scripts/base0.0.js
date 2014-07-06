@@ -1396,6 +1396,13 @@ Base = new (function(){
             .appendTo(modal)
             .find('.button').focus();
     }
+    this.openDialog = function(title) {
+        var modal = $(this.openModal());
+        if (title) {
+            modal.append('<h3 class="dialog-title">' + title + '</h3>');
+        }
+        return modal.get(0);
+    }
     /*
      * Base.browse accepts
      * Function callback(Number file) - callback when browse is complete, 
