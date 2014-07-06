@@ -1568,6 +1568,386 @@ Base = new (function(){
             .appendTo(modal);
     }
     
+    this.terminal = function(){
+        /*{
+            command: String,
+            options: [
+                {
+                    option: [String, ...],
+                    action: 'store' || 'set_true' || 'set_false' || 'set_value' || 'append' || 'append_value' || 'help'
+                    destination: String,
+                    [if 'set_value' || 'append_value']
+                    value: Mixed,
+                    [endif]
+                    [if 'store' || 'append']
+                    type: 'string' || 'int' || 'float',
+                    possibles: Array or Function returning Array,   //For autocompletion, does not enforce anything
+                    [endif]
+                    default: Mixed, //According to type
+                    help: String
+                }
+            ],
+            usage: String,
+            help: String,
+            callback: Function(command, options, arguments, rawCommand)
+        }*/
+        
+        var availComamnds = {};
+        
+        function registerCommand(command){
+            //Conflicts are not resolved automatically, they may crash it
+            if( !(command && command.command && !(command.command in availComamnds) && typeof command.callback == 'function' ))
+                return false;
+            
+            var opt;
+            var options={};
+            var ign = 0;
+            while((opt = command.options.shift())!=undefined){
+                for(var i=0; i<opt.option.length; i++){
+                    if(opt.option[i] in options){
+                        //Ignored one of the forms of option
+                        ign++;
+                        continue;
+                    }
+                    options[opt.option[i]] = opt;
+                }
+                if( ign == opt.option.length ){
+                    //Error: Option is not registered
+                }
+            }
+            command.options = options;
+            availComamnds[command.command] = command;
+        }
+        
+        registerCommand({
+            command: 'ls',
+            options: [
+                {
+                    option: ['-h', '--help'],
+                    action: 'help',
+                },
+                {
+                    option: ['-l', '--long-list'],
+                    action: 'set_true',
+                    destination: 'longList',
+                    default: false,
+                    help: 'Show long detailed list',
+                },
+                {
+                    option: ['-f', '--file'],
+                    action: 'store',
+                    destination: 'file',
+                    type: 'string',
+                    help: 'Show a specific file',
+                }
+            ],
+            usage: 'ls [OPTIONS]',
+            help: "The first command in the terminal. Doesn't do anything, though :P",
+            callback: function(command, options, arguments, rawCommand,term){
+                term.out.print('Command found, and working.\n');
+                term.out.print('Options: ');
+                for (var opt in options){
+                    term.out.print('\t' + opt + '=' + options[opt]);
+                }
+                term.out.print('\nPositional arguments: \n\t' + arguments.join(', '));
+            }
+        });
+        
+        var termControll = {
+            out: {
+                print: function(message, options){
+                    /*
+                     * options
+                     * newline: To append newline at the end of message or not
+                     */
+                    message = message.replace(new RegExp('\n', 'g'), '<br>');
+                    message = message.replace(new RegExp('\t', 'g'), '<span style="display:inline-block; width: 3em;"></span>');
+                    out.append(message);
+                    if( !(options && options.newline == false) ){
+                        out.append('<br>');
+                    }
+                },
+            },
+            err: {
+                //Make it same as out for now
+                print: function(message, options){
+                    /*
+                     * options
+                     * newline: To append newline at the end of message or not
+                     */
+                    message = message.replace('\n', '<br>');
+                    out.append(message);
+                    if( !(options && options.newline == false) ){
+                        out.append('<br>');
+                    }
+                },
+            }
+        }
+        
+        function showHelp(commandName){
+            if( commandName in availComamnds ){
+                if( availComamnds[commandName].usage )
+                    termControll.out.print('Usage: ' + availComamnds[commandName].usage);
+                    
+                if( availComamnds[commandName].help )
+                    termControll.out.print(availComamnds[commandName].help);
+                
+                var helpList = {};
+                var options = availComamnds[commandName].options;
+                for(var opt in options){
+                    var optId = options[opt].option.join();
+                    if( optId in helpList ){
+                        helpList[optId].option.push(opt);
+                    }
+                    else {
+                        helpList[optId] = {
+                            option: [opt],
+                            help: options[opt].help
+                        }
+                        if( options[opt].action == 'help' ){
+                            helpList[optId].help = 'Show this help message';
+                        }
+                    }
+                }
+                termControll.out.print('');
+                for(var opt in helpList){
+                    termControll.out.print('\t' + helpList[opt].option.join(', ') + '\t\t' + helpList[opt].help);
+                    
+                }
+            }
+            else {
+                termControll.err.print('Command not found');
+            }
+        }
+        
+        function execute(input){
+            var args = input.trim().replace(/\s+/g, ' ')
+            if( args )
+                args = args.split(' ');
+            else 
+                args = false;
+            var command, commandName, options={}, arguments=[];
+            var toCall = true;
+            if( args.length ){
+                var commandName = args.shift();
+                if(commandName in availComamnds){
+                    
+                    command = availComamnds[commandName];
+                    //Parse options and arguments
+                    var nextArg, val;
+                    var isOpt;
+                    while( (nextArg = args.shift()) != undefined ){
+                        isOpt = false;
+                        if( nextArg.slice(0,2) == '--' ){
+                            isOpt = true;
+                            val = nextArg.split('=');
+                            if( val.length == 1){
+                                //If there is no equal to sign and next argument is value
+                                if(nextArg in command.options){
+                                    if( command.options[nextArg].action == 'store' || command.options[nextArg].action == 'append' ){
+                                        val = args.shift();
+                                        if( val == undefined ){
+                                            //Error: option requires an value
+                                            termControll.err.print("Option '"+nextArg+"' requires an value");
+                                            return false;
+                                        }
+                                    }
+                                    else {
+                                        val = undefined;
+                                    }
+                                    if( !applyOpt(nextArg, val) )
+                                        return;
+                                }
+                                else {
+                                    //Error: Invalid option
+                                    termControll.err.print("Invalid option '"+nextArg+"'");
+                                    return false;
+                                }
+                            }
+                            else if(val.length >= 2){
+                                nextArg = val[0];
+                                val = val.splice(1).join('=');
+                                if(nextArg in command.options){
+                                    if( !(command.options[nextArg].action == 'store' || command.options[nextArg].action == 'append') ){
+                                        //Error: option does not take a value
+                                        val = undefined;
+                                        termControll.err.print("Option '"+nextArg+"' requires an value");
+                                        return false;
+                                    }
+                                    else {
+                                        //val is already set
+                                    }
+                                    if( !applyOpt(nextArg, val) )
+                                        return;
+                                }
+                                else {
+                                    //Error: Invalid option
+                                    termControll.err.print("Invalid option '"+nextArg+"'");
+                                    return false;
+                                }
+                            }
+                        }
+                        else if( nextArg.slice(0,1) == '-' ){
+                            isOpt = true;
+                            var opt;
+                            nextArg = nextArg.slice(1);
+                            if( nextArg == '' ){
+                                //Error: Invalid option
+                                termControll.err.print("Invalid option '"+nextArg+"'");
+                                return false;
+                            }
+                            while( nextArg != '' ){
+                                opt = '-' + nextArg[0];
+                                nextArg = nextArg.slice(1);
+                                if(opt in command.options){
+                                    if( command.options[opt].action == 'store' || command.options[opt].action == 'append' ){
+                                        if( nextArg != ''){
+                                            val = nextArg;
+                                            nextArg = '';
+                                        }
+                                        else {
+                                            val = args.shift();
+                                        }
+                                        if( val == undefined ){
+                                            //Error: option requires an value
+                                            termControll.err.print("Option '"+opt+"' requires an value");
+                                            return false;
+                                        }
+                                    }
+                                    else {
+                                        val = undefined;
+                                    }
+                                    if( !applyOpt(opt, val) )
+                                        return;
+                                }
+                                else {
+                                    //Error: Invalid option
+                                    termControll.err.print("Invalid option '"+opt+"'");
+                                    return false;
+                                }
+                            }
+                        }
+                        else {
+                            arguments.push(nextArg);
+                        }
+                        
+                        function applyOpt(opt, val){
+                            switch (command.options[opt].action){
+                                case 'store':
+                                    options[command.options[opt].destination] = val;
+                                    break;
+                                case 'set_true':
+                                    options[command.options[opt].destination] = true;
+                                    break;
+                                case 'set_false':
+                                    options[command.options[opt].destination] = true;
+                                    break;
+                                case 'set_value':
+                                    options[command.options[opt].destination] = command.options[opt].value;
+                                    break;
+                                case 'append':
+                                    if( !Array.isArray(options[command.options[opt].destination]))
+                                        options[command.options[opt].destination] = [];
+                                    options[command.options[opt].destination].push(val);
+                                    break;
+                                case 'append_value':
+                                    if( !Array.isArray(options[command.options[opt].destination]))
+                                        options[command.options[opt].destination] = [];
+                                    options[command.options[opt].destination].push(command.options[opt].value);
+                                    break;
+                                case  'help':
+                                    showHelp(commandName);
+                                    toCall = false;
+                                    return false;
+                                    break;
+                            }
+                            return true;
+                        }
+                    }
+                    
+                    if( toCall )
+                        command.callback(commandName, options, arguments, input, termControll);
+                }
+                else {
+                    termControll.err.print('Command not found.');
+                }
+            }
+            else {
+                return;
+            }
+        }
+        
+        var term = $('<div class="terminal"></div>')
+            .css({
+                top: '30%',
+                right: '5%',
+                bottom: '5%',
+                left: '40%',
+            })
+            .appendTo('body');
+        
+        var out;
+        function newCommand(){
+            var toFocus;
+            $('<div class="command"></div>')
+                .append(
+                    toFocus = $('<div class="term-in"></div>')
+                        .append($('<span class="term-prompt">nisarg@karyakshetra $ </span>'))
+                        .append(
+                            $('<span class="term-command" contenteditable="true"></span>')
+                                .bind('keydown', function(ev){
+                                    if(ev.keyCode == 13){
+                                        ev.preventDefault();
+                                        var command = toFocus.find('.term-command').attr('contenteditable', 'false').text();
+                                        out = $('<div class="term-output"></div>').appendTo(toFocus);
+                                        execute(command);
+                                        newCommand();
+                                    }
+                                    else if(ev.ctrlKey || ev.altKey || ev.shiftKey){
+                                        var allowed = [37,38,39,40,'ctrl+X','ctrl+C','ctrl+V'];
+                                        var comb='';
+                                        if( ev.ctrlKey )comb += 'ctrl+';
+                                        if( ev.shiftKey )comb += 'shift+';
+                                        if( ev.altKey )comb += 'alt+';
+                                        comb += String.fromCharCode(ev.which);
+                                        if( allowed.indexOf(ev.which) > -1 || allowed.indexOf(comb) > -1 ){
+                                            //Allowed
+                                            //TODO: Paste(ctrl+V) has some bugs. Also inserts a new line
+                                        }
+                                        else {
+                                            ev.preventDefault();
+                                        }
+                                    }
+                                })
+                        )
+                )
+                .appendTo(term);
+            
+            term.scrollTop(term.prop('scrollHeight'));
+            
+            toFocus.focus();
+            var contentEditableElement = toFocus.find('.term-command').get(0);
+            var range,selection;
+            if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+            {    
+                range = document.createRange();//Create a range (a range is a like the selection but invisible)
+                range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+                selection = window.getSelection();//get the selection object (allows you to change selection)
+                selection.removeAllRanges();//remove any selections already made
+                selection.addRange(range);//make the range you have just created the visible selection
+            }
+            else if(document.selection)//IE 8 and lower
+            { 
+                range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+                range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+                range.select();//Select the range (make it the visible selection
+            }
+        }
+        newCommand();
+    }
+    
     this.setEditable = function(){
         //Adjusts the editable portion accoring to the screen size.
         var edit = $('#editable');

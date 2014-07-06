@@ -575,6 +575,20 @@ i.fa.fa-cfw {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+/*
+ * Style for terminal
+ */
+.terminal {
+    position: fixed;
+    color: white;
+    background-color: #050505;
+    padding: 5px;
+    overflow: auto;
+    font-family: monospace;
+}
+.term-command {
+    outline: none;
+}
 
 /*
  * Classes and styles for module
