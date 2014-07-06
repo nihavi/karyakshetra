@@ -455,6 +455,13 @@ i.fa.fa-cfw {
     border-radius: 2px;
 }
 
+.modal-cont > .modal .dialog-title {
+    color: #666;
+    text-align: left;
+    margin-top: 0;
+    border-bottom: 1px solid #ccc;
+}
+
 .modal-cont > .modal:hover {
     opacity: 1;
 }
@@ -594,6 +601,10 @@ i.fa.fa-cfw {
  * Classes and styles for module
  * To standardize certain common interface
  */
+
+.modal-content {
+    text-align: left;
+}
 
 .modal-content .button {
     font-size: 16px;
