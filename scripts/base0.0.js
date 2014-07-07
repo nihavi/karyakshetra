@@ -1568,7 +1568,7 @@ Base = new (function(){
             .appendTo(modal);
     }
     
-    this.terminal = function(){
+    this.terminal = new (function(){
         /*{
             command: String,
             options: [
@@ -1593,8 +1593,9 @@ Base = new (function(){
         }*/
         
         var availComamnds = {};
+        var history;
         
-        function registerCommand(command){
+        this.registerCommand = function(command){
             //Conflicts are not resolved automatically, they may crash it
             if( !(command && command.command && !(command.command in availComamnds) && typeof command.callback == 'function' ))
                 return false;
@@ -1619,40 +1620,6 @@ Base = new (function(){
             availComamnds[command.command] = command;
         }
         
-        registerCommand({
-            command: 'ls',
-            options: [
-                {
-                    option: ['-h', '--help'],
-                    action: 'help',
-                },
-                {
-                    option: ['-l', '--long-list'],
-                    action: 'set_true',
-                    destination: 'longList',
-                    default: false,
-                    help: 'Show long detailed list',
-                },
-                {
-                    option: ['-f', '--file'],
-                    action: 'store',
-                    destination: 'file',
-                    type: 'string',
-                    help: 'Show a specific file',
-                }
-            ],
-            usage: 'ls [OPTIONS]',
-            help: "The first command in the terminal. Doesn't do anything, though :P",
-            callback: function(command, options, arguments, rawCommand,term){
-                term.out.print('Command found, and working.\n');
-                term.out.print('Options: ');
-                for (var opt in options){
-                    term.out.print('\t' + opt + '=' + options[opt]);
-                }
-                term.out.print('\nPositional arguments: \n\t' + arguments.join(', '));
-            }
-        });
-        
         var termControll = {
             out: {
                 print: function(message, options){
@@ -1660,6 +1627,7 @@ Base = new (function(){
                      * options
                      * newline: To append newline at the end of message or not
                      */
+                    
                     message = message.replace(new RegExp('\n', 'g'), '<br>');
                     message = message.replace(new RegExp('\t', 'g'), '<span style="display:inline-block; width: 3em;"></span>');
                     out.append(message);
@@ -1840,7 +1808,7 @@ Base = new (function(){
                                     options[command.options[opt].destination] = true;
                                     break;
                                 case 'set_false':
-                                    options[command.options[opt].destination] = true;
+                                    options[command.options[opt].destination] = false;
                                     break;
                                 case 'set_value':
                                     options[command.options[opt].destination] = command.options[opt].value;
@@ -1877,76 +1845,199 @@ Base = new (function(){
             }
         }
         
-        var term = $('<div class="terminal"></div>')
-            .css({
-                top: '30%',
-                right: '5%',
-                bottom: '5%',
-                left: '40%',
-            })
-            .appendTo('body');
-        
-        var out;
-        function newCommand(){
-            var toFocus;
-            $('<div class="command"></div>')
-                .append(
-                    toFocus = $('<div class="term-in"></div>')
-                        .append($('<span class="term-prompt">nisarg@karyakshetra $ </span>'))
-                        .append(
-                            $('<span class="term-command" contenteditable="true"></span>')
-                                .bind('keydown', function(ev){
-                                    if(ev.keyCode == 13){
+        var out, term;
+        this.open = function(){
+            term = $('<div class="terminal"></div>')
+                .css({
+                    top: '30%',
+                    right: '5%',
+                    bottom: '5%',
+                    left: '40%',
+                })
+                .appendTo('body');
+            
+            history = [];
+            
+            function cursorAtEnd(elem){
+                var contentEditableElement = elem;
+                var range,selection;
+                if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
+                {
+                    range = document.createRange();//Create a range (a range is a like the selection but invisible)
+                    range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+                    range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+                    selection = window.getSelection();//get the selection object (allows you to change selection)
+                    selection.removeAllRanges();//remove any selections already made
+                    selection.addRange(range);//make the range you have just created the visible selection
+                }
+                else if(document.selection)//IE 8 and lower
+                { 
+                    range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
+                    range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
+                    range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+                    range.select();//Select the range (make it the visible selection
+                }
+            }
+            function newCommand(){
+                var toFocus;
+                term
+                    .append($('<span class="term-prompt">nisarg@karyakshetra $ </span>'))
+                    .append(
+                        toFocus = $('<span class="term-command" contenteditable="true"></span>')
+                            .bind('keydown', function(ev){
+                                if(ev.keyCode == 13){
+                                    ev.preventDefault();
+                                    var command = toFocus.attr('contenteditable', 'false').text();
+                                    out = $('<span class="term-output"><br></span>').appendTo(term);
+                                    execute(command);
+                                    history[history.length] = command;
+                                    newCommand();
+                                }
+                                else if(ev.keyCode == 38){
+                                    var noToLast;
+                                    if( toFocus.data('history-count') )
+                                        noToLast = toFocus.data('history-count') + 1;
+                                    else 
+                                        noToLast = 1;
+                                    if(noToLast > history.length){
+                                        noToLast = history.length;
+                                        toFocus.data('history-count', noToLast);
+                                        return;
+                                    }
+                                    toFocus.data('history-count', noToLast);
+                                    toFocus.text(history[history.length - noToLast]);
+                                }
+                                else if(ev.keyCode == 40){
+                                    var noToLast;
+                                    if( toFocus.data('history-count') )
+                                        noToLast = toFocus.data('history-count') - 1;
+                                    else 
+                                        noToLast = 0;
+                                    if(noToLast < 0){
+                                        noToLast = 0;
+                                        toFocus.data('history-count', noToLast);
+                                        return;
+                                    }
+                                    toFocus.data('history-count', noToLast);
+                                    if( !noToLast )
+                                        toFocus.text('');
+                                    else
+                                        toFocus.text(history[history.length - noToLast]);
+                                    //cursorAtEnd(this);
+                                }
+                                else if(ev.ctrlKey || ev.altKey){
+                                    var allowed = [37,38,39,40,'ctrl+X','ctrl+C','ctrl+V'];
+                                    var comb='';
+                                    if( ev.ctrlKey )comb += 'ctrl+';
+                                    if( ev.shiftKey )comb += 'shift+';
+                                    if( ev.altKey )comb += 'alt+';
+                                    comb += String.fromCharCode(ev.which);
+                                    if( allowed.indexOf(ev.which) > -1 || allowed.indexOf(comb) > -1 ){
+                                        //Allowed
+                                        //TODO: Paste(ctrl+V) has some bugs. Also inserts a new line
+                                    }
+                                    else {
                                         ev.preventDefault();
-                                        var command = toFocus.find('.term-command').attr('contenteditable', 'false').text();
-                                        out = $('<div class="term-output"></div>').appendTo(toFocus);
-                                        execute(command);
-                                        newCommand();
                                     }
-                                    else if(ev.ctrlKey || ev.altKey || ev.shiftKey){
-                                        var allowed = [37,38,39,40,'ctrl+X','ctrl+C','ctrl+V'];
-                                        var comb='';
-                                        if( ev.ctrlKey )comb += 'ctrl+';
-                                        if( ev.shiftKey )comb += 'shift+';
-                                        if( ev.altKey )comb += 'alt+';
-                                        comb += String.fromCharCode(ev.which);
-                                        if( allowed.indexOf(ev.which) > -1 || allowed.indexOf(comb) > -1 ){
-                                            //Allowed
-                                            //TODO: Paste(ctrl+V) has some bugs. Also inserts a new line
-                                        }
-                                        else {
-                                            ev.preventDefault();
-                                        }
-                                    }
-                                })
-                        )
-                )
-                .appendTo(term);
-            
-            term.scrollTop(term.prop('scrollHeight'));
-            
-            toFocus.focus();
-            var contentEditableElement = toFocus.find('.term-command').get(0);
-            var range,selection;
-            if(document.createRange)//Firefox, Chrome, Opera, Safari, IE 9+
-            {    
-                range = document.createRange();//Create a range (a range is a like the selection but invisible)
-                range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
-                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-                selection = window.getSelection();//get the selection object (allows you to change selection)
-                selection.removeAllRanges();//remove any selections already made
-                selection.addRange(range);//make the range you have just created the visible selection
+                                }
+                            })
+                            .bind('keyup', function(ev){
+                                if(ev.keyCode == 38 ){//|| ev.keyCode == 40){
+                                    cursorAtEnd(this);
+                                }
+                            })
+                    )
+                
+                term.scrollTop(term.prop('scrollHeight'));
+                
+                cursorAtEnd(toFocus.get(0));
             }
-            else if(document.selection)//IE 8 and lower
-            { 
-                range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
-                range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
-                range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-                range.select();//Select the range (make it the visible selection
-            }
+            newCommand();
         }
-        newCommand();
-    }
+        this.close = function(){
+            term.remove();
+        }
+        
+        /*
+         * Some basic commands
+         */
+        
+        //echo
+        this.registerCommand({
+            command: 'echo',
+            options: [
+                {
+                    option: ['-h', '--help'],
+                    action: 'help',
+                },
+                {
+                    option: ['-n'],
+                    action: 'set_false',
+                    destination: 'newline',
+                    default: true,
+                    help: 'do not output the trailing newline',
+                },
+            ],
+            usage: 'echo [OPTIONS] [STRING]...',
+            help: "Display text",
+            callback: function(command, options, arguments, rawCommand,term){
+                var newline = true;
+                if( options.newline == false )newline = false;
+                term.out.print(arguments.join(' '),{newline: newline});
+            }
+        });
+        
+        //exit
+        this.registerCommand({
+            command: 'exit',
+            options: [
+                {
+                    option: ['-h', '--help'],
+                    action: 'help',
+                },
+            ],
+            usage: 'exit [-h][--help]',
+            help: "Exit and close terminal",
+            callback: function(command, options, arguments, rawCommand,term){
+                Base.terminal.close();
+            }
+        });
+        
+        //ls
+        this.registerCommand({
+            command: 'ls',
+            options: [
+                {
+                    option: ['-h', '--help'],
+                    action: 'help',
+                },
+                {
+                    option: ['-l', '--long-list'],
+                    action: 'set_true',
+                    destination: 'longList',
+                    default: false,
+                    help: 'Show long detailed list',
+                },
+                {
+                    option: ['-f', '--file'],
+                    action: 'store',
+                    destination: 'file',
+                    type: 'string',
+                    help: 'Show a specific file',
+                }
+            ],
+            usage: 'ls [OPTIONS]',
+            help: "The first command in the terminal. Doesn't do anything, though :P",
+            callback: function(command, options, arguments, rawCommand,term){
+                term.out.print('Command found, and working.\n');
+                term.out.print('Options: ');
+                for (var opt in options){
+                    term.out.print('\t' + opt + '=' + options[opt]);
+                }
+                term.out.print('\nPositional arguments: \n\t' + arguments.join(', '));
+            }
+        });
+    })();
     
     this.setEditable = function(){
         //Adjusts the editable portion accoring to the screen size.
