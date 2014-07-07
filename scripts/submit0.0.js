@@ -94,6 +94,7 @@ Submit = new(function(){
                 this.append(control.DOMElement);
             }
         });
+        
         var f = new Form();
         $('#editable').appendControl(f);
         
@@ -113,12 +114,51 @@ Submit = new(function(){
         f.append(activePage);
 
         activeContainer.append(new Control('title', {'text':'Container Title'}));
+        Base.focusMenu('insert');
     };
 
+    function openInsertDialog() {
+        var insertDialog = $(Base.openDialog('Insert Form Control'));
+        insertDialog.append($('<div><input type="radio" name="control-type" value="textbox"/>Textbox</div>'));
+        insertDialog.append($('<div><input type="radio" name="control-type" value="textarea"/>Textarea</div>'));
+        insertDialog.append($('<input type="button" value="Ok" class="button" />').on('click', Base.closeModal));
+        insertDialog.append($('<input type="button" value="Cancel" class="button" />').on('click', Base.closeModal));
+    }
+    
     this.getMenu = function(){
-        return {};
-    };
-
+        return {
+            type: 'main',
+            id: 'insert',
+            title: 'Insert', //Name of menu
+            icon: 'fa-plus', //Font awesome icon name
+            groups: [
+                {
+                    type: 'group',
+                    id: 'g1',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-plus-square',
+                            title: 'Insert element dialog',
+                            callback: openInsertDialog
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    id: 'g2',
+                    items: [
+                        {
+                            type: 'button',
+                            icon: 'fa-check-square',
+                            title: 'Insert Checkbox',
+                            callback: function() {}
+                        }
+                    ]
+                }
+            ]
+        };
+    }
     this.resize = function(){
 
     };

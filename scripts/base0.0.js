@@ -1369,10 +1369,10 @@ Base = new (function(){
             .appendTo(modal)
             .focus();
         $('<div class="prompt-btn"></div>')
-            .append($('<input type="button" value="'+cancel+'" class="btn" />').bind('click',function(){
+            .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
                     Base.closeModal();
                 }))
-            .append($('<input type="button" value="'+ok+'" class="btn" />').bind('click',promptEnter))
+            .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',promptEnter))
             .appendTo(modal);
     }
     /*
@@ -1395,6 +1395,13 @@ Base = new (function(){
             .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',Base.closeModal))
             .appendTo(modal)
             .find('.button').focus();
+    }
+    this.openDialog = function(title) {
+        var modal = $(this.openModal());
+        if (title) {
+            modal.append('<h3 class="dialog-title">' + title + '</h3>');
+        }
+        return modal.get(0);
     }
     /*
      * Base.browse accepts
