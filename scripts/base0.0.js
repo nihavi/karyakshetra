@@ -1695,10 +1695,67 @@ Base = new (function(){
             }
         }
         
+        function cleanString(string){
+            string = 
+                    string
+                        .replace(/\\ /g,' ')    //Space
+                        .replace(/\\"/g,'"')    //Double quotes
+                        .replace(/\\'/g,"'")    //Single quotes
+                
+                if( (string[0] == string[string.length-1]) && (string[0] == '"' || string[0] == "'") ){
+                    string = string.slice(1,-1);
+                }
+            return string;
+        }
+        function cleanArgs(args){
+            for(var i=0; i<args.length; i++){
+                args[i] = cleanString(args[i])
+            }
+        }
         function execute(input){
-            var args = input.trim().replace(/\s+/g, ' ')
-            if( args )
-                args = args.split(' ');
+            var args = input.trimLeft();
+            if( args ){
+                var tmpArgs = [];
+                var len = args.length;
+                var last= false;
+                var esc = false;
+                var quote = false;
+                var j=0;
+                for(var i = 0; i<len; i++){
+                    if( args[i] == '\\' )
+                        i++;
+                    else if( quote ){
+                        if( args[i] == quote )
+                            quote = false;
+                        continue;
+                    }
+                    else if( args[i].match(/\s/g) ){
+                        if( last == 'space'){
+                            j++;
+                            continue;
+                        }
+                        last = 'space'
+                        tmpArgs[tmpArgs.length] = args.slice(j, i);
+                        j = i+1;
+                    }
+                    else if( args[i] == '"' || args[i] == "'" ){
+                        quote = args[i];
+                        last = false;
+                    }
+                    else {
+                        last = false;
+                    }
+                }
+                if( quote ){
+                    termControll.err.print("Quotes not terminated");
+                    return false;
+                }
+                if( args.slice(j, i) )
+                    tmpArgs[tmpArgs.length] = args.slice(j, i);
+                
+                cleanArgs(tmpArgs);
+                args = tmpArgs;
+            }
             else 
                 args = false;
             var command, commandName, options={}, arguments=[];
@@ -1723,7 +1780,7 @@ Base = new (function(){
                                         val = args.shift();
                                         if( val == undefined ){
                                             //Error: option requires an value
-                                            termControll.err.print("Option '"+nextArg+"' requires an value");
+                                            termControll.err.print("Option '"+nextArg+"' requires a value");
                                             return false;
                                         }
                                     }
@@ -1741,12 +1798,12 @@ Base = new (function(){
                             }
                             else if(val.length >= 2){
                                 nextArg = val[0];
-                                val = val.splice(1).join('=');
+                                val = cleanString(val.splice(1).join('='));
                                 if(nextArg in command.options){
                                     if( !(command.options[nextArg].action == 'store' || command.options[nextArg].action == 'append') ){
                                         //Error: option does not take a value
                                         val = undefined;
-                                        termControll.err.print("Option '"+nextArg+"' requires an value");
+                                        termControll.err.print("Option '"+nextArg+"' does not require a value");
                                         return false;
                                     }
                                     else {
@@ -1777,7 +1834,7 @@ Base = new (function(){
                                 if(opt in command.options){
                                     if( command.options[opt].action == 'store' || command.options[opt].action == 'append' ){
                                         if( nextArg != ''){
-                                            val = nextArg;
+                                            val = cleanString(nextArg);
                                             nextArg = '';
                                         }
                                         else {
@@ -1785,7 +1842,7 @@ Base = new (function(){
                                         }
                                         if( val == undefined ){
                                             //Error: option requires an value
-                                            termControll.err.print("Option '"+opt+"' requires an value");
+                                            termControll.err.print("Option '"+opt+"' requires a value");
                                             return false;
                                         }
                                     }
@@ -1844,7 +1901,7 @@ Base = new (function(){
                         command.callback(commandName, options, arguments, input, termControll);
                 }
                 else {
-                    termControll.err.print('Command not found.');
+                    termControll.err.print('Command \''+commandName+'\' not found.');
                 }
             }
             else {
@@ -1949,7 +2006,7 @@ Base = new (function(){
                                 }
                             })
                             .bind('keyup', function(ev){
-                                if(ev.keyCode == 38 ){//|| ev.keyCode == 40){
+                                if(ev.keyCode == 38 || ev.keyCode == 40){
                                     cursorAtEnd(this);
                                 }
                             })
