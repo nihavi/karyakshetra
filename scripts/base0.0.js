@@ -1687,7 +1687,6 @@ Base = new (function(){
                 termControll.out.print('');
                 for(var opt in helpList){
                     termControll.out.print('\t' + helpList[opt].option.join(', ') + '\t\t' + helpList[opt].help);
-                    
                 }
             }
             else {
@@ -2064,6 +2063,24 @@ Base = new (function(){
             help: "Exit and close terminal",
             callback: function(command, options, arguments, rawCommand,term){
                 Base.terminal.close();
+            }
+        });
+        
+        //help
+        this.registerCommand({
+            command: 'help',
+            options: [
+                {
+                    option: ['-h', '--help'],
+                    action: 'help',
+                },
+            ],
+            usage: 'help [-h][--help]',
+            help: "Show available commands and what they do",
+            callback: function(command, options, arguments, rawCommand,term){
+                for( var i in availComamnds){
+                    term.out.print(i + '\t\t' + availComamnds[i].help);
+                }
             }
         });
         
