@@ -113,3 +113,17 @@ input[type=checkbox].file-selector {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.type-icon {
+    padding-right: 7px;
+    padding-left: 2px;
+    color: #999;
+}
+
+.file:hover .type-icon {
+    color: #666;
+}
+
+.file.focus .type-icon {
+    color: #eee;
+}

@@ -50,7 +50,7 @@ function objectFunction(){
         $('#file-list').empty();
             
         $('<div id="location-bar"></div>')
-            .append($('<span class="fa fa-folder">&nbsp;</span>'))
+            .append($('<i class="fa fa-folder">&nbsp;</i>'))
             .append($('<span class="location"></span>')
                 .text(data.dir.path)
             )
@@ -82,7 +82,7 @@ function objectFunction(){
             }
             a.text(file.name);
             f.append($('<input class="file-selector" type="checkbox">'));
-    
+            f.append($('<i class="fa type-icon ' + ((dir) ? 'fa-folder' : 'fa-file') + '"></i>'))
             f.append(a);
             var moduleLabel;
             
