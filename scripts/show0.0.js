@@ -30,10 +30,6 @@ Show = new (function(){
         this.resize();
         
         if( file ){
-            //I'm keeping following two lines as comment as I don't know why it was here.
-            //var newSlide = new Slide();
-            //newSlide.renderSlide();
-            //Two lines above is a hack, do it properly :FIXME
             this.openFile(file);
         }
         else {
@@ -95,7 +91,8 @@ Show = new (function(){
         bgColor: String,    //Background color of slide, default white
         ratio: Number,  //Aspect ratio, width/height, default 4:3
         elems: Object,  //id as key and Elem Object as value
-        elemId: Number  //Counter for giving unique id to elem
+        elemId: Number, //Counter for giving unique id to elem
+        animOrder: Array    //Order of animantions
     }
     Elem
     {
@@ -103,6 +100,7 @@ Show = new (function(){
         parent: Slide Object,   //Parent Slide
         id: String, //Id of element
         animations: Array,  //Array of Animations
+        animId: Number, //Counter for unique id of aminations
         
         fontSize: Number,   //Font-size in percentage relative to slide height, if title or text
         text: String,   //Text inside the box, if title or text
@@ -530,6 +528,10 @@ Show = new (function(){
         if( !('backgroundColor' in elem.style) ){
             elem.style.backgroundColor = 'transparent';
         }
+        
+        if( !('animId' in elem) )
+            elem.animId = 0;
+        this.animId = elem.animId;
         
         this.top = elem.top;
         this.left = elem.left;
@@ -1419,6 +1421,12 @@ Show = new (function(){
                 activeElement.animations = [];
             }
             if( name == 'none' ){
+                if( activeElement.animations.length ){
+                    var removeId = activeElement.id+','+activeElement.animations[0].id;
+                    activeElement.parent.animOrder = activeElement.parent.animOrder.filter(function(anim){
+                        return (anim != removeId);
+                    });
+                }
                 activeElement.animations = [];
             }
             else if( activeElement.animations.length ){
@@ -1426,11 +1434,17 @@ Show = new (function(){
             }
             else {
                 activeElement.animations[0] = {
+                    id: 'anim' + activeElement.animId,
                     type: 'entry',  //FIXME in future, when other type comes
                     name: name,
                     duration: 'normal',
                     timing: 'click'
                 }
+                activeElement.animId++;
+                if( !('animOrder' in activeElement.parent) ){
+                    activeElement.parent.animOrder = [];
+                }
+                activeElement.parent.animOrder.push(activeElement.id+','+activeElement.animations[0].id);
             }
             Base.updateMenu(defaultMenus.concat(formatMenu(activeElement)));
             Base.focusMenu('animation');
@@ -2163,6 +2177,7 @@ Show = new (function(){
         });
         
         SlideShow.animQueue = [];
+        var tmpAnimationMap = {};
         if('elems' in slide){
             var i;
             for(i in slide.elems){
@@ -2174,12 +2189,18 @@ Show = new (function(){
                         
                     var anim = Object.create( slide.elems[i].animations[0] );
                     anim.elem = slide.elems[i];
-                    SlideShow.animQueue.push(anim);
+                    tmpAnimationMap[i+','+anim.id] = anim;
+                    
                     if( !reverse )
                         slide.elems[i].elemDOM.hide();
                 }
             }
         }
+        
+        for( i in slide.animOrder ){
+            SlideShow.animQueue.push(tmpAnimationMap[slide.animOrder[i]]);
+        }
+        delete tmpAnimationMap;
         
         activeSlide = slide;
         if( !reverse )
