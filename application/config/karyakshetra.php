@@ -6,3 +6,6 @@
 */
 
 $config['karyakshetra'] = array();
+
+// Whether to simulate filesystem with database instead of using actual filesystem
+$config['karyakshetra']['simulate_filesystem'] = TRUE;

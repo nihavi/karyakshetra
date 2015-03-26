@@ -1,19 +1,19 @@
 <?php
 
 class File_model extends CI_Model {
-    
+
     function __construct()
     {
         parent::__construct();
         date_default_timezone_set('Asia/Kolkata');
         $this->load->database();
     }
-    
+
     function mkdir($dir_name, $parent_id = 0, $user_id = null)
     {
         return $this->save_as($dir_name, null, 0, $parent_id, $user_id, false, true);
     }
-    
+
     function save($file_id, $file_data, $file_path = NULL, $update_db = TRUE)
     {
         if( !$file_path ){
@@ -21,15 +21,15 @@ class File_model extends CI_Model {
             $query = $this->db->get('files');
             $file_path = $query->row()->path;
         }
-        
+
         /*
          * TODO
          * Check and report if soft file/physical file does not exist
          */
-        
-        $this->load->helper('file');
-        write_file($file_path . 'data.kdat', $file_data);
-        
+
+        $this->load->helper('filesystem');
+        fs_write_file($file_path . 'data.kdat', $file_data);
+
         if ( $update_db )
         {
             $this->db->trans_start();
@@ -38,21 +38,21 @@ class File_model extends CI_Model {
             $this->db->update('files');
             $this->db->trans_complete();
         }
-        
+
         return $file_id;
     }
-    
+
     function save_as($file_name, $file_data, $ftype, $parent_id = 0, $user_id = null, $uploaded = false, $isDir = false)
     {
         /*
          * $uploaded = false, It'll save file and return fid
          *           = true, It'll save empty file and return file_path
-         * 
+         *
          * if !$file_data, It'll save empty file and return fid
          */
-        
+
         $this->db->trans_start();
-        
+
         //Prepare array for insertion
         $data = array(
             'fname'=> $file_name,
@@ -62,45 +62,46 @@ class File_model extends CI_Model {
 
         $this->db->set('modified', 'NOW()', FALSE);
         $this->db->insert('files', $data);
-        
+
         $file_id = $this->db->insert_id();
-        
+
         if( !$isDir ){
             //Prepare file path
             $this->db->where('fid', $file_id);
-            
+
             $date_path =  strtolower(date('Y/M/'));
-            
+
             $file_path = DATAPATH . $date_path . $file_id . '/';
-            
-            
+
+
             if (!is_dir($file_path))
             {
                 umask(0);
-                mkdir($file_path, 0777, true);
+                $this->load->helper('filesystem');
+                fs_mkdir($file_path, 0777, true);
             }
-            
+
             //Insert file path into DB
             $this->db->set('path', $file_path);
             $this->db->update('files');
         }
-        
+
         if ($user_id == null)
         {
             $this->db->where('gname', 'public');
             $query = $this->db->get('groups');
             $user_id = $query->row()->gid;
         }
-        
+
         //Add file permissions, default to `public` for now
-        
+
         $this->db->insert('filepermissions', array(
                 'gid'       => $user_id,
                 'fid'       => $file_id,
                 'rights'    => 7
             )
         );
-        
+
         //Actual file save call
         if (! $uploaded)
         {
@@ -116,9 +117,9 @@ class File_model extends CI_Model {
             $this->db->trans_complete();
             return $file_path;
         }
-        
+
     }
-    
+
     function rename($file_id, $name)
     {
         $this->db->trans_start();
@@ -128,7 +129,7 @@ class File_model extends CI_Model {
         $this->db->trans_complete();
         return ($this->db->trans_status() === false)?false:true;
     }
-    
+
     function remove_file($file_id)
     {
         $this->db->trans_start();
@@ -137,10 +138,10 @@ class File_model extends CI_Model {
         $this->db->set('removed', 1);
         $this->db->update('files');
         $this->db->trans_complete();
-        
+
         return ($this->db->trans_status() === false)?false:true;
     }
-    
+
     function remove_dir($dir_id, $recursive = false)
     {
         if( $recursive ){
@@ -150,37 +151,36 @@ class File_model extends CI_Model {
                     'pid' => $dir_id,
                     'removed' => 0,
                 ));
-        
+
             if ($query->num_rows() > 0)
             {
                 return false;
             }
-            
+
             $this->db->trans_start();
             $this->db->where('fid', $dir_id);
             $this->db->set('removed', 1);
             $this->db->update('files');
             $this->db->trans_complete();
-            
+
             return ($this->db->trans_status() === false)?false:true;
         }
     }
-    
+
     function open($file_id)
     {
-        
         $this->db->where('fid', $file_id);
         $this->db->where('removed', 0);
-        
+
         $query = $this->db->get('files');
-        
+
         if ($query->num_rows() > 0){
             $file_path = $query->row()->path;
-            
-            $this->load->helper('file');
-            
-            $file_data = read_file( $file_path . 'data.kdat' );
-            
+
+            $this->load->helper('filesystem');
+
+            $file_data = fs_read_file( $file_path . 'data.kdat' );
+
             return array(
                 'name' => $query->row()->fname,
                 'data' => $file_data
@@ -201,17 +201,17 @@ class File_model extends CI_Model {
         $this->db->where("files.removed = 0");
         $this->db->order_by('modified', 'desc');
         $query = $this->db->get();
-        
+
         return $query->result();
     }
-    
+
     function get_file($file_id)
     {
         $query = $this->db->get_where('files', array(
                 'fid' => $file_id,
                 'removed' => 0,
             ));
-        
+
         if ($query->num_rows() > 0)
         {
             return $query->row();
@@ -221,12 +221,12 @@ class File_model extends CI_Model {
             return false;
         }
     }
-    
+
     function get_file_path($file_id)
     {
         if($file_id == 0)
             return '/';
-        
+
         $file = $this->get_file($file_id);
         if( !$file )
             return false;
@@ -238,22 +238,23 @@ class File_model extends CI_Model {
                 return false;
             $path = $file->fname . '/' . $path;
         }
-        
+
         return '/' . $path;
     }
-    
+
     function extract_upload($file_name, $file_ext, $file_path)
     {
         $module = substr($file_ext, 1);
         $this->load->helper('module_helper');
         $ftype = module_id($module);
-        
+
         $save_path = $this->save_as($file_name, null, $ftype, $this->session->userdata('uid'), true);
-    
-        $zip = new ZipArchive; 
-        $zip->open($file_path); 
-        $zip->extractTo($save_path); 
+
+        //TODO: use filesystem helper to support filesystem simulation
+        $zip = new ZipArchive;
+        $zip->open($file_path);
+        $zip->extractTo($save_path);
         $zip->close();
     }
-    
+
 }
