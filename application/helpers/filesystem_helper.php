@@ -15,7 +15,7 @@ function fs_write_file($file_path, $data)
 
         if ($query->num_rows() > 0)
         {
-            $CI->db->where("filepath = $file_path");
+            $CI->db->where("filepath = '$file_path'");
             $CI->db->update('filesystem', array(
                     'data'  => $data
                 )
