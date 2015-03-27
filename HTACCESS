@@ -8,7 +8,7 @@ RewriteRule ^(.*)$ $1/ [R=301,L]
 
 #remove index.php and redirect, conditionally
 RewriteCond $1 !^(index\.php|libs|scripts|fonts|styles|images|robots\.txt|user_guide)
-RewriteRule ^(.*)$ index.php/$1 [L]
+RewriteRule ^(.*)$ index.php?/$1 [L]
 
 #Prevent caching
 <filesMatch "\.(html|htm|js|css|php)$">

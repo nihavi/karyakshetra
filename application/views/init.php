@@ -11,7 +11,7 @@
                 baseUrl: '<?php echo base_url(); ?>',
                 moduleId: '<?php echo $module_id; ?>',
                 mode: '<?php echo $mode; ?>',
-                <?php 
+                <?php
                     if( isset($file_id) ){
                         echo "fileId: '".$file_id."',";
                         echo "fileData: '".$file_data."',";
@@ -21,7 +21,6 @@
             }
             function loadJquery(fallback)
             {
-                fallback = true;
                 var url='//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js';
                 if(fallback)
                     url='<?php echo base_url().'scripts/jquery-1.11.0.min.js'; ?>';
@@ -43,7 +42,7 @@
                                     //Error: Jquery is not loaded
                                     document.write('Could not load jQuery');
                                 }
-                                else 
+                                else
                                     loadJquery(true);
                             }
                             else {
