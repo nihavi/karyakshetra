@@ -72,7 +72,7 @@ Base = new (function(){
     /*
      * Base backend
      */
-    
+
     /*
      * File save mechanism
      */
@@ -97,12 +97,13 @@ Base = new (function(){
                 postData.filename = filename;
             else
                 postData.filename = 'Untitled file';
-            
+
             if( !parentId ){
                 parentId = 0;
             }
             postData.parent = parentId;
         }
+        $('#file-name').html('<span class="fa fa-spin fa-spinner"></span> ' + $('#file-name').text());
         $.ajax({
             type: 'POST',
             url: url,
@@ -111,22 +112,22 @@ Base = new (function(){
                 currFileId = data;
                 lastSavedFile = filedata;
                 console.log('File saved with id ' + data);
-                console.log(postData.filename);
-                $('#file-name').text(postData.filename);
+                if (postData.filename) fileName = postData.filename;
+                $('#file-name').html(fileName);
             },
             error: function(){
                 console.log('File not saved');
             }
         });
     }
-    
+
     var isNewFile = function(){
         if( currFileId )
             return false;
-        else 
+        else
             return true;
     }
-    
+
     var isFileNotSaved = function(){
         if( 'getFile' in module ){
             if( module.getFile() != lastSavedFile )
@@ -134,19 +135,19 @@ Base = new (function(){
         }
         return false;
     }
-    
+
     /*
      * opQueue implementation
      */
      exQueue = new Array();
      newQueue = new Array();
      exPointer = 0;
-    
+
     this.addOp = function(pastState, newState){
         /*
          * pastState - previous state to be restored on undo
          * newState - next state to be rendered on viewer
-         * 
+         *
          * Will not return anything
          */
         exQueue[exPointer] = pastState;
@@ -157,16 +158,16 @@ Base = new (function(){
         if( isStreaming )
             sendOp(newState);
     };
-    
+
     this.undo = function(){
         /*
          * if undo is possible,
          * This function will call module's 'performOp' function with pastState
          * Assuming module is an object with performOp function defined
-         * 
-         * module.performOp should return pastState and newState in a object 
+         *
+         * module.performOp should return pastState and newState in a object
          * with properties of same names
-         * 
+         *
          * Will not return anything
          */
         if(exPointer > 0){
@@ -188,10 +189,10 @@ Base = new (function(){
          * if redo is possible,
          * This function will call module's 'performOp' function with newState
          * Assuming module is an object with performOp function defined
-         * 
-         * module.performOp should return pastState and newState in a object 
+         *
+         * module.performOp should return pastState and newState in a object
          * with properties of same names
-         * 
+         *
          * Will not return anything
          */
         if(exQueue[exPointer+1] != null){
@@ -209,7 +210,7 @@ Base = new (function(){
     var isListening = false;
     var isStreaming = false;
     var lastLoadedOp;
-    
+
     var startListening = function(){
         var updateOp = function(){
             $.ajax({
@@ -250,7 +251,7 @@ Base = new (function(){
             return false;
         }
     }
-    
+
     var sendOp = function(op){
         $.ajax({
             type: 'POST',
@@ -286,12 +287,12 @@ Base = new (function(){
             isStreaming = false;
         }
     }
-    
-    
+
+
     /*
      * Keyboard shortcuts
      *
-    
+
     Prototype of shortcut object
     {
         ctrl: Boolean,
@@ -300,25 +301,25 @@ Base = new (function(){
         char: String,
         callback: Function()
     }
-    
+
     */
-    
+
     var registeredShortcuts = new Object();
-    
+
     this.getShortcuts = function(){
         /*
          * Returns object containing all registered shortcuts
          */
         return registeredShortcuts;
     }
-    
+
     this.addShortcuts = function( shortcuts ){
         /*
          * Adds key shortcuts
-         * 
+         *
          * Expects an Array of Objects as argument.
          * Object is defined as followed
-        
+
         {
             ctrl: Boolean,
             shift: Boolean,
@@ -326,7 +327,7 @@ Base = new (function(){
             char: String,
             callback: Function()
         }
-        
+
          */
         var i;
         for ( i = 0; i<shortcuts.length; i++ ){
@@ -362,21 +363,21 @@ Base = new (function(){
             }
         }
     };
-    
+
     this.removeShortcuts = function( shortcuts ){
         /*
          * Removes key shortcuts
-         * 
+         *
          * Expects an Array of Objects as argument.
          * Object is defined as followed
-        
+
         {
             ctrl: Boolean,
             shift: Boolean,
             alt: Boolean,
             char: String,
         }
-        
+
          */
         var i;
         for ( i = 0; i<shortcuts.length; i++ ){
@@ -414,25 +415,25 @@ Base = new (function(){
             }
         }
     };
-    
+
     var handleKeyShortcuts = function(ev){
         var comb = '';
         if( ev.ctrlKey )comb += 'ctrl+';
         if( ev.shiftKey )comb += 'shift+';
         if( ev.altKey )comb += 'alt+';
         comb += String.fromCharCode(ev.which);
-                
+
         if( comb in registeredShortcuts && registeredShortcuts[comb] != null){
             registeredShortcuts[comb]();
             ev.preventDefault();
         }
     }
-    
+
     //Add event listener for key shortcuts
     $(window).keydown(handleKeyShortcuts);
-    
+
     //Common shortcuts are added at the end of this script to avoid undefined functions
-    
+
     /*
      * Base Frontend
      */
@@ -521,11 +522,11 @@ Base = new (function(){
         if (palette.length == 0)
             palette = defaultPalette;
     }
-    
+
     var log = function(id,t){
         console.log(id,t);
     }
-    
+
     var saveFrontEnd = function(){
         if( 'getFile' in module ){
             var data = module.getFile();
@@ -555,7 +556,7 @@ Base = new (function(){
                         )
                         .append($('<span>Enter file name</span>'))
                         .appendTo(modal);
-                    
+
                     if(parentFile.path){
                         modal.find('.browse-result .path').text(parentFile.path);
                     }
@@ -573,7 +574,7 @@ Base = new (function(){
                             },
                         });
                     }
-                        
+
                     var promptEnter = function(){
                         saveFile(data, $('.prompt-in').val(), parentFile.id);
                         Base.closeModal(false);
@@ -604,22 +605,22 @@ Base = new (function(){
         }
     }
     var openFrontEnd = function(){
-        
+
         var openFile = function(file, newtab){
             Base.closeModal(false);
             if( !file )
                 return;
             if( newtab )
                 window.open(baseUrl + file.module + '/' + file.id,'_blank');
-            else 
+            else
                 window.open(baseUrl + file.module + '/' + file.id,'_self');
         };
-        
+
         Base.browse(function(file){
             if( file == false ){
                 return;
             }
-            if( isFileNotSaved() ){                
+            if( isFileNotSaved() ){
                 var modal = $(Base.openModal());
                 $('<div class="alert-text">The current file is not saved. You may lose your changes on opening new file.</div>').appendTo(modal);
                 $('<div class="prompt-btn"></div>')
@@ -667,25 +668,25 @@ Base = new (function(){
             ]
         }
     ];
-    
+
     var menus;//Keeps track and information of the menus
     var menuMeta;//Mapping of modules id and DOM id
     var groupMeta;//Keeps information about groups in current submenu
     var submenu;//Keeps track and information of the current submenu
     var menuId;
-    
+
     /*
      * Global variables from response
      */
-    
+
     var baseUrl;
     var moduleMode;
-    
+
     /*
      * Dependency solver
      */
     var loadingDep;
-    
+
     var loadMathJax = function(){
         window.MathJax = {
             root: baseUrl+'libs/MathJax',
@@ -716,7 +717,7 @@ Base = new (function(){
             }
         })
     };
-    
+
     var solveDepend = function(depends){
         var availLibs = {
             'MathJax': loadMathJax
@@ -729,28 +730,28 @@ Base = new (function(){
             }
         }
     }
-    
+
     var solvedDep = function(){
         --loadingDep;
         if(loadingDep < 1)
             init2();
     }
-    
+
     this.init = function(){
         /*
          * init function for Base
          * To be called when all js and css are loaded for the first time
          */
-        
+
         // Get base url from response
         baseUrl = response.baseUrl;
         moduleId = response.moduleId;
         moduleMode = response.mode;
-        
+
         /*
          * Check excludes and set environment accordingly
          */
-        
+
         if( 'exclude' in module ){
             for(var i = 0; i < module.exclude.length; ++i){
                 switch( module.exclude[i] ){
@@ -763,9 +764,9 @@ Base = new (function(){
                 }
             }
         }
-        
+
         /*
-         * Check dependencies and load libraries 
+         * Check dependencies and load libraries
          */
         if( 'depends' in module ){
             solveDepend(module.depends);
@@ -779,7 +780,7 @@ Base = new (function(){
          * Init level 2.
          * Dependencies are solved by now.
          */
-        
+
         if( ('fileId' in response) && ('fileData' in response) ){
             //Open file
             if( !('openFile' in module) ){
@@ -792,26 +793,26 @@ Base = new (function(){
                 fileName = response.fileName;
             }
         }
-        
+
         $( "#wait-message" ).remove();
-        
+
         //Set default palette
         Base.setPalette(defaultPalette);
-        
+
         //Append interface div that contains everything inside body
         $('<div class="interface" id="interface"></div>').appendTo('body');
-        
+
         //Append menubar to interface
         //menubar contains whole menu with all submenus
         $('<div class="toolbars" id="menubar"></div>').appendTo('#interface');
-        
+
         //Append main to menubar
         var mainMenu = $('<div class="bar bar-super" id="mainMenu"></div>').appendTo('#menubar');
-        
+
         mainMenu.mousedown(function(ev){
             ev.preventDefault();
         });
-        
+
         //Add main menu items inside this level
         //Items are defined in menus
         menuId = 0;
@@ -819,16 +820,16 @@ Base = new (function(){
         menuMeta = new Object();
         Base.updateMenu(module.getMenu());
         focusFirstMenu();
-        
+
 
         //Append editable to interface
         var edit = $('<div class="editable" id="editable"></div>').appendTo('#interface');
         Base.setEditable();
-        
+
         //Call module's init
         module.init(edit.get(0), file, moduleMode);
         module.resize();
-                
+
         window.onbeforeunload = function(){
             //To prevent unload if file is changed
             if( isFileNotSaved() ){
@@ -838,7 +839,7 @@ Base = new (function(){
     }
 
     function createColorPicker() {
-        
+
         $('.colorpicker').remove();
         var domElement = $('<div class="colorpicker clearfloat"></div>');
 
@@ -865,9 +866,9 @@ Base = new (function(){
         }
 
         $('.colorpicker .color').bind('click', onColorClick);
-        
+
     };
-    
+
     var activeMenu;
     var showDefaultMenu = true;
     var showFileName = true;
@@ -889,7 +890,7 @@ Base = new (function(){
         if( !this.focusMenu(oldActiveMenu) )
             focusFirstMenu();
     };
-    
+
     var focusFirstMenu = function(){
         var i;
         for( i in menuMeta ){
@@ -897,7 +898,7 @@ Base = new (function(){
             break;
         }
     }
-    
+
     this.focusMenu = function(id){
         //Will be called by module with id of a menu to activate that menu
         if (id && id in menuMeta){
@@ -908,11 +909,11 @@ Base = new (function(){
             return false;
         }
     }
-    
+
     this.getFocusMenu = function(){
         return activeMenu;
     }
-    
+
     var createMenu = function(menuObject){
         //Create menu labels in menubar, and merge menus with same id
         var item, i, menuItem;
@@ -921,18 +922,18 @@ Base = new (function(){
         menuMeta = new Array();
         mainMenu.empty();
         $('#subMenu').remove();
-        
+
         var homeLink = $('<a class="a-home" href="'+baseUrl+'">')
             .append($('<div class="btn btn-big btn-home"></div>')
             .append($('<i class="fa fa-home"></i>')))
             .appendTo(mainMenu);
 
         var accountOptions = $('<a href="' + baseUrl +'account/logout/" class="account-options pull-right" >Logout</a>').appendTo(mainMenu);
-        
-        if (showFileName) {    
-            $('<span style="color:#aaa;" id="file-name" class=" pull-right">' + ((fileName) ? fileName : 'Untitled file') + '</span>').appendTo(mainMenu);
+
+        if (showFileName) {
+            $('<span style="color:#aaa;" id="file-name" class="pull-right">' + ((fileName) ? fileName : 'Untitled file') + '</span>').appendTo(mainMenu);
         }
-        
+
         for(var i = 0; i<menuObject.length; ++i){
             item = menuObject[i];
             if( ('type' in item) && (item.type == 'main') && ('title' in item) && ('icon' in item) ){
@@ -946,7 +947,7 @@ Base = new (function(){
                     //Insert menu into DOM
                     id = 'menuHead'+menuId;
                     var menuItem = $('<div class="btn btn-big" id="'+id+'"></div>').appendTo(mainMenu);
-                    
+
                     menuItem.click(activateMenu);
                     $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                     $('<span> '+item.title+'</span>').appendTo(menuItem);
@@ -964,26 +965,26 @@ Base = new (function(){
         }
         createColorPicker();
     }
-    
+
     var activateMenu = function(ev){
-        /* 
+        /*
          * Onclick event handler on main menu items
          * Creates menu associated with label
          */
         var id = $(this).attr('id');
         var menu = menus[id];
         activeMenu = menu.id;
-        
+
         //Change classes of item in main menu
         $('#mainMenu .active').removeClass('active');
         $(this).addClass('active');
-        
+
         //Remove old submenu
         $('#subMenu').remove();
         groupMeta = new Object();
         submenu = new Object();
         var subMenuId = 0;
-        
+
         //Append submenu to menubar
         var subMenu = $('<div class="bar bar-sub blue" id="subMenu"></div>').appendTo('#menubar');
         subMenu.mousedown(function(ev){
@@ -1022,7 +1023,7 @@ Base = new (function(){
                                 $('<i class="fa '+item.icon+'"></i>').appendTo(menuItem);
                                 menuItem.addClass('btn-icon');
                             }
-                            
+
                             if( item.type == 'color' ){
                                 menuItem.addClass('btn-color');
                                 menuItem.find('i').css('font-size', '0.5em');
@@ -1060,41 +1061,41 @@ Base = new (function(){
                                     menuItem.addClass('select btn-text btn-intext btn-icon');
                                     var dropdown = $('<div class="dropdown"></div>').appendTo(menuItem);
                                     for(var i = 0; i<item.list.length; i++) {
-                                        
+
                                         var op = $('<div class="option">'+(item.list[i].value)+'</div>')
                                             .data({
                                                 'id': item.list[i].id,
                                                 'index' : i
                                             })
                                             .appendTo(dropdown);
-                                        
+
                                         op.click(function() {
                                             var elem = $(this).closest('.select');
                                             var itemId = elem.attr('id');
                                             var item = submenu[itemId];
                                             var selected = $(this).data('id');
                                             item.callback(item.id, selected);
-                                            
+
                                             if( !('state' in item) || item.state ){
                                                 elem.find('.btn-intext').html(item.list[$(this).data('index')].value);
                                                 item.currState = selected;
                                             }
                                         });
                                     }
-                                    
+
                                     menuItem.css('min-width', dropdown.width() + (menuItem.outerWidth() - menuItem.width()) * 2);
-                                    
+
                                     var x = menuItem.offset().left;
                                     var y = $('.toolbars').height() + 2;
-                                    
+
                                     dropdown.css({
                                         'top' : y,
                                         'left': x,
                                         'min-width': parseInt(menuItem.css('min-width')) + 14
                                     });
-                                    
+
                                     var text = $('<span class="btn-intext"></span>').prependTo(menuItem);
-                                    
+
                                     if('currState' in item){
                                         if( !('state' in item) || item.state ){
                                             for (var i=0;i<item.list.length;++i) {
@@ -1120,7 +1121,7 @@ Base = new (function(){
                                     }
                                 }
                             }
-                            
+
                             menuItem.mousedown(function(ev){
                                 if( !$(ev.target).closest('.input-text').length )
                                     ev.preventDefault();
@@ -1150,15 +1151,15 @@ Base = new (function(){
         }
         setTooltip();
     }
-    
+
     var handleMenuClick = function(ev){
         //Handles click on toolbar items
         var elem = $(this);
         var itemId = $(this).attr('id');
         var item = submenu[itemId];
-        
+
         if( item.type == 'color' ){
-                    
+
             var hideColorPicker = function(e) {
                 if (($(e.target).closest('.colorpicker').length == 0)
                     && ($(e.target).closest('.btn-color').length == 0)) {
@@ -1168,17 +1169,17 @@ Base = new (function(){
                     $('.colorpicker').hide().data('caller', '');
                 }
             }
-            
+
             if (($('.colorpicker').css('display') == 'none') || ($('.colorpicker').data('caller') != itemId)) {
-                
+
                 var x = elem.offset().left;
                 var y = $('.toolbars').height() + 1;
-                
+
                 $('.colorpicker').css({
                     'top': y,
                     'left': x
                 });
-                
+
                 var dummy = $('<div>').css('backgroundColor',item.currState);
                 var color = dummy.css('backgroundColor');
                 dummy.remove()
@@ -1186,7 +1187,7 @@ Base = new (function(){
                 $('.colorpicker .color').filter(function(i){
                     return $(this).css('backgroundColor') == item.currState || $(this).css('backgroundColor') == color;
                 }).first().addClass('active');
-                
+
                 $('.colorpicker').show().data('caller', itemId);
                 $(window).bind('click', hideColorPicker);
                 $('.btn-color').attr('rel','tooltip');
@@ -1198,7 +1199,7 @@ Base = new (function(){
                 $(window).unbind('click', hideColorPicker);
             }
         }
-        
+
         else if( item.type == 'font' ){
         }
         else if( item.type == 'size' ){
@@ -1208,17 +1209,17 @@ Base = new (function(){
         }
         else if( item.type == 'list' ){
             var dropdown = elem.find('.dropdown');
-            
+
             var hideDropdown = function(e) {
                 if ($(e.target).closest('.dropdown').length == 0) {
-                    if( $(e.target).closest('.select').length == 0 ){                      
+                    if( $(e.target).closest('.select').length == 0 ){
                         $(window).unbind('click', hideDropdown);
                         $('.dropdown').hide();
                         $('.btn.select').attr('rel','tooltip');
                     }
                 }
             }
-            
+
             if (dropdown.css('display') == 'none') {
                 $('.dropdown').hide();
                 dropdown.show();
@@ -1278,7 +1279,7 @@ Base = new (function(){
             }
         }
     }
-    
+
     /*
      * Implementation of modal box
      */
@@ -1312,7 +1313,7 @@ Base = new (function(){
                 content = $('<div class="modal-content"></div>')
             )
         ).appendTo($('body'));
-        
+
         content = content.get(0);
         return content;
     }
@@ -1326,7 +1327,7 @@ Base = new (function(){
         }
         modalCallback = false;
     }
-    
+
     /*
      * Implementation of prompt
      */
@@ -1335,7 +1336,7 @@ Base = new (function(){
     /*
      * Base.prompt accepts
      * String text  - Text for prompt
-     * Function callback(Mixed response) - callback when prompt is complete, 
+     * Function callback(Mixed response) - callback when prompt is complete,
      *      if it fails response will be false, otherwise String
      * String value - Default value for prompt
      * String ok    - Text to be shown in ok btn, default OK
@@ -1388,7 +1389,7 @@ Base = new (function(){
             callback = function(){};
         if( !ok )
             ok = 'OK';
-        
+
         var modal = Base.openModal(null, null, callback);
         $('<div class="alert-text">'+text+'</div>').appendTo(modal);
         $('<div class="alert-btn"></div>')
@@ -1405,7 +1406,7 @@ Base = new (function(){
     }
     /*
      * Base.browse accepts
-     * Function callback(Number file) - callback when browse is complete, 
+     * Function callback(Number file) - callback when browse is complete,
      *      if it fails response will be false, otherwise file object
      * String ok            - Text to be shown in ok btn, default OK
      * String cancel        - Text to be shown in cancel btn, default Cancel
@@ -1425,16 +1426,16 @@ Base = new (function(){
         }
         if( directory != false )
             directory = true;
-        
+
         var currDirectory = {
                 id: 0,
                 parent: 0,
             };
-            
+
         var updateFileListUI = function (data, fileListUI) {
-        
+
             fileListUI.empty();
-            
+
             var files = data.files;
             var disable = ( currDirectory.parent == currDirectory.id );
             var f = $('<div class="browse-file"></div>');
@@ -1453,8 +1454,8 @@ Base = new (function(){
                 });
             }
             fileListUI.append(f);
-            
-            
+
+
             for (var i=0;i<files.length;++i) {
                 var file = files[i];
                 var dir = false;
@@ -1462,17 +1463,17 @@ Base = new (function(){
                     dir = true;
                 }
                 file.ftype = parseInt(file.ftype);
-                
+
                 var disable = (ftypes.length && file.ftype != 0 && ftypes.indexOf(file.ftype) == -1);
                 var f = $('<div class="browse-file"></div>');
-                
+
                 if( disable || (dir && !directory))
                     f.addClass('disabled');
-                else 
+                else
                     f.addClass('enabled');
-                
+
                 f.data('file', file);
-                
+
                 var a;
                 if(dir){
                     a = $('<a></a>');
@@ -1486,20 +1487,20 @@ Base = new (function(){
                     a = $('<span></span>')
                 }
                 a.text(file.name);
-        
+
                 f.append(a);
                 var moduleLabel;
-                
+
                 if( dir ){
                     moduleLabel = 'Directory';
                 }
                 else {
                     moduleLabel = file.module.charAt(0).toUpperCase() + file.module.slice(1) + ' file';
                 }
-                
+
                 moduleLabel = $('<span class="disabled browse-module-label pull-right">' + moduleLabel + '</span>');
                 f.append(moduleLabel);
-                
+
                 if( !disable ){
                     f.on('click', function(e) {
                         if (!$(e.target).is('a')) {
@@ -1515,11 +1516,11 @@ Base = new (function(){
                         }
                     });
                 }
-                
+
                 fileListUI.append(f);
             }
         }
-        
+
         var getFileList = function (parent, fileListUI) {
             //Originally copied from Dash
             $.ajax({
@@ -1532,21 +1533,21 @@ Base = new (function(){
                 },
             });
         }
-        
+
         var modal = Base.openModal(null, null, function(){
                 callback(false);
             });
-        
+
         modal = $(modal);
-        
+
         var fileLocationUI = $('<div class="browse-location-p"></div>')
             .append($('<span class="fa fa-folder">&nbsp;</span>'))
             .append($('<span class="browse-location"></span>'))
             .appendTo(modal);
-            
+
         var fileListUI = $('<div class="browse-file-list"></div>').appendTo(modal);
         getFileList(currDirectory.id, fileListUI);
-        
+
         var browseEnter = function(){
             var file = fileListUI.find('.browse-file.focus');
             if( !directory && !file.length)
@@ -1566,7 +1567,7 @@ Base = new (function(){
                 //Error: Select allowed file
             }
         }
-        
+
         $('<div class="browse-btn"></div>')
             .append($('<input type="button" value="'+cancel+'" class="button" />').bind('click',function(){
                     Base.closeModal();
@@ -1574,7 +1575,7 @@ Base = new (function(){
             .append($('<input type="button" value="'+ok+'" class="button" />').bind('click',browseEnter))
             .appendTo(modal);
     }
-    
+
     this.terminal = new (function(){
         /*{
             command: String,
@@ -1598,15 +1599,15 @@ Base = new (function(){
             help: String,
             callback: Function(command, options, arguments, rawCommand)
         }*/
-        
+
         var availComamnds = {};
         var history;
-        
+
         this.registerCommand = function(command){
             //Conflicts are not resolved automatically, they may crash it
             if( !(command && command.command && !(command.command in availComamnds) && typeof command.callback == 'function' ))
                 return false;
-            
+
             var opt;
             var options={};
             var ign = 0;
@@ -1626,7 +1627,7 @@ Base = new (function(){
             command.options = options;
             availComamnds[command.command] = command;
         }
-        
+
         var termControll = {
             out: {
                 print: function(message, options){
@@ -1634,7 +1635,7 @@ Base = new (function(){
                      * options
                      * newline: To append newline at the end of message or not
                      */
-                    
+
                     message = message.replace(new RegExp('\n', 'g'), '<br>');
                     message = message.replace(new RegExp('\t', 'g'), '<span style="display:inline-block; width: 3em;"></span>');
                     out.append(message);
@@ -1658,15 +1659,15 @@ Base = new (function(){
                 },
             }
         }
-        
+
         function showHelp(commandName){
             if( commandName in availComamnds ){
                 if( availComamnds[commandName].usage )
                     termControll.out.print('Usage: ' + availComamnds[commandName].usage);
-                    
+
                 if( availComamnds[commandName].help )
                     termControll.out.print(availComamnds[commandName].help);
-                
+
                 var helpList = {};
                 var options = availComamnds[commandName].options;
                 for(var opt in options){
@@ -1693,14 +1694,14 @@ Base = new (function(){
                 termControll.err.print('Command not found');
             }
         }
-        
+
         function cleanString(string){
-            string = 
+            string =
                     string
                         .replace(/\\ /g,' ')    //Space
                         .replace(/\\"/g,'"')    //Double quotes
                         .replace(/\\'/g,"'")    //Single quotes
-                
+
                 if( (string[0] == string[string.length-1]) && (string[0] == '"' || string[0] == "'") ){
                     string = string.slice(1,-1);
                 }
@@ -1751,18 +1752,18 @@ Base = new (function(){
                 }
                 if( args.slice(j, i) )
                     tmpArgs[tmpArgs.length] = args.slice(j, i);
-                
+
                 cleanArgs(tmpArgs);
                 args = tmpArgs;
             }
-            else 
+            else
                 args = false;
             var command, commandName, options={}, arguments=[];
             var toCall = true;
             if( args.length ){
                 var commandName = args.shift();
                 if(commandName in availComamnds){
-                    
+
                     command = availComamnds[commandName];
                     //Parse options and arguments
                     var nextArg, val;
@@ -1861,7 +1862,7 @@ Base = new (function(){
                         else {
                             arguments.push(nextArg);
                         }
-                        
+
                         function applyOpt(opt, val){
                             switch (command.options[opt].action){
                                 case 'store':
@@ -1895,7 +1896,7 @@ Base = new (function(){
                             return true;
                         }
                     }
-                    
+
                     if( toCall )
                         command.callback(commandName, options, arguments, input, termControll);
                 }
@@ -1907,7 +1908,7 @@ Base = new (function(){
                 return;
             }
         }
-        
+
         var out, term;
         this.open = function(){
             term = $('<div class="terminal"></div>')
@@ -1918,9 +1919,9 @@ Base = new (function(){
                     left: '40%',
                 })
                 .appendTo('body');
-            
+
             history = [];
-            
+
             function cursorAtEnd(elem){
                 var contentEditableElement = elem;
                 var range,selection;
@@ -1934,7 +1935,7 @@ Base = new (function(){
                     selection.addRange(range);//make the range you have just created the visible selection
                 }
                 else if(document.selection)//IE 8 and lower
-                { 
+                {
                     range = document.body.createTextRange();//Create a range (a range is a like the selection but invisible)
                     range.moveToElementText(contentEditableElement);//Select the entire contents of the element with the range
                     range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
@@ -1960,7 +1961,7 @@ Base = new (function(){
                                     var noToLast;
                                     if( toFocus.data('history-count') )
                                         noToLast = toFocus.data('history-count') + 1;
-                                    else 
+                                    else
                                         noToLast = 1;
                                     if(noToLast > history.length){
                                         noToLast = history.length;
@@ -1974,7 +1975,7 @@ Base = new (function(){
                                     var noToLast;
                                     if( toFocus.data('history-count') )
                                         noToLast = toFocus.data('history-count') - 1;
-                                    else 
+                                    else
                                         noToLast = 0;
                                     if(noToLast < 0){
                                         noToLast = 0;
@@ -2010,9 +2011,9 @@ Base = new (function(){
                                 }
                             })
                     )
-                
+
                 term.scrollTop(term.prop('scrollHeight'));
-                
+
                 cursorAtEnd(toFocus.get(0));
             }
             newCommand();
@@ -2020,11 +2021,11 @@ Base = new (function(){
         this.close = function(){
             term.remove();
         }
-        
+
         /*
          * Some basic commands
          */
-        
+
         //echo
         this.registerCommand({
             command: 'echo',
@@ -2049,7 +2050,7 @@ Base = new (function(){
                 term.out.print(arguments.join(' '),{newline: newline});
             }
         });
-        
+
         //exit
         this.registerCommand({
             command: 'exit',
@@ -2065,7 +2066,7 @@ Base = new (function(){
                 Base.terminal.close();
             }
         });
-        
+
         //help
         this.registerCommand({
             command: 'help',
@@ -2083,7 +2084,7 @@ Base = new (function(){
                 }
             }
         });
-        
+
         //ls
         this.registerCommand({
             command: 'ls',
@@ -2119,7 +2120,7 @@ Base = new (function(){
             }
         });
     })();
-    
+
     this.setEditable = function(){
         //Adjusts the editable portion accoring to the screen size.
         var edit = $('#editable');
@@ -2131,19 +2132,19 @@ Base = new (function(){
             edit.css('height', $(window).innerHeight() - $('#menubar').outerHeight());
         }
     }
-    
+
     var handleResize = function(){
         Base.setEditable();
         //Call module's resize function
         module.resize();
     }
     $(window).resize(handleResize);
-    
-    
+
+
     /*
      * Tooltip implementation
      * From http://osvaldas.info/elegant-css-and-jquery-tooltip-responsive-mobile-friendly
-     * 
+     *
      * Edited
      */
     var setTooltip = function()
@@ -2152,31 +2153,31 @@ Base = new (function(){
             target  = false,
             tooltip = false,
             title   = false;
-     
+
         targets.bind( 'mouseenter', function()
         {
             target  = $( this );
             tip     = target.attr( 'title' );
             tooltip = $( '<div id="tooltip"></div>' );
-     
+
             if( !tip || tip == '' || target.attr('rel')!='tooltip')
                 return false;
-     
+
             target.removeAttr( 'title' );
             tooltip.css( 'opacity', 0 )
                    .html( tip )
                    .appendTo( 'body' );
-     
+
             var init_tooltip = function()
             {
                 if( $( window ).width() < tooltip.outerWidth() * 1.5 )
                     tooltip.css( 'max-width', $( window ).width() / 2 );
                 else
                     tooltip.css( 'max-width', 340 );
-     
+
                 var pos_left = target.offset().left + ( target.outerWidth() / 2 ) - ( tooltip.outerWidth() / 2 ),
                     pos_top  = target.offset().top + target.outerHeight();
-     
+
                 if( pos_left < 0 )
                 {
                     pos_left = target.offset().left + target.outerWidth() / 2 - 20;
@@ -2184,7 +2185,7 @@ Base = new (function(){
                 }
                 else
                     tooltip.removeClass( 'left' );
-     
+
                 if( pos_left + tooltip.outerWidth() > $( window ).width() )
                 {
                     pos_left = target.offset().left - tooltip.outerWidth() + target.outerWidth() / 2 + 20;
@@ -2192,7 +2193,7 @@ Base = new (function(){
                 }
                 else
                     tooltip.removeClass( 'right' );
-                
+
                 if( pos_top + tooltip.outerHeight() + 20 > $( window ).height() ){
                     pos_top  = target.offset().top - tooltip.outerHeight() - 20,
                     tooltip.removeClass( 'top' );
@@ -2201,39 +2202,39 @@ Base = new (function(){
                 {
                     tooltip.addClass( 'top' );
                 }
-                    
+
                 tooltip.css( { left: pos_left, top: pos_top } )
                        .animate( { top: '+=10', opacity: 1 }, 50 );
             };
-     
+
             init_tooltip();
             $( window ).resize( init_tooltip );
-     
+
             var remove_tooltip = function()
             {
                 tooltip.animate( { top: '-=10', opacity: 0 }, 50, function()
                 {
                     $( this ).remove();
                 });
-     
+
                 target.attr( 'title', tip );
             };
-     
+
             target.bind( 'mouseleave', remove_tooltip );
             target.bind( 'click', remove_tooltip );
             tooltip.bind( 'click', remove_tooltip );
         });
     }
-    
+
     /*
      * Full screen request
      */
-     
+
     this.fullscreen = function() {
         element=document.body;
         // Supports most browsers and their versions.
         var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullScreen;
-        
+
         if (requestMethod) { // Native full screen.
             requestMethod.call(element);
         }
@@ -2245,11 +2246,11 @@ Base = new (function(){
         }
         handleResize();
     }
-    
+
     this.exitFullscreen = function() {
         // Supports most browsers and their versions.
         var requestMethod = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-        
+
         if (requestMethod) { // Native full screen.
             requestMethod.call(document);
         }
@@ -2261,7 +2262,7 @@ Base = new (function(){
         }
         handleResize();
     }
-    
+
     this.hideMenu = function(complete){
         //Hide menus completely if complete is true
         $('#menubar').hide();
@@ -2273,14 +2274,14 @@ Base = new (function(){
         }
         handleResize();
     }
-    
+
     this.showMenu = function(){
         $('#menubar').show();
         $('#showMenu').remove();
         handleResize();
     }
-    
-    
+
+
     //Add common shortcuts
     this.addShortcuts([
         {
@@ -2310,11 +2311,10 @@ Base = new (function(){
             callback: saveFrontEnd
         }
     ]);
-    
+
     // Utility functions
     String.prototype.capitalize = function(lower) {
         return (lower ? this.toLowerCase() : this).replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
     };
-    
-})();
 
+})();

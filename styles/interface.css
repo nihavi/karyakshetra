@@ -323,7 +323,7 @@ i.fa.fa-cfw {
 
 .btn-longtext,
 .select .option {
-    
+
 }
 
 .option {
@@ -340,7 +340,7 @@ i.fa.fa-cfw {
 /*
  * Tooltip
  * From http://osvaldas.info/elegant-css-and-jquery-tooltip-responsive-mobile-friendly
- * 
+ *
  * Edited
  */
 #tooltip
@@ -354,7 +354,7 @@ i.fa.fa-cfw {
     border-radius: 5px;
     pointer-events:none;
 }
- 
+
     #tooltip:after /* triangle decoration */
     {
         width: 0;
@@ -368,7 +368,7 @@ i.fa.fa-cfw {
         bottom: -10px;
         margin-left: -10px;
     }
- 
+
         #tooltip.top:after
         {
             border-top-color: transparent;
@@ -376,13 +376,13 @@ i.fa.fa-cfw {
             top: -20px;
             bottom: auto;
         }
- 
+
         #tooltip.left:after
         {
             left: 10px;
             margin: 0;
         }
- 
+
         #tooltip.right:after
         {
             right: 10px;
@@ -399,7 +399,7 @@ i.fa.fa-cfw {
     color: white;
 }
 
-/* 
+/*
  * Save dialogue box
  */
 .save-text{
@@ -622,7 +622,7 @@ i.fa.fa-cfw {
     background-color: #006ca8;
     border: 1px solid #005c98;
 }
-/* Old button styles 
+/* Old button styles
 .button {
     font-size:20px;
     color:white;
