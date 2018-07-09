@@ -30,7 +30,8 @@ class Setup_model extends CI_Model {
             ),
             'path'=>array(
                 'type'=>'VARCHAR',//Physical path
-                'constraint' => '256'
+                'constraint' => '256',
+                'null' => TRUE,
             ),
             'created TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
             'modified'=>array(
