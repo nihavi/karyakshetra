@@ -99,10 +99,7 @@ class Setup_model extends CI_Model {
                 'type'=>'VARCHAR',
                 'constraint' => '100'
             ),
-            'created TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
-            'lastlogin'=>array(
-                'type'=>'DATETIME'
-            )
+            'created TIMESTAMP DEFAULT CURRENT_TIMESTAMP'
         );
         $this->dbforge->add_field($fields);
         $this->dbforge->add_key('uid', TRUE);
@@ -162,7 +159,8 @@ class Setup_model extends CI_Model {
         $gid = $this->db->insert_id();
         $this->db->insert('users', array(
                 'uid' => $gid,
-                'username' => 'public'
+                'username' => 'public',
+                'password' => ''
             ));
         $this->db->trans_complete();
         if ($this->db->trans_status() === FALSE)
@@ -189,7 +187,7 @@ class Setup_model extends CI_Model {
             ),
             'op'=>array(
                 'type'=>'VARCHAR',
-                'constraint'=>'65535'
+                'constraint'=>'2048'
             ),
             'time TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
         );
