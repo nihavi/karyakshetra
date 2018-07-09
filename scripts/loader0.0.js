@@ -67,8 +67,8 @@ function loadJquery(fallback)
                                 //Error: font-awesome error
                                 document.write('Some error occured');
                             });
-                            linkCss('http://fonts.googleapis.com/css?family=Source+Sans+Pro');
-                            linkCss('http://fonts.googleapis.com/css?family=Open+Sans');
+                            linkCss('//fonts.googleapis.com/css?family=Source+Sans+Pro');
+                            linkCss('//fonts.googleapis.com/css?family=Open+Sans');
                         },
                         function(){
                             //Error: scripts loading failed
