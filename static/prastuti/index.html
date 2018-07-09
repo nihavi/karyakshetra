@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Karyakshetra</title>
+        <script>
+            response = {
+                baseUrl: 'http://localhost/karyakshetra/static/',
+                moduleId: 'dash',
+                mode: 'edit',
+                paths: {
+                    baseScript: 'base0.0.js',
+                    moduleScript: 'show0.0.js',
+                    moduleStyle: 'show0.0.css',
+                },
+            }
+
+            var script=document.createElement('script');
+            script.src=response.baseUrl + 'scripts/loader0.0.js';
+            document.head.appendChild(script);
+        </script>
+    </head>
+    <body onload='loadJquery()'>
+        <div id='wait-message'>Please wait...</div>
+    </body>
+</html>
